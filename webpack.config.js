@@ -48,15 +48,19 @@ module.exports = {
 
         ]
     },
+    output: {
+        publicPath: "/"
+    },
     // Server Configuration options
     devServer: {
         host: '0.0.0.0',
-        disableHostCheck: true
+        disableHostCheck: true,
+        historyApiFallback: true
     },
     plugins: [
         new HtmlWebPackPlugin({
             template: "./src/index.html",
-            filename: "./index.html"
+            filename: "./index.html",
         })
     ]
 };

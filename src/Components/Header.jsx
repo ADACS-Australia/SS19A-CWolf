@@ -9,10 +9,10 @@ import {
     Navbar,
     NavbarBrand,
     NavbarToggler,
-    NavItem,
-    NavLink
+    NavItem
 } from "reactstrap";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import {Link} from "react-router-dom";
 
 import marzIcon from '../Assets/images/Marz.png';
 import {faCog, faQuestionCircle, faSignal, faTasks, faTh} from "@fortawesome/free-solid-svg-icons";
@@ -41,26 +41,26 @@ class Header extends React.Component {
     render() {
         return (
             <Navbar color="dark" dark expand="md" fixed="top" className="marz-header">
-                <NavbarBrand>
+                <Link className="navbar-brand" to="/">
                     <img className='navbar-brand-logo' src={marzIcon} alt="Marz Logo"/>
-                </NavbarBrand>
+                </Link>
                 <NavbarToggler onClick={this.toggle}/>
                 <Collapse isOpen={this.state.isOpen} navbar>
                     <Nav className="ml-auto" navbar>
                         <NavItem>
-                            <NavLink><FontAwesomeIcon icon={faTh}/> Overview</NavLink>
+                            <Link className="nav-link" to="/"><FontAwesomeIcon icon={faTh}/> Overview</Link>
                         </NavItem>
                         <NavItem>
-                            <NavLink><FontAwesomeIcon icon={faSignal}/> Detailed</NavLink>
+                            <Link className="nav-link" to="/detailed/"><FontAwesomeIcon icon={faSignal}/> Detailed</Link>
                         </NavItem>
                         <NavItem>
-                            <NavLink><FontAwesomeIcon icon={faTasks}/> Templates</NavLink>
+                            <Link className="nav-link" to="/templates/"><FontAwesomeIcon icon={faTasks}/> Templates</Link>
                         </NavItem>
                         <NavItem>
-                            <NavLink><FontAwesomeIcon icon={faCog}/> Settings</NavLink>
+                            <Link className="nav-link" to="/settings/"><FontAwesomeIcon icon={faCog}/> Settings</Link>
                         </NavItem>
                         <NavItem>
-                            <NavLink><FontAwesomeIcon icon={faQuestionCircle}/> Usage</NavLink>
+                            <Link className="nav-link" to="/usage/"><FontAwesomeIcon icon={faQuestionCircle}/> Usage</Link>
                         </NavItem>
                     </Nav>
                     <Form className="ml-auto" inline>

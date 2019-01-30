@@ -1,25 +1,12 @@
 import * as React from "react";
 import {Col, Container, Row} from "reactstrap";
+import {Link} from "react-router-dom";
 
 import marzIcon from '../../Assets/images/Marz2.png';
 
 class Overview extends React.Component {
     constructor(props) {
         super(props);
-
-        this.toggle = this.toggle.bind(this);
-
-        // Set the initial state of the menu as closed
-        this.state = {
-            isOpen: false
-        };
-    }
-
-    toggle() {
-        // Toggle the open state of the menu
-        this.setState({
-            isOpen: !this.state.isOpen
-        });
     }
 
     render() {
@@ -34,7 +21,7 @@ class Overview extends React.Component {
                     <Col xs={4} className="introCard">
                         <div className="inner">
                             <h2>New users</h2>
-                            <p>Please visit the <a>usage page</a>. It contains instructions, example
+                            <p>Please visit the <Link to="/usage/">usage page</Link>. It contains instructions, example
                                 FITS files, and useful Python code to import results!</p>
                             <p>If you use Marz, please cite this work via the BibTeX available when clicking the blue
                                 button above. If you want to use high resolution graphs, the download arrow icon in the
