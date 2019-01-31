@@ -4,6 +4,7 @@ import Overview from "./Pages/Overview.jsx";
 import Sidebar from "./Sidebar.jsx";
 import {BrowserRouter as Router, Route} from "react-router-dom";
 import Usage from "./Pages/Usage.jsx";
+import Footer from "./Footer.jsx";
 
 function MarzApp(props) {
     return (
@@ -15,10 +16,13 @@ function MarzApp(props) {
                         <Sidebar/>
                     </div>
                     <div id="afterSideBarContainer">
-                        <Route exact path="/" render={(routeProps) => <Overview {...props} {...routeProps}/>}/>
-                        <Route path="/usage/" render={(routeProps) => <Usage {...props} {...routeProps}/>}/>
+                        <div className="spacing relative">
+                            <Route exact path="/" render={(routeProps) => <Overview {...props} {...routeProps}/>}/>
+                            <Route path="/usage/" render={(routeProps) => <Usage {...props} {...routeProps}/>}/>
+                        </div>
                     </div>
                 </div>
+                <Footer/>
             </div>
         </Router>
     )

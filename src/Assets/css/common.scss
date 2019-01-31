@@ -15,7 +15,7 @@
 }
 
 .grey-text {
-  color: #AAAAAA;
+  //color: #AAAAAA;
 }
 
 .light-grey-background {
@@ -47,15 +47,15 @@ p.fill-height {
 }
 
 .darker {
-  background-color: rgba(0, 0, 0, 0.04);
+  //background-color: rgba(0, 0, 0, 0.04);
 }
 
 .lined {
   border: 1px solid #AAA;
-  background-color: #E8E8E8;
+  //background-color: #E8E8E8;
 
   &.active {
-    border-color: #5E99FF;
+    //border-color: #5E99FF;
   }
 }
 
@@ -93,7 +93,7 @@ p.fill-height {
   vertical-align: middle;
   width: 100%;
   padding: 0 10px;
-  background-color: #CCC;
+  //background-color: #CCC;
   background: linear-gradient(to bottom, #DDD 0%, #CCC 100%);
   overflow: hidden;
 
