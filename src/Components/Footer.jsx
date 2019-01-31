@@ -1,4 +1,5 @@
 import React from "react";
+import {Navbar} from "reactstrap";
 
 class Footer extends React.Component {
     constructor(props) {
@@ -8,7 +9,7 @@ class Footer extends React.Component {
     render() {
         return (
             <div id="footer">
-                <div className="navbar-inverse footer filler grey-text">
+                <Navbar color="dark" light fixed="bottom" className="grey-text marz-header">
                     <div className="spacing vcenter">
                         <div className="pull-left">
                             <p className="fill-height">Please drop in a FITS file.</p>
@@ -31,7 +32,7 @@ class Footer extends React.Component {
                             {/*</div>*/}
                         {/*</div>*/}
                     </div>
-                </div>
+                </Navbar>
             </div>
         )
     }

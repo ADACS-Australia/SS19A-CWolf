@@ -12,12 +12,12 @@
 }
 
 .accordion {
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.25);
     border-radius: 2px;
 }
 
 .accordion__item + .accordion__item {
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.25);
 }
 
 .accordion__item--has-icon {
@@ -25,7 +25,7 @@
 }
 
 .accordion__title {
-    background-color: #737373;
+    background-color: #e0e0e0;
     color: #444;
     cursor: pointer;
     padding: 18px;
@@ -35,7 +35,7 @@
 }
 
 .accordion__title:hover {
-    background-color: #ddd;
+    background-color: #b8b8b8;
 }
 
 .accordion__body {
