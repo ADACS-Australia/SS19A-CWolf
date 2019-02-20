@@ -1,4 +1,7 @@
+const webpack = require("webpack");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+
+const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
 
 module.exports = {
     module: {
@@ -7,7 +10,16 @@ module.exports = {
                 test: /\.(js|jsx)$/,
                 exclude: /node_modules/,
                 use: {
-                    loader: "babel-loader"
+                    loader: "babel-loader",
+                    options: {
+                        presets: [
+                            "@babel/preset-env",
+                            "@babel/preset-react"
+                        ],
+                        plugins: [
+                            "@babel/plugin-proposal-class-properties"
+                        ]
+                    }
                 }
             },
             {
@@ -61,6 +73,14 @@ module.exports = {
         new HtmlWebPackPlugin({
             template: "./src/index.html",
             filename: "./index.html",
+        }),
+        new webpack.DefinePlugin({
+            'process.env': {
+                NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development')
+            }
         })
-    ]
+    ],
+    resolve: {
+        extensions: ['.js', '.jsx']
+    },
 };

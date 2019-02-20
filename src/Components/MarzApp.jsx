@@ -1,11 +1,14 @@
 import * as React from "react";
-import Header from "./Header.jsx";
-import Overview from "./Pages/Overview.jsx";
-import Sidebar from "./Sidebar.jsx";
-import {BrowserRouter as Router, Route} from "react-router-dom";
-import Usage from "./Pages/Usage.jsx";
-import Footer from "./Footer.jsx";
-import Detailed from "./Pages/Detailed.jsx";
+import Header from "./Header";
+import Overview from "./Pages/Overview";
+import Sidebar from "./Sidebar";
+import {MemoryRouter, BrowserRouter, Route} from "react-router-dom";
+import Usage from "./Pages/Usage";
+import Footer from "./Footer";
+import Detailed from "./Pages/Detailed";
+
+console.log(process.env.NODE_ENV)
+const Router = process.env.NODE_ENV === 'development' ? BrowserRouter : MemoryRouter;
 
 function MarzApp(props) {
     return (

@@ -539,3 +539,12 @@ input[type='range'] {
   max-height: 50px;
   overflow: hidden;
 }
+
+.force-inline-layout {
+  flex-wrap: nowrap !important;
+  display: inline-flex !important;
+}
+
+.margin-right-4px {
+  margin-right: 4px;
+}

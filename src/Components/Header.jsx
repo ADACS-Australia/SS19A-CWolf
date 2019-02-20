@@ -17,7 +17,7 @@ import {Link} from "react-router-dom";
 import marzIcon from '../Assets/images/Marz.png';
 import {faCog, faQuestionCircle, faSignal, faTasks, faTh} from "@fortawesome/free-solid-svg-icons";
 import {updateInitials} from "../Stores/Personal/Actions";
-import BibTeX from "./BibTeX.jsx";
+import BibTeX from "./BibTeX";
 
 class Header extends React.Component {
     constructor(props) {

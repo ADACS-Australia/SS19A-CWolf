@@ -6,7 +6,7 @@ another that should describe how the state from the stores should be passed down
 */
 
 import PersonalStore from "../Stores/Personal/PersonalStore";
-import MarzApp from "../Components/MarzApp.jsx";
+import MarzApp from "../Components/MarzApp";
 import {Container} from 'flux/utils';
 
 // Returns the list of flux stores that are subscribed to actions sent from within components
