@@ -11,6 +11,7 @@ import Input from "reactstrap/es/Input";
 import ManagedSliderInput from "../General/SliderInput/ManagedSliderInput";
 import ManagedButtonGroup from "../General/ManagedButtonGroup/ManagedButtonGroup";
 import Dropdown from "reactstrap/es/Dropdown";
+import DetailedCanvas from "../General/DetailedCanvas/DetailedCanvas";
 
 class Detailed extends React.Component {
     constructor(props) {
@@ -43,17 +44,17 @@ class Detailed extends React.Component {
                     <ListGroup>
                         <ListGroupItem>
                             <Form inline>
-                            {/*<div className="form-group">*/}
+                                {/*<div className="form-group">*/}
                                 {/*<div className="input-group input-group-sm">*/}
-                                    {/*<div className="btn-group">*/}
-                                        {/*<button className="btn btn-sm btn-default">*/}
-                                            {/*<strong></strong>*/}
-                                            {/*<span className="label control-panel-span">*/}
-                                            {/*</span>*/}
-                                        {/*</button>*/}
-                                    {/*</div>*/}
+                                {/*<div className="btn-group">*/}
+                                {/*<button className="btn btn-sm btn-default">*/}
+                                {/*<strong></strong>*/}
+                                {/*<span className="label control-panel-span">*/}
+                                {/*</span>*/}
+                                {/*</button>*/}
                                 {/*</div>*/}
-                            {/*</div>*/}
+                                {/*</div>*/}
+                                {/*</div>*/}
 
                                 <ManagedToggleButton
                                     default={true}
@@ -129,37 +130,37 @@ class Detailed extends React.Component {
                             </Form>
 
                             {/*<div className="input-group input-group-sm range-toggle-container">*/}
-                                {/*<span className="input-group-addon">Range</span>*/}
-                                {/*<div className="btn-group">*/}
-                                    {/*<button className="btn btn-sm btn-default"></button>*/}
-                                {/*</div>*/}
+                            {/*<span className="input-group-addon">Range</span>*/}
+                            {/*<div className="btn-group">*/}
+                            {/*<button className="btn btn-sm btn-default"></button>*/}
+                            {/*</div>*/}
                             {/*</div>*/}
                         </ListGroupItem>
                         <ListGroupItem>
                             <Form inline>
-                            <FormGroup inline>
-                                <InputGroup
-                                    className="force-inline-layout margin-right-4px"
-                                    size="sm"
-                                >
-                                    <InputGroupAddon addonType="prepend">
-                                        Top Results
-                                    </InputGroupAddon>
-                                    <Button color='light' size='sm'>Analyse spectra</Button>
-                                </InputGroup>
-                            </FormGroup>
-                            <FormGroup inline>
-                                <InputGroup
-                                    className="force-inline-layout template-container margin-right-4px"
-                                    size="sm"
-                                >
-                                    <InputGroupAddon addonType="prepend">
-                                        Template
-                                    </InputGroupAddon>
-                                    <Input type='select'>
-                                    </Input>
-                                </InputGroup>
-                            </FormGroup>
+                                <FormGroup inline>
+                                    <InputGroup
+                                        className="force-inline-layout margin-right-4px"
+                                        size="sm"
+                                    >
+                                        <InputGroupAddon addonType="prepend">
+                                            Top Results
+                                        </InputGroupAddon>
+                                        <Button color='light' size='sm'>Analyse spectra</Button>
+                                    </InputGroup>
+                                </FormGroup>
+                                <FormGroup inline>
+                                    <InputGroup
+                                        className="force-inline-layout template-container margin-right-4px"
+                                        size="sm"
+                                    >
+                                        <InputGroupAddon addonType="prepend">
+                                            Template
+                                        </InputGroupAddon>
+                                        <Input type='select'>
+                                        </Input>
+                                    </InputGroup>
+                                </FormGroup>
                                 <ManagedSliderInput
                                     defaultValue={0}
                                     min={0}
@@ -185,44 +186,42 @@ class Detailed extends React.Component {
                             </Form>
 
                             {/*<div className="form-group">*/}
-                                {/*<div className="input-group input-group-sm redshift-container">*/}
-                                    {/*<span className="input-group-addon">Redshift</span>*/}
-                                    {/*<input type="text" id="redshiftInput" className="form-control redshift-input"/>*/}
-                                    {/*<span className="input-group-addon redshift-span">*/}
-                                            {/*<input type="range"*/}
-                                                   {/*min="{{settings.bounds.redshiftMin}}"*/}
-                                                   {/*max="{{settings.bounds.redshiftMax}}"*/}
-                                                   {/*step="0.0001"*/}
-                                            {/*/></span>*/}
-                                {/*</div>*/}
+                            {/*<div className="input-group input-group-sm redshift-container">*/}
+                            {/*<span className="input-group-addon">Redshift</span>*/}
+                            {/*<input type="text" id="redshiftInput" className="form-control redshift-input"/>*/}
+                            {/*<span className="input-group-addon redshift-span">*/}
+                            {/*<input type="range"*/}
+                            {/*min="{{settings.bounds.redshiftMin}}"*/}
+                            {/*max="{{settings.bounds.redshiftMax}}"*/}
+                            {/*step="0.0001"*/}
+                            {/*/></span>*/}
+                            {/*</div>*/}
                             {/*</div>*/}
                             {/*<button className="form-group btn btn-primary btn-sm inline-block">*/}
-                                {/*Perform Fit*/}
+                            {/*Perform Fit*/}
                             {/*</button>*/}
-                        {/*</li>*/}
-                        {/*<li className="list-group-item form-inline">*/}
+                            {/*</li>*/}
+                            {/*<li className="list-group-item form-inline">*/}
                             {/*<button className="form-group btn btn-primary btn-sm inline-block">*/}
                             {/*</button>*/}
                             {/*<button className="form-group btn btn-info btn-sm inline-block">*/}
-                                {/*Back*/}
+                            {/*Back*/}
                             {/*</button>*/}
                             {/*<button className="form-group btn btn-info btn-sm inline-block">*/}
-                                {/*Forward*/}
+                            {/*Forward*/}
                             {/*</button>*/}
                             {/*<ul className="form-group list-unstyled list-inline">*/}
-                                {/*<li className="sline lined">*/}
+                            {/*<li className="sline lined">*/}
 
-                                {/*</li>*/}
+                            {/*</li>*/}
                             {/*</ul>*/}
                         </ListGroupItem>
                     </ListGroup>
                 </div>
-                {/*<div id="detailedCanvasParent" className="canvas-container">*/}
-                    {/*<canvas id="detailedCanvas"></canvas>*/}
-                {/*</div>*/}
+                <DetailedCanvas {...this.props}/>
             </div>
-    )
+        )
     }
-    }
+}
 
-    export default Detailed
+export default Detailed

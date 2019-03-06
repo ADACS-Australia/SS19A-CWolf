@@ -7,7 +7,6 @@ import Usage from "./Pages/Usage";
 import Footer from "./Footer";
 import Detailed from "./Pages/Detailed";
 
-console.log(process.env.NODE_ENV)
 const Router = process.env.NODE_ENV === 'development' ? BrowserRouter : MemoryRouter;
 
 function MarzApp(props) {
