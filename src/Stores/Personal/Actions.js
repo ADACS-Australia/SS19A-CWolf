@@ -1,13 +1,17 @@
 import AppDispatcher from "../AppDispatcher";
-import ActionTypes from "../ActionTypes"
+
+const PersonalActionTypes = {
+    UPDATE_INITIALS: 'PersonalActionTypes.UPDATE_INITIALS',
+}
 
 function updateInitials(initials) {
     AppDispatcher.dispatch({
-        type: ActionTypes.UPDATE_INITIALS,
+        type: PersonalActionTypes.UPDATE_INITIALS,
         initials: initials
     })
 }
 
 export {
-    updateInitials
+    updateInitials,
+    PersonalActionTypes
 };

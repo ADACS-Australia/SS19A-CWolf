@@ -17,7 +17,11 @@ class ManagedSliderInput extends React.Component {
     onChange(e) {
         this.setState({
             value: e.target.value
-        })
+        });
+
+        // Check if there is a callback and trigger it
+        if (this.props.onChange)
+            this.props.onChange(e.target.value);
     }
 
     render() {

@@ -1,6 +1,6 @@
 import AppDispatcher from "../AppDispatcher";
-import ActionTypes from "../ActionTypes"
 import {ReduceStore} from "flux/utils";
+import {PersonalActionTypes} from "./Actions";
 
 class PersonalStore extends ReduceStore {
     constructor() {
@@ -15,7 +15,7 @@ class PersonalStore extends ReduceStore {
 
     reduce(state, action) {
         switch (action.type) {
-            case ActionTypes.UPDATE_INITIALS:
+            case PersonalActionTypes.UPDATE_INITIALS:
                 localStorage.initials = action.initials;
                 return {
                     ...state,

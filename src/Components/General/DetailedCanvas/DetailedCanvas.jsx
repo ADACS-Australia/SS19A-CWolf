@@ -10,8 +10,8 @@ class DetailedCanvas extends React.Component {
     }
 
     componentDidMount() {
-        console.log(this.refs, this.refs.canvas);
-        this.renderer = new CanvasRenderer(this.props, this.refs.canvas, this.refs.parent)
+        this.renderer = new CanvasRenderer(this.refs.canvas, this.refs.parent, this.props);
+        this.renderer.update(this.props);
     }
 
     onChange(e, c, i) {
@@ -24,19 +24,24 @@ class DetailedCanvas extends React.Component {
     }
 
     render() {
+        // Check if the renderer has been initialised yet
+        if (this.renderer)
+            // Yes it has, so render the canvas
+            this.renderer.update(this.props);
+
         return (
             <div ref='parent' id="detailedCanvasParent" className="canvas-container">
-            <canvas
-                ref='canvas'
-                id="detailedCanvas"
-                onMouseDown={this.onCanvasEvent}
-                onMouseUp={this.onCanvasEvent}
-                onMouseMove={this.onCanvasEvent}
-                onTouchStart={this.onCanvasEvent}
-                onTouchEnd={this.onCanvasEvent}
-                onTouchMove={this.onCanvasEvent}
-                onWheel={this.onCanvasEvent}
-            />
+                <canvas
+                    ref='canvas'
+                    id="detailedCanvas"
+                    onMouseDown={this.onCanvasEvent}
+                    onMouseUp={this.onCanvasEvent}
+                    onMouseMove={this.onCanvasEvent}
+                    onTouchStart={this.onCanvasEvent}
+                    onTouchEnd={this.onCanvasEvent}
+                    onTouchMove={this.onCanvasEvent}
+                    onWheel={this.onCanvasEvent}
+                />
             </div>
         )
     }

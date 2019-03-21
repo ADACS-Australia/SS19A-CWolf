@@ -12,6 +12,7 @@ import ManagedSliderInput from "../General/SliderInput/ManagedSliderInput";
 import ManagedButtonGroup from "../General/ManagedButtonGroup/ManagedButtonGroup";
 import Dropdown from "reactstrap/es/Dropdown";
 import DetailedCanvas from "../General/DetailedCanvas/DetailedCanvas";
+import {updateRedShift, updateTemplateOffset} from "../../Stores/Detailed/Actions";
 
 class Detailed extends React.Component {
     constructor(props) {
@@ -168,6 +169,7 @@ class Detailed extends React.Component {
                                     width={225}
                                     sliderWidth={90}
                                     label='Offset'
+                                    onChange={value => updateTemplateOffset(0, value)}
                                 />
                                 <ManagedSliderInput
                                     defaultValue={0}
@@ -175,12 +177,13 @@ class Detailed extends React.Component {
                                     max={5}
                                     width={305}
                                     sliderWidth={145}
-                                    label='Offset'
+                                    label='Redshift'
                                     step={0.0001}
                                     inputStyle={{
                                         color: 'red',
                                         fontWeight: 'bold'
                                     }}
+                                    onChange={value => updateRedShift(0, value)}
                                 />
                                 <Button color='primary' size='sm'>Perform Fit</Button>
                             </Form>
