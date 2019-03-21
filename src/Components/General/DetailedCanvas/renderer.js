@@ -8,14 +8,12 @@ import {
     shiftWavelength
 } from '../../../Utils/methods';
 import Enumerable from "linq";
-import SpectralLines from "./spectralLines";
 import {adjustRedshift} from "../../../Utils/dsp";
 import {getStrengthOfLine} from "./spectralAnalysis";
 
 import download_image from '../../../Assets/images/download.png';
 import lens_image from '../../../Assets/images/lens.png';
-
-const spectraLineService = new SpectralLines();
+import {spectraLineService} from "./spectralLines";
 
 const dataStore = {
     ui: {

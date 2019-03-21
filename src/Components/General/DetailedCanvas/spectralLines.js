@@ -150,4 +150,9 @@ class SpectralLines {
     };
 }
 
-export default SpectralLines;
+const spectraLineService = new SpectralLines();
+
+export {
+    SpectralLines,
+    spectraLineService
+}

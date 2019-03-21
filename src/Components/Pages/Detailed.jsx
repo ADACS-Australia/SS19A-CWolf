@@ -13,6 +13,10 @@ import ManagedButtonGroup from "../General/ManagedButtonGroup/ManagedButtonGroup
 import Dropdown from "reactstrap/es/Dropdown";
 import DetailedCanvas from "../General/DetailedCanvas/DetailedCanvas";
 import {updateRedShift, updateTemplateOffset} from "../../Stores/Detailed/Actions";
+import {spectraLineService} from "../General/DetailedCanvas/spectralLines";
+import * as Enumerable from "linq";
+
+const boldItems = Enumerable.from(['O2', 'Hb', 'Ha']);
 
 class Detailed extends React.Component {
     constructor(props) {
@@ -20,6 +24,18 @@ class Detailed extends React.Component {
     }
 
     render() {
+        // Get the list of spectral lines
+        const spectralLines = Enumerable.from(spectraLineService.getAll()).select(
+            (l, i) => {
+                const bold = boldItems.contains(l.id);
+                return (
+                    <li className={"sline lined " + (bold ? "bold" : "")} key={l.id}>
+                        {l.label}
+                    </li>
+                )
+            }
+        );
+
         return (
             <div className="detailedView filler">
                 <div className="panel panel-default detailed-control panel-header">
@@ -187,37 +203,16 @@ class Detailed extends React.Component {
                                 />
                                 <Button color='primary' size='sm'>Perform Fit</Button>
                             </Form>
-
-                            {/*<div className="form-group">*/}
-                            {/*<div className="input-group input-group-sm redshift-container">*/}
-                            {/*<span className="input-group-addon">Redshift</span>*/}
-                            {/*<input type="text" id="redshiftInput" className="form-control redshift-input"/>*/}
-                            {/*<span className="input-group-addon redshift-span">*/}
-                            {/*<input type="range"*/}
-                            {/*min="{{settings.bounds.redshiftMin}}"*/}
-                            {/*max="{{settings.bounds.redshiftMax}}"*/}
-                            {/*step="0.0001"*/}
-                            {/*/></span>*/}
-                            {/*</div>*/}
-                            {/*</div>*/}
-                            {/*<button className="form-group btn btn-primary btn-sm inline-block">*/}
-                            {/*Perform Fit*/}
-                            {/*</button>*/}
-                            {/*</li>*/}
-                            {/*<li className="list-group-item form-inline">*/}
-                            {/*<button className="form-group btn btn-primary btn-sm inline-block">*/}
-                            {/*</button>*/}
-                            {/*<button className="form-group btn btn-info btn-sm inline-block">*/}
-                            {/*Back*/}
-                            {/*</button>*/}
-                            {/*<button className="form-group btn btn-info btn-sm inline-block">*/}
-                            {/*Forward*/}
-                            {/*</button>*/}
-                            {/*<ul className="form-group list-unstyled list-inline">*/}
-                            {/*<li className="sline lined">*/}
-
-                            {/*</li>*/}
-                            {/*</ul>*/}
+                        </ListGroupItem>
+                        <ListGroupItem>
+                            <Form inline>
+                                <Button color='primary' size='sm'>Hide</Button>
+                                <Button size='sm'>Back</Button>
+                                <Button size='sm'>Forward</Button>
+                                <ul className="list-unstyled list-inline">
+                                    {spectralLines.toArray()}
+                                </ul>
+                            </Form>
                         </ListGroupItem>
                     </ListGroup>
                 </div>
