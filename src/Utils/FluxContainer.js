@@ -9,12 +9,16 @@ import PersonalStore from "../Stores/Personal/PersonalStore";
 import MarzApp from "../Components/MarzApp";
 import {Container} from 'flux/utils';
 import DetailedStore from "../Stores/Detailed/DetailedStore";
+import DataStore from "../Stores/Data/DataStore";
+import UIStore from "../Stores/UI/UIStore";
 
 // Returns the list of flux stores that are subscribed to actions sent from within components
 function getStores() {
     return [
         PersonalStore,
-        DetailedStore
+        DetailedStore,
+        DataStore,
+        UIStore,
     ]
 }
 
@@ -23,6 +27,8 @@ function getState() {
     return {
         personal: PersonalStore.getState(),
         detailed: DetailedStore.getState(),
+        data: DataStore.getState(),
+        ui: UIStore.getState(),
     }
 }
 

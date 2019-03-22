@@ -2,6 +2,7 @@ import React from "react";
 import Dropzone from "react-dropzone";
 
 import styled from 'styled-components';
+import {addFiles} from "../Stores/Data/Actions";
 
 const getColor = (props) => {
     if (props.isDragReject) {
@@ -34,6 +35,7 @@ class Sidebar extends React.Component {
     onDrop(acceptedFiles, rejectedFiles) {
         // Do something with files
         console.log(acceptedFiles, rejectedFiles)
+        addFiles(acceptedFiles, 0);
     }
 
     render() {
@@ -41,7 +43,7 @@ class Sidebar extends React.Component {
             <div className="filler light-grey-background">
                 <div className="spacing">
                     <div id="sidebar-wrapper">
-                        <Dropzone onDrop={Sidebar.onDrop}>
+                        <Dropzone onDrop={this.onDrop}>
                             {({getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles}) => {
                                 return (
                                     <Container

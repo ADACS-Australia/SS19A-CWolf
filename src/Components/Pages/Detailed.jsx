@@ -1,7 +1,6 @@
 import React from "react";
 
 import '../../Assets/css/detailed.scss';
-import ToggleButton from "../General/ToggleButton/ToggleButton";
 import ManagedToggleButton from "../General/ToggleButton/ManagedToggleButton";
 import {Button, Form, FormGroup, ListGroup} from "reactstrap";
 import ListGroupItem from "reactstrap/es/ListGroupItem";
@@ -10,11 +9,10 @@ import InputGroupAddon from "reactstrap/es/InputGroupAddon";
 import Input from "reactstrap/es/Input";
 import ManagedSliderInput from "../General/SliderInput/ManagedSliderInput";
 import ManagedButtonGroup from "../General/ManagedButtonGroup/ManagedButtonGroup";
-import Dropdown from "reactstrap/es/Dropdown";
 import DetailedCanvas from "../General/DetailedCanvas/DetailedCanvas";
-import {updateRedShift, updateTemplateOffset} from "../../Stores/Detailed/Actions";
 import {spectraLineService} from "../General/DetailedCanvas/spectralLines";
 import * as Enumerable from "linq";
+import {updateRedShift, updateTemplateOffset} from "../../Stores/UI/Actions";
 
 const boldItems = Enumerable.from(['O2', 'Hb', 'Ha']);
 

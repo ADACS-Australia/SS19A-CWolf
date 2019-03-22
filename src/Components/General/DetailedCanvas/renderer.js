@@ -78,8 +78,11 @@ class CanvasRenderer {
         // Get the general parameter information
         this.params = this.props.detailed.spectra[0];
 
-        // Get the detail information for this spectra
-        this.detailed = this.params.detailed;
+        // Get the ui info for this spectra
+        this.ui = this.props.ui.ui[0];
+
+        // Get the detailed ui info for this spectra
+        this.detailed = this.ui.detailed;
 
         // Get the view information for this spectra
         this.view = this.params.view;
