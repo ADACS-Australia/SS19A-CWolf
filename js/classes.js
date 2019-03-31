@@ -11,7 +11,7 @@ try {
     var $q = require("q");
 } catch (err) {
 }
-var deps = ["./config", "./methods", "./helio", "./spectrum", "./spectrumX"];
+var deps = ["./config", "./methods", "./helio", "./spectrumX"];
 for (var i = 0; i < deps.length; i++) {
     require(deps[i])();
 }
@@ -613,15 +613,6 @@ FitsFileLoader.prototype.parseFitsFile = function(q, originalFilename) {
                 cmb = getCMBCorrection(ra * 180 / Math.PI, dec * 180 / Math.PI, this.epoch, this.radecsys);
             }
             var s = new Spectra(id, llambda, int, vari, skyy, name, ra, dec, mag, type, this.originalFilename, helio, cmb, this.node);
-            var so = new Spectrum(name);
-            so.setRightAscension(ra);
-            so.setDeclination(dec);
-            so.setMagnitude(mag);
-            so.setType(type);
-            so.setWavelength(llambda);
-            so.setIntensity(int);
-            so.setVariance(vari);
-            so.setSky(skyy);
             s.setCompute(int != null && vari != null);
             spectraList.push(s);
         }
