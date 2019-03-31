@@ -11,7 +11,7 @@ try {
     var $q = require("q");
 } catch (err) {
 }
-var deps = ["./config", "./methods", "./helio"];
+var deps = ["./config", "./methods", "./helio", "./spectrum", "./spectrumX"];
 for (var i = 0; i < deps.length; i++) {
     require(deps[i])();
 }
@@ -395,9 +395,52 @@ FastAreaFinder.prototype.getArea = function(start, end) {
 
 
 
+//==================
+function SpectrumConsumer($q, global, log, processorService, resultGenerator, node) {
+    this.node = defaultFor(node, false);
+    this.isLoading = false;
+    this.hasFitsFile = false;
+    this.originalFilename = null;
+    this.filename = null;
+    this.MJD = null;
+    this.date = null;
+    this.header0 = null;
+    this.epoch = null;
+    this.radecsys = null;
+    this.JD = null;
+    this.longitude = null;
+    this.latitude = null;
+    this.altitude = null;
+    this.resultGenerator = resultGenerator;
 
+    this.spectra = null;
+    this.primaryIndex = 0;
+    this.numPoints = null;
 
+    this.$q = $q;
+    this.processorService = processorService;
+    this.global = global;
+    this.log = log;
+    this.subscribed = [];
+    this.subscribedContexts = [];
+}
+SpectrumConsumer.prototype.consume = function(provider,context) {
+    var q = this.$q.defer();
+    provider.provide(q).then(function(spectraList) {
+        provider.isLoading = false;
+        for (var i = 0; i < this.subscribed.length; i++) {
+            this.subscribed[i].apply(this.subscribedContexts[i], [spectraList]);
+        }
+        q.resolve(spectraList);
+    }.bind(this));
+    return q.promise;
+}
+SpectrumConsumer.prototype.subscribeToInput = function(fn, context) {
+    this.subscribed.push(fn);
+    this.subscribedContexts.push(context);
+}
 
+//==================
 
 
 
@@ -426,30 +469,44 @@ function FitsFileLoader($q, global, log, processorService, resultGenerator, node
     this.processorService = processorService;
     this.global = global;
     this.log = log;
-    this.subscribed = [];
-    this.subscribedContexts = [];
+    //this.subscribed = [];
+    //this.subscribedContexts = [];
 }
+/*
 FitsFileLoader.prototype.subscribeToInput = function(fn, context) {
     this.subscribed.push(fn);
     this.subscribedContexts.push(context);
+};
+*/
+FitsFileLoader.prototype.setFilename = function(ifilename) {
+    var actualName=path.basename(ifilename);
+    this.isLoading = true;
+    this.hasFitsFile = true;
+    this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
+    this.global.data.fitsFileName = this.originalFilename;
+    this.filename = this.originalFilename.replace(/_/g, " ");
+    this.thefilename = ifilename;
+    this.actualName = actualName;
+}
+FitsFileLoader.prototype.provide = function(q) {
+    //var q = this.$q.defer();
+    this.isLoading = true;
+    this.hasFitsFile = true;
+    var fileData = fs.readFileSync(this.thefilename);
+    this.fits = new astro.FITS(fileData, function() {
+        this.parseFitsFile(q,this.originalFilename);
+        this.processorService.setPause();
+    }.bind(this));
+    return q.promise;
 };
 FitsFileLoader.prototype.loadInFitsFile = function(file) {
     var q = this.$q.defer();
     this.isLoading = true;
     this.hasFitsFile = true;
-    var pass = file;
-    if (file.actualName != null) {
-        this.originalFilename = file.actualName.replace(/\.[^/.]+$/, "");
-        pass = file.file;
-    } else {
-        this.originalFilename = file.name.replace(/\.[^/.]+$/, "");
-    }
-    this.global.data.fitsFileName = this.originalFilename;
-    this.filename = this.originalFilename.replace(/_/g, " ");
-    this.log.debug("Loading FITs file");
-    this.fits = new astro.FITS(pass, function() {
-        this.log.debug("Loaded FITS file");
-        this.parseFitsFile(q, this.originalFilename);
+    this.fits = new astro.FITS(this.pass, function() {
+        console.log("Loaded FITS file");
+        this.parseFitsFileAndGiveMeASpectra(q, this.originalFilename);
+        //this.parseFitsFile(q, this.originalFilename);
         this.processorService.setPause();
     }.bind(this));
     return q.promise;
@@ -459,7 +516,6 @@ FitsFileLoader.prototype.getHDUFromName = function(name) {
     for (var i = 0; i < this.fits.hdus.length; i++) {
         var h = this.fits.getHeader(i).cards['EXTNAME'];
         if (h != null && h.value.toUpperCase() == n) {
-            this.log.debug(name + " index found at " + i);
             return i;
         }
     }
@@ -474,7 +530,6 @@ FitsFileLoader.prototype.getHDUFromName = function(name) {
  * @param q
  */
 FitsFileLoader.prototype.parseFitsFile = function(q, originalFilename) {
-    this.log.debug("Getting headers");
     this.header0 = this.fits.getHDU(0).header;
     this.MJD = this.header0.get('UTMJD');
     this.originalFilename = originalFilename;
@@ -501,7 +556,6 @@ FitsFileLoader.prototype.parseFitsFile = function(q, originalFilename) {
     this.numPoints = this.fits.getHDU(this.dataExt).data.width;
 
     this.$q.all([this.getWavelengths(), this.getIntensityData(), this.getVarianceData(), this.getSkyData(), this.getDetailsData()]).then(function(data) {
-        this.log.debug("Load promises complete");
         var lambda = data[0];
         var intensity = data[1];
         var variance = data[2];
@@ -559,19 +613,34 @@ FitsFileLoader.prototype.parseFitsFile = function(q, originalFilename) {
                 cmb = getCMBCorrection(ra * 180 / Math.PI, dec * 180 / Math.PI, this.epoch, this.radecsys);
             }
             var s = new Spectra(id, llambda, int, vari, skyy, name, ra, dec, mag, type, this.originalFilename, helio, cmb, this.node);
+            var so = new Spectrum(name);
+            so.setRightAscension(ra);
+            so.setDeclination(dec);
+            so.setMagnitude(mag);
+            so.setType(type);
+            so.setWavelength(llambda);
+            so.setIntensity(int);
+            so.setVariance(vari);
+            so.setSky(skyy);
             s.setCompute(int != null && vari != null);
             spectraList.push(s);
         }
         this.log.debug("Spectra list made");
+        q.resolve(spectraList);
+
+    }.bind(this));
+    return q.promise;
+};
+FitsFileLoader.prototype.parseFitsFileAndGiveMeASpectra = function(q, originalFilename) {
+    this.parseFitsFile(q,originalFilename).then(function(spectraList) {
+        console.log("thening");
         this.isLoading = false;
         for (var i = 0; i < this.subscribed.length; i++) {
             this.subscribed[i].apply(this.subscribedContexts[i], [spectraList]);
         }
-        this.log.debug("Returning FITs object");
         q.resolve();
-
-    }.bind(this))
-};
+    }.bind(this));
+}
 FitsFileLoader.prototype.shouldPerformHelio = function() {
     var flag = this.header0.get('DO_HELIO');
     if ((flag != null && (flag == 1 || flag == "T" || flag == true))) {
@@ -626,7 +695,7 @@ FitsFileLoader.prototype.getRawWavelengths = function() {
     var q = this.$q.defer();
     var index = this.getHDUFromName(globalConfig.waveExt);
     if (index == null) {
-        this.log.debug("Wavelength extension not found. Checking headings");
+        this.log.debug("Wavelength extension not found. Checking headings "+this.dataExt);
         header = this.fits.getHDU(this.dataExt).header;
         var CRVAL1 = header.get('CRVAL1');
         var CRPIX1 = header.get('CRPIX1');
@@ -668,7 +737,6 @@ FitsFileLoader.prototype.getRawWavelengths = function() {
  * @returns {deferred.promise}
  */
 FitsFileLoader.prototype.getIntensityData = function() {
-    this.log.debug("Getting spectra intensity");
     var index = this.dataExt;
     if (index == null) {
         index = this.primaryIndex;
@@ -696,7 +764,6 @@ FitsFileLoader.prototype.getIntensityData = function() {
  * @returns {deferred.promise}
  */
 FitsFileLoader.prototype.getVarianceData = function() {
-    this.log.debug("Getting spectra variance");
     var index = this.getHDUFromName(globalConfig.varExt);
     if (index == null) {
         index = this.getHDUFromName(globalConfig.ivarExt);
@@ -1374,4 +1441,6 @@ module.exports = function() {
     this.SpectraManager = SpectraManager;
     this.ResultsGenerator = ResultsGenerator;
     this.FitsFileLoader = FitsFileLoader;
+    this.SpectrumConsumer = SpectrumConsumer;
+    this.Spectra = Spectra;
 };

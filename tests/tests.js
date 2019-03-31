@@ -3,7 +3,6 @@ var cluster = require('cluster');
 
 
 var tests = ["./basicTests", "./algorithmTests", "./translationTests", "./fitsParsingTests", "./generatedSpectrumTests", "./verificationTests"];
-//var tests = ["./fitsParsingTests"];
 var deps = [];
 for (var i = 0; i < tests.length; i++) {
     deps.push(require(tests[i]));
