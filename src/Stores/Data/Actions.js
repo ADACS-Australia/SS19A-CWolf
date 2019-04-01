@@ -2,17 +2,34 @@ import AppDispatcher from "../AppDispatcher";
 
 const DataActionTypes = {
     ADD_FILES: 'DataActionTypes.ADD_FILES',
+    SET_FITS_FILENAME: 'DataActionTypes.SET_FITS_FILENAME',
+    SET_TYPES: 'DataActionTypes.SET_TYPES',
 };
 
-function addFiles(files, index) {
+function addFiles(files) {
     AppDispatcher.dispatch({
         type: DataActionTypes.ADD_FILES,
-        index: index,
         files: files
+    })
+}
+
+function setFitsFilename(filename) {
+    AppDispatcher.dispatch({
+        type: DataActionTypes.SET_FITS_FILENAME,
+        filename: filename
+    })
+}
+
+function setTypes(types) {
+    AppDispatcher.dispatch({
+        type: DataActionTypes.SET_TYPES,
+        types: types
     })
 }
 
 export {
     addFiles,
+    setFitsFilename,
+    setTypes,
     DataActionTypes
 };

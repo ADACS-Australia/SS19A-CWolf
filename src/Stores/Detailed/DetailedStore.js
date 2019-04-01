@@ -1,5 +1,3 @@
-import AppDispatcher from "../AppDispatcher";
-import {ReduceStore} from "flux/utils";
 import {DetailedActionTypes} from "./Actions";
 import Enumerable from "linq";
 
@@ -123,18 +121,17 @@ const defaultState = {
     }
 };
 
-class DetailedStore extends ReduceStore {
+class DetailedStore {
     constructor() {
-        super(AppDispatcher);
+    }
+
+    key() {
+        return 'detailed';
     }
 
     getInitialState() {
         return {
-            spectra: [
-                {
-                    ...defaultState
-                }
-            ]
+            ...defaultState
         }
     }
 
@@ -146,4 +143,4 @@ class DetailedStore extends ReduceStore {
     }
 }
 
-export default new DetailedStore();
+export default DetailedStore;

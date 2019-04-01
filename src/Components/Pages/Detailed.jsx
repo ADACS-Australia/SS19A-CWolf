@@ -183,7 +183,7 @@ class Detailed extends React.Component {
                                     width={225}
                                     sliderWidth={90}
                                     label='Offset'
-                                    onChange={value => updateTemplateOffset(0, value)}
+                                    onChange={value => updateTemplateOffset(value)}
                                 />
                                 <ManagedSliderInput
                                     defaultValue={0}
@@ -197,7 +197,7 @@ class Detailed extends React.Component {
                                         color: 'red',
                                         fontWeight: 'bold'
                                     }}
-                                    onChange={value => updateRedShift(0, value)}
+                                    onChange={value => updateRedShift(value)}
                                 />
                                 <Button color='primary' size='sm'>Perform Fit</Button>
                             </Form>

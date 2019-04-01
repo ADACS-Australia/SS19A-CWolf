@@ -1,7 +1,7 @@
 import {
     binarySearch,
     defaultFor,
-    distance,
+    distance, fastSmooth,
     findCorrespondingFloatIndex,
     getMax,
     getMin,
@@ -14,6 +14,7 @@ import {getStrengthOfLine} from "./spectralAnalysis";
 import download_image from '../../../Assets/images/download.png';
 import lens_image from '../../../Assets/images/lens.png';
 import {spectraLineService} from "./spectralLines";
+import TemplateManager from "../../../Lib/TemplateManager";
 
 const dataStore = {
     ui: {
@@ -76,16 +77,18 @@ class CanvasRenderer {
         this.props = props;
 
         // Get the general parameter information
-        this.params = this.props.detailed.spectra[0];
+        this.params = this.props.detailed;
 
         // Get the ui info for this spectra
-        this.ui = this.props.ui.ui[0];
+        this.ui = this.props.ui;
 
         // Get the detailed ui info for this spectra
         this.detailed = this.ui.detailed;
 
         // Get the view information for this spectra
         this.view = this.params.view;
+
+        this.addBaseData();
 
         // Force a canvas redraw
         this.handleRedrawRequest();
@@ -105,8 +108,8 @@ class CanvasRenderer {
         this.downloadImg = new Image();
         this.downloadImg.src = download_image;
 
-        // todo
-        this.ui = dataStore.ui;
+        // Todo: Convert this to a singleton for the entire project
+        this.templateManager = new TemplateManager();
 
         // Force a redraw
         this.update(props);
@@ -366,14 +369,10 @@ class CanvasRenderer {
             res.bound.yMin = res.dataY - r1 * h * (1 / this.params.zoomXRatio);
             res.bound.yMax = res.bound.yMin + (h * (1 / this.params.zoomXRatio));
             res.bound.lockedBounds = true;
-            let rawData = null;
-            if (this.params.data.length > 0) {
-                for (let i = 0; i < this.params.data.length; i++) {
-                    if (this.params.data[i].id === 'data') {
-                        rawData = this.params.data[i];
-                    }
-                }
-            }
+
+            let rawData = this.params.data.where(x => x.id === 'data').toArray();
+            rawData = rawData.length ? rawData : null;
+
             res.bound.lockedBounds = true;
             if (rawData != null && rawData.x && rawData.x.length > 0) {
                 if (res.bound.xMin < rawData.x[0] || res.bound.xMax > rawData.x[rawData.x.length - 1]) {
@@ -432,24 +431,27 @@ class CanvasRenderer {
         }
         bound.yMin = 9e9;
         bound.yMax = -9e9;
-        for (let i = 0; i < this.params.data.length; i++) {
-            if (this.params.data.id === "data" && i < this.params.startRawTruncate) continue;
-            if (this.params.data[i].bound) {
+
+        const data = this.params.data.toArray();
+
+        for (let i = 0; i < this.params.data.count(); i++) {
+            if (data[i].id === "data" && i < this.params.startRawTruncate) continue;
+            if (data[i].bound) {
                 c++;
             }
             if (!bound.callout) {
-                if (this.params.data[i].bound && this.params.data[i].xMin != null && this.params.data[i].xMax != null) {
-                    bound.xMin = this.params.data[i].xMin;
-                    bound.xMax = this.params.data[i].xMax;
+                if (data[i].bound && data[i].xMin != null && data[i].xMax != null) {
+                    bound.xMin = data[i].xMin;
+                    bound.xMax = data[i].xMax;
                 }
             }
         }
         let currentRangeIndex = this.detailed.rangeIndex;
 
-        for (let i = 0; i < this.params.data.length; i++) {
-            if (this.params.data[i].bound) {
-                bound.yMin = this.params.data[i].yMins[currentRangeIndex];
-                bound.yMax = this.params.data[i].yMaxs[currentRangeIndex];
+        for (let i = 0; i < this.params.data.count(); i++) {
+            if (data[i].bound) {
+                bound.yMin = data[i].yMins[currentRangeIndex];
+                bound.yMax = data[i].yMaxs[currentRangeIndex];
             }
         }
         if (c === 0) {
@@ -691,11 +693,14 @@ class CanvasRenderer {
 
     renderPlots(bound) {
         this.c.lineWidth = 0.6;
-        for (let j = 0; j < this.params.data.length; j++) {
+
+        const data = this.params.data.toArray();
+
+        for (let j = 0; j < this.params.data.count(); j++) {
             this.c.beginPath();
-            this.c.strokeStyle = this.params.data[j].colour;
-            const xs = this.params.data[j].x;
-            const ys = this.params.data[j].y2 == null ? this.params.data[j].y : this.params.data[j].y2;
+            this.c.strokeStyle = data[j].colour;
+            const xs = data[j].x;
+            const ys = data[j].y2 == null ? data[j].y : data[j].y2;
             let disconnect = true;
             let oob = false;
             let x = 0;
@@ -703,7 +708,7 @@ class CanvasRenderer {
             let yOffset = 0;
             let r = 1;
             let o = 0;
-            if (this.params.data[j].id === 'template') {
+            if (data[j].id === 'template') {
                 this.c.globalAlpha = 0.5;
                 const lower = binarySearch(xs, bound.xMin)[0];
                 const upper = binarySearch(xs, bound.xMax)[1];
@@ -712,12 +717,12 @@ class CanvasRenderer {
                 r = ((bound.yMax - bound.yMin) / (max - min)) / (bound.callout ? this.params.calloutSpacingFactor : this.params.spacingFactor) / this.params.templateFactor;
                 o = bound.yMin - r * min;
                 yOffset = this.detailed.templateOffset * bound.height / (this.params.templateFactor * (bound.callout ? 200 : 150));
-            } else if (this.params.data[j].id === 'sky') {
+            } else if (data[j].id === 'sky') {
                 if (bound.callout) {
                     continue;
                 }
                 yOffset = bound.height + bound.top;
-            } else if (this.params.data[j].id === 'variance') {
+            } else if (data[j].id === 'variance') {
                 if (bound.callout) {
                     continue;
                 }
@@ -725,7 +730,7 @@ class CanvasRenderer {
                 this.c.moveTo(bound.left, bound.top + 5);
                 this.c.lineTo(bound.left + bound.width, bound.top + 5);
                 this.c.moveTo(bound.left, bound.top + 5)
-            } else if (this.params.data[j].id === "data") {
+            } else if (data[j].id === "data") {
                 if (bound.callout) {
                     yOffset = -5;
                 } else {
@@ -733,7 +738,7 @@ class CanvasRenderer {
                 }
             }
             let start = 0;
-            if (this.params.data[j].id === "data") {
+            if (data[j].id === "data") {
                 start = this.params.startRawTruncate;
             }
             let mx2 = bound.left;
@@ -754,11 +759,11 @@ class CanvasRenderer {
                         }
                     }
                     mx2 = (x + cx) / 2;
-                    if (this.params.data[j].id === "sky") {
+                    if (data[j].id === "sky") {
                         y = yOffset - ys[i];
-                    } else if (this.params.data[j].id === "variance") {
+                    } else if (data[j].id === "variance") {
                         y = yOffset + ys[i];
-                    } else if (this.params.data[j].id === 'template') {
+                    } else if (data[j].id === 'template') {
                         y = CanvasRenderer.convertDataYToCanvasCoordinate(bound, ys[i] * r + o) - yOffset;
                     } else {
                         y = CanvasRenderer.convertDataYToCanvasCoordinate(bound, ys[i]) - yOffset;
@@ -775,11 +780,11 @@ class CanvasRenderer {
                     if (disconnect === true) {
                         disconnect = false;
                         if (i > 0) {
-                            if (this.params.data[j].id === "sky") {
+                            if (data[j].id === "sky") {
                                 yp = yOffset - ys[i - 1];
-                            } else if (this.params.data[j].id === "variance") {
+                            } else if (data[j].id === "variance") {
                                 yp = yOffset + ys[i - 1];
-                            } else if (this.params.data[j].id === 'template') {
+                            } else if (data[j].id === 'template') {
                                 yp = CanvasRenderer.convertDataYToCanvasCoordinate(bound, ys[i - 1] * r + o) - yOffset;
                             } else {
                                 yp = CanvasRenderer.convertDataYToCanvasCoordinate(bound, ys[i - 1]) - yOffset;
@@ -799,7 +804,7 @@ class CanvasRenderer {
                 }
             }
             this.c.stroke();
-            if (this.params.data[j].id === "template") {
+            if (data[j].id === "template") {
                 this.c.globalAlpha = 1;
             }
         }
@@ -861,7 +866,7 @@ class CanvasRenderer {
                     let strength = null;
                     if (this.params.baseData != null) {
                         // todo
-                        strength = getStrengthOfLine(this.params.baseData.x, this.params.baseData.y2, lines[i], z, templatesService.isQuasar(this.detailed.templateId));
+                        strength = getStrengthOfLine(this.params.baseData.x, this.params.baseData.y2, lines[i], z, this.templateManager.isQuasar(this.detailed.templateId));
                     }
                     this.c.beginPath();
                     this.c.setLineDash([5, 3]);
@@ -976,9 +981,15 @@ class CanvasRenderer {
     };
 
     selectCalloutWindows() {
-        const baseData = this.params.data.select(x => {
+        this.params.baseData = this.params.data.where(x => {
             return x.id === 'data';
-        });
+        }).toArray();
+
+        if (!this.params.baseData.length)
+            this.params.baseData = null;
+        else
+            this.params.baseData = this.params.baseData[0];
+
         const redshift = parseFloat(this.detailed.redshift);
         let start = this.view.defaultMin;
         let end = this.view.defaultMax;
@@ -990,7 +1001,7 @@ class CanvasRenderer {
             end = this.params.baseData[0].x[this.params.baseData[0].x.length - 1];
         }
 
-        const availableCallouts = this.params.callouts.select(c => {
+        const availableCallouts = this.params.callouts.where(c => {
             const zmean = ((1 + redshift) * c[0] + (1 + redshift) * c[1]) / 2.;
             return zmean >= start && zmean <= end;
         }).toArray();
@@ -1074,37 +1085,39 @@ class CanvasRenderer {
 
     };
 
-    // smoothData(id) {
-    //     this.smooth = parseInt(this.detailed.smooth);
-    //     for (this.i = 0; i < data.length; i++) {
-    //         if (data[i].id == id) {
-    //             data[i].y2 = fastSmooth(data[i].y, smooth);
-    //             this.ys2 = data[i].y2.slice(params.startRawTruncate);
-    //             ys2 = ys2.sort(function (a, b) {
-    //                 if (!isFinite(a - b)) {
-    //                     return !isFinite(a) ? -1 : 1;
-    //                 } else {
-    //                     return a - b;
-    //                 }
-    //             });
-    //             this.numPoints = ys2.length;
-    //             for (this.k = 0; k < numPoints; k++) {
-    //                 if (isFinite(ys2[k])) {
-    //                     break;
-    //                 }
-    //             }
-    //             this.yMins = [], yMaxs = [];
-    //             for (this.j = 0; j < this.detailed.ranges.length; j++) {
-    //                 this.range = this.detailed.ranges[j];
-    //                 yMins.push(ys2[Math.floor(0.01 * (100 - range) * (numPoints - k)) + k]);
-    //                 yMaxs.push(ys2[Math.ceil(0.01 * (range) * (numPoints - 1 - k)) + k]);
-    //             }
-    //             data[i].yMins = yMins;
-    //             data[i].yMaxs = yMaxs;
-    //         }
-    //     }
-    // };
-    //
+    smoothData(id) {
+        const smooth = parseInt(this.detailed.smooth);
+        const data = this.params.data.toArray()
+        for (let i = 0; i < this.params.data.count(); i++) {
+            if (data[i].id === id) {
+                data[i].y2 = fastSmooth(data[i].y, smooth);
+                let ys2 = data[i].y2.slice(this.params.startRawTruncate);
+                ys2 = ys2.sort(function (a, b) {
+                    if (!isFinite(a - b)) {
+                        return !isFinite(a) ? -1 : 1;
+                    } else {
+                        return a - b;
+                    }
+                });
+                const numPoints = ys2.length;
+                let k;
+                for (k = 0; k < numPoints; k++) {
+                    if (isFinite(ys2[k])) {
+                        break;
+                    }
+                }
+                const yMins = [], yMaxs = [];
+                for (let j = 0; j < this.detailed.ranges.length; j++) {
+                    let range = this.detailed.ranges[j];
+                    yMins.push(ys2[Math.floor(0.01 * (100 - range) * (numPoints - k)) + k]);
+                    yMaxs.push(ys2[Math.ceil(0.01 * (range) * (numPoints - 1 - k)) + k]);
+                }
+                data[i].yMins = yMins;
+                data[i].yMaxs = yMaxs;
+            }
+        }
+    };
+
     // getActiveHash() {
     //     if (this.ui.active == null) return "";
     //     return this.ui.active.getHash();
@@ -1118,59 +1131,51 @@ class CanvasRenderer {
     //     }
     // };
     //
-    // addBaseData() {
-    //     this.i = 0;
-    //     for (i = 0; i < data.length; i++) {
-    //         if (data[i].id == 'data') {
-    //             data.splice(i, 1);
-    //             break;
-    //         }
-    //     }
-    //     for (i = 0; i < data.length; i++) {
-    //         if (data[i].id == 'variance') {
-    //             data.splice(i, 1);
-    //             break;
-    //         }
-    //     }
-    //     if (this.ui.active != null) {
-    //         this.ys = null;
-    //         this.xs = null;
-    //         this.colour = "#000";
-    //         if (this.ui.dataSelection.processed && this.ui.active.processedLambdaPlot != null) {
-    //             xs = this.ui.active.processedLambdaPlot;
-    //             ys = this.detailed.continuum ? this.ui.active.processedContinuum : this.ui.active.processedIntensity2;
-    //             colour = this.ui.colours.processed;
-    //         } else {
-    //             ys = this.detailed.continuum ? this.ui.active.intensityPlot : this.ui.active.getIntensitySubtracted();
-    //             xs = this.ui.active.lambda;
-    //             colour = this.ui.colours.raw;
-    //         }
-    //         this.xs2 = xs.slice();
-    //         xs2.sort(function (a, b) {
-    //             return a - b;
-    //         });
-    //         this.xMin = xs2[params.startRawTruncate];
-    //         this.xMax = xs2[xs2.length - 1];
-    //         this.params.baseData = {
-    //             id: 'data', bound: true, colour: colour, x: xs, y: ys, xMin: xMin,
-    //             xMax: xMax
-    //         };
-    //         data.push(this.params.baseData);
-    //         if (this.ui.dataSelection.variance) {
-    //             if (this.ui.dataSelection.processed && this.ui.active.processedVariancePlot != null) {
-    //                 ys = this.ui.active.processedVariancePlot;
-    //             } else {
-    //                 ys = this.ui.active.variancePlot;
-    //             }
-    //             data.push({id: 'variance', bound: false, colour: this.ui.colours.variance, x: xs, y: ys});
-    //         }
-    //         smoothData('data');
-    //     }
-    //     data.sort(function (a, b) {
-    //         return a.id < b.id;
-    //     });
-    // };
-    //
+    addBaseData() {
+        // Remove any existing data or variance from the data array
+        this.params.data = this.params.data.where(x => x.id !== 'data' && x.id !== 'variance');
+
+        if (this.ui.active != null) {
+            let ys = null;
+            let xs = null;
+            let colour = "#000";
+            if (this.ui.dataSelection.processed && this.ui.active.processedLambdaPlot != null) {
+                xs = this.ui.active.processedLambdaPlot;
+                ys = this.detailed.continuum ? this.ui.active.processedContinuum : this.ui.active.processedIntensity2;
+                colour = this.ui.colours.processed;
+            } else {
+                ys = this.detailed.continuum ? this.ui.active.intensityPlot : this.ui.active.getIntensitySubtracted();
+                xs = this.ui.active.lambda;
+                colour = this.ui.colours.raw;
+            }
+            const xs2 = xs.slice();
+            xs2.sort(function (a, b) {
+                return a - b;
+            });
+            const xMin = xs2[this.params.startRawTruncate];
+            const xMax = xs2[xs2.length - 1];
+            this.params.baseData = {
+                id: 'data', bound: true, colour: colour, x: xs, y: ys, xMin: xMin,
+                xMax: xMax
+            };
+            this.params.data = this.params.data.concat([this.params.baseData]);
+            if (this.ui.dataSelection.variance) {
+                if (this.ui.dataSelection.processed && this.ui.active.processedVariancePlot != null) {
+                    ys = this.ui.active.processedVariancePlot;
+                } else {
+                    ys = this.ui.active.variancePlot;
+                }
+                this.params.data = this.params.data.concat(
+                    [
+                        {id: 'variance', bound: false, colour: this.ui.colours.variance, x: xs, y: ys}
+                    ]
+                );
+            }
+            this.smoothData('data');
+        }
+        this.params.data.orderBy(a => a.id);
+    };
+
     // addSkyData() {
     //     for (this.i = 0; i < data.length; i++) {
     //         if (data[i].id == 'sky') {
@@ -1203,7 +1208,7 @@ class CanvasRenderer {
     //             h = this.ui.active.helio;
     //             c = this.ui.active.cmb;
     //         }
-    //         this.r = templatesService.getTemplateAtRedshift(this.detailed.templateId,
+    //         this.r = this.templateManager.getTemplateAtRedshift(this.detailed.templateId,
     //             adjustRedshift(parseFloat(this.detailed.redshift), -h, -c), this.detailed.continuum);
     //         data.push({id: "template", colour: this.ui.colours.matched, x: r[0], y: r[1]});
     //     }

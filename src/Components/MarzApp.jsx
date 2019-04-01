@@ -10,6 +10,7 @@ import Detailed from "./Pages/Detailed";
 const Router = process.env.NODE_ENV === 'development' ? BrowserRouter : MemoryRouter;
 
 function MarzApp(props) {
+    console.log("props: ", props)
     return (
         <Router>
             <div>

@@ -6,26 +6,23 @@ const UIActionTypes = {
     UPDATE_TEMPLATE_OFFSET: "UIActionTypes.UPDATE_TEMPLATE_OFFSET",
 };
 
-function setMerge(index, merge) {
+function setMerge(merge) {
     AppDispatcher.dispatch({
         type: UIActionTypes.SET_MERGE,
-        index: index,
         merge: merge,
     })
 }
 
-function updateRedShift(index, redshift) {
+function updateRedShift(redshift) {
     AppDispatcher.dispatch({
         type: UIActionTypes.UPDATE_REDSHIFT,
-        index: index,
         redshift: redshift
     })
 }
 
-function updateTemplateOffset(index, templateOffset) {
+function updateTemplateOffset(templateOffset) {
     AppDispatcher.dispatch({
         type: UIActionTypes.UPDATE_TEMPLATE_OFFSET,
-        index: index,
         templateOffset: templateOffset
     })
 }

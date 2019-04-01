@@ -1,22 +1,25 @@
-import AppDispatcher from "../AppDispatcher";
-import {ReduceStore} from "flux/utils";
 import {PersonalActionTypes} from "./Actions";
+import CookieManager from "../../Lib/CookieManager";
 
-class PersonalStore extends ReduceStore {
+class PersonalStore {
     constructor() {
-        super(AppDispatcher);
+    }
+
+    key() {
+        return 'personal';
     }
 
     getInitialState() {
         return {
-            initials: localStorage.initials || ""
+            initials: CookieManager.registerCookieValue("initials", "")
         }
     }
 
     reduce(state, action) {
         switch (action.type) {
             case PersonalActionTypes.UPDATE_INITIALS:
-                localStorage.initials = action.initials;
+                console.log(action)
+                CookieManager.setCookie("initials", action.initials);
                 return {
                     ...state,
                     initials: action.initials,
@@ -28,4 +31,4 @@ class PersonalStore extends ReduceStore {
     }
 }
 
-export default new PersonalStore();
+export default PersonalStore;

@@ -7,6 +7,7 @@
  */
 import {defaultFor} from "./methods";
 
+// todo: verify this belongs here and not in helio.js
 export function adjustRedshift(z, helio, cmb) {
     helio = defaultFor(helio, null);
     cmb = defaultFor(cmb, null);

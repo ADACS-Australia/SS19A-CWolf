@@ -7,6 +7,10 @@ module.exports = {
     module: {
         rules: [
             {
+                test: /\.worker\.js$/,
+                use: { loader: 'worker-loader' }
+            },
+            {
                 test: /\.(js|jsx)$/,
                 exclude: /node_modules/,
                 use: {
@@ -61,7 +65,8 @@ module.exports = {
         ]
     },
     output: {
-        publicPath: "/"
+        publicPath: "/",
+        globalObject: "this",
     },
     // Server Configuration options
     devServer: {

@@ -34,8 +34,7 @@ class Sidebar extends React.Component {
 
     onDrop(acceptedFiles, rejectedFiles) {
         // Do something with files
-        console.log(acceptedFiles, rejectedFiles)
-        addFiles(acceptedFiles, 0);
+        addFiles(acceptedFiles);
     }
 
     render() {
