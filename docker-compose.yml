@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  nginx:
+    build: ./
+    container_name: ng_marz
+    ports:
+      - "8040:8000"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./:/code/
+    command: >
+      bash -c "
+        rm -Rf /code/dist/* &&
+        cd / && 
+        . ~/.nvm/nvm.sh &&
+        cd /code/ &&
+        nvm install && 
+        nvm use &&
+        nvm install-latest-npm && 
+        npm install && 
+        npm run build -- --output-public-path=\"/projects/live/marz/\" &&
+        nginx -g 'daemon off;'"
