@@ -5,7 +5,7 @@ for (var i = 0; i < deps.length; i++) {
 try  {
     math.sin(1);
 } catch (err) {
-    math = require("../lib/math");
+    math = require("mathjs");
 }
 /**
  * Computes the heliocentric velocity (km/s) correction for a given time and location.
