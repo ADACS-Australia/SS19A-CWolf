@@ -27,7 +27,7 @@ function MarzApp(props) {
                         </div>
                     </div>
                 </div>
-                <Footer/>
+                <Footer {...props}/>
             </div>
         </Router>
     )

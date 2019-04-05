@@ -3,6 +3,13 @@ import {defaultFor} from "../Utils/methods";
 import SpectraManager from "./SpectraManager"
 import QualityManager from "./QualityManager";
 import LocalStorageManager from "./LocalStorageManager";
+import {
+    setActive,
+    setTemplateId,
+    updateNumberMatched,
+    updateNumberProcessed,
+    updateRedShift
+} from "../Stores/UI/Actions";
 
 class SpectraController {
     constructor(store, resultsManager) {
@@ -134,7 +141,12 @@ class SpectraController {
             data.history.pop();
         }
 
-        ui.active = spectra;
+        console.log("Setting active", spectra)
+
+        // Set the active spectra
+        setActive(spectra);
+
+        console.log("Potato")
         let id = spectra.getFinalTemplateID();
         let z = spectra.getFinalRedshift();
         if (spectra.getMerges().length > 0) {
@@ -145,12 +157,13 @@ class SpectraController {
         }
 
         if (id != null && z != null) {
-            ui.detailed.templateId = id;
-            ui.detailed.redshift = z;
+            setTemplateId(id);
+            updateRedShift(z);
         } else {
-            ui.detailed.templateId = "0";
-            ui.detailed.redshift = "0";
+            setTemplateId("0");
+            updateRedShift("0");
         }
+        console.log("ded")
     };
 
     setSpectra(spectraList) {
@@ -189,6 +202,7 @@ class SpectraController {
         spectra.manualRedshift = parseFloat(vals['z']);
         spectra.setComment(vals['com']);
 
+        setTimeout(() => updateNumberMatched(), 0)
     };
 
     getSpectra(id) {

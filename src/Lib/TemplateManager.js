@@ -431,7 +431,7 @@ class TemplateManager {
         }];
 
         this.process = process;
-        this.setOriginalTemplates(originalTemplates);
+        this.setOriginalTemplates(originalTemplates)
 
     }
 
@@ -664,6 +664,22 @@ class TemplateManager {
             }
         }
         t.zs = t.zs.slice(t.startZIndex, t.endZIndex);
+    }
+
+    getTemplateAtRedshift(templateId, redshift, withContinuum) {
+        return this.getTemplate(templateId, redshift, withContinuum);
+    }
+
+    getTemplates() {
+        return this.templates;
+    }
+
+    getFFTReadyTemplate(templateId) {
+        const t = this.templatesHash[templateId];
+        if (t.fft == null) {
+            this.shiftTemplate(t);
+        }
+        return t;
     }
 }
 

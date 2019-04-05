@@ -14,7 +14,7 @@ class ManagedToggleButton extends React.Component {
         // Check if the toggle callback is set
         if (this.props.onToggle)
             // Call the toggle callback with the current state
-            this.props.onToggle(self.state.toggleActive);
+            this.props.onToggle(this.state.toggleActive);
     }
 
     render() {

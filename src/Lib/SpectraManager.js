@@ -1,4 +1,5 @@
 import {globalConfig} from "./config";
+import {updateNumberMatched, updateNumberProcessed} from "../Stores/UI/Actions";
 
 class SpectraManager {
     constructor(store) {
@@ -62,6 +63,8 @@ class SpectraManager {
                 this.finishedCallback();
             }
         }
+
+        setTimeout(() => updateNumberMatched(), 0)
     };
     setSpectra(spectraList) {
         const data = this.getData();
@@ -85,6 +88,8 @@ class SpectraManager {
         spectra.processedContinuum = results.continuum;
         spectra.isProcessing = false;
         spectra.isProcessed = true;
+
+        setTimeout(() => updateNumberProcessed(), 0)
     };
     isFinishedMatching() {
         return this.getNumberMatched() === this.getNumberTotal();

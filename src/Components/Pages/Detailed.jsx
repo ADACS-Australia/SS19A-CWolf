@@ -12,7 +12,13 @@ import ManagedButtonGroup from "../General/ManagedButtonGroup/ManagedButtonGroup
 import DetailedCanvas from "../General/DetailedCanvas/DetailedCanvas";
 import {spectraLineService} from "../General/DetailedCanvas/spectralLines";
 import * as Enumerable from "linq";
-import {updateRedShift, updateTemplateOffset} from "../../Stores/UI/Actions";
+import {
+    resetToAutomatic, resetToManual,
+    setProcessed,
+    setVariance,
+    updateRedShift,
+    updateTemplateOffset
+} from "../../Stores/UI/Actions";
 
 const boldItems = Enumerable.from(['O2', 'Hb', 'Ha']);
 
@@ -38,27 +44,36 @@ class Detailed extends React.Component {
             <div className="detailedView filler">
                 <div className="panel panel-default detailed-control panel-header">
                     <div className="panel-heading">
-                        <strong>ID</strong>
-                        <strong>NAME</strong>
-                        <strong>AutoQOP</strong>
+                        <strong>ID</strong> {this.props.ui.active ? this.props.ui.active.id : ""}
+                        <strong>NAME</strong> {this.props.ui.active ? this.props.ui.active.name : ""}
+                        {
+                            // todo
+                            (<strong>AutoQOP</strong>)
+                        }
                         <h4 className="auto-qop">
                             <span className=""></span></h4>
                         <strong>QOP</strong>
                         <h4 className="qop-h4">
-                            <span className="label"></span>
+                            <span
+                                className={"label " + (this.props.ui.active ? this.props.ui.active.qopLabel : "")}
+                            >
+                                {this.getQOPText()}
+                            </span>
                         </h4>
+                        {/*todo*/}
                         <strong>COMMENT</strong>
                         <input type="text"
                                className="input-sm comment-input"
                                placeholder="Enter a comment"/>
-                        <strong>RA</strong>
-                        <strong>DEC</strong>
-                        <strong>MAG</strong>
-                        <strong>TYPE</strong>
+                        <strong>RA</strong> {this.props.ui.active ? this.props.ui.active.getRA().toFixed(3) : ""}
+                        <strong>DEC</strong> {this.props.ui.active ? this.props.ui.active.getDEC().toFixed(3) : ""}
+                        <strong>MAG</strong> {this.props.ui.active ? this.props.ui.active.magnitude.toFixed(2) : ""}
+                        <strong>TYPE</strong> {this.props.ui.active ? this.props.ui.active.type : ""}
                     </div>
                     <ListGroup>
                         <ListGroupItem>
                             <Form inline>
+                                {/*todo: merges*/}
                                 {/*<div className="form-group">*/}
                                 {/*<div className="input-group input-group-sm">*/}
                                 {/*<div className="btn-group">*/}
@@ -72,17 +87,16 @@ class Detailed extends React.Component {
                                 {/*</div>*/}
 
                                 <ManagedToggleButton
-                                    default={true}
+                                    default={this.props.ui.dataSelection.processed}
                                     on={"Processed"}
                                     off={"Raw"}
                                     handle={"Data"}
                                     size="xs"
                                     offstyle="secondary"
+                                    onToggle={(toggled) => {
+                                        setProcessed(toggled)
+                                    }}
                                 />
-                                {/*<toggle-switch className="switch-success" style="width: 170px"*/}
-                                {/*ng-model="ui.dataSelection.processed" knob-label="Data"*/}
-                                {/*on-label="Processed" off-label="Raw"></toggle-switch>*/}
-
                                 <ManagedToggleButton
                                     default={true}
                                     handle={"Template"}
@@ -106,11 +120,14 @@ class Detailed extends React.Component {
 
 
                                 <ManagedToggleButton
-                                    default={false}
+                                    default={this.props.ui.dataSelection.variance}
                                     handle={"Variance"}
                                     size="xs"
                                     offstyle="secondary"
                                     onstyle="warning"
+                                    onToggle={(toggled) => {
+                                        setVariance(toggled)
+                                    }}
                                 />
                                 {/*<toggle-switch className="switch-warning" style="width: 170px"*/}
                                 {/*ng-model="ui.dataSelection.variance"*/}
@@ -118,8 +135,8 @@ class Detailed extends React.Component {
 
 
                                 <ManagedButtonGroup>
-                                    <Button color='light' size='sm'>Reset auto</Button>
-                                    <Button color='light' size='sm'>Reset manual</Button>
+                                    <Button color='light' size='sm' onClick={() => resetToAutomatic()}>Reset auto</Button>
+                                    <Button color='light' size='sm' onClick={() => resetToManual()}>Reset manual</Button>
                                 </ManagedButtonGroup>
 
                                 <ManagedSliderInput
@@ -217,6 +234,15 @@ class Detailed extends React.Component {
                 <DetailedCanvas {...this.props}/>
             </div>
         )
+    }
+
+    getQOPText() {
+        const s = this.props.ui.active;
+        if (s && s.qop != null && s.getFinalRedshift()) {
+            return s.qop + " at " + s.getFinalRedshift();
+        } else {
+            return "";
+        }
     }
 }
 

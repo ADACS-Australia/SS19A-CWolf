@@ -15,54 +15,11 @@ import download_image from '../../../Assets/images/download.png';
 import lens_image from '../../../Assets/images/lens.png';
 import {spectraLineService} from "./spectralLines";
 import TemplateManager from "../../../Lib/TemplateManager";
-
-const dataStore = {
-    ui: {
-        merge: false,
-        mergeDefault: 0,
-        mergeInitials: [],
-        active: null,
-        graphicalLayout: true,
-        sidebarSmall: false,
-        dataSelection: {
-            processed: true,
-            matched: true,
-            variance: false
-        },
-        quality: {
-            max: 0,
-            bars: [],
-            barHash: {}
-        },
-        colours: {
-            unselected: '#E8E8E8',
-            raw: "#111111",
-            processed: "#005201",
-            matched: "#AA0000",
-            sky: "#009DFF",
-            template: '#8C0623',
-            variance: '#E3A700',
-            merges: ["#009DFF", "#005201"]
-        }
-    },
-    data: {
-        fits: [],
-        types: [],
-        fitsFileName: null,
-        spectra: [],
-        spectraHash: {},
-        history: []
-    },
-    filters: {
-        typeFilter: '*',
-        templateFilter: '*',
-        redshiftFilter: '*',
-        qopFilter: '*'
-    },
-    personal: {
-        initials: ""
-    }
-};
+import {
+    clearShouldUpdateBaseData,
+    clearShouldUpdateSkyData,
+    clearShouldUpdateTemplateData, clearShouldUpdateXcorData
+} from "../../../Stores/Detailed/Actions";
 
 class CanvasRenderer {
 
@@ -71,8 +28,7 @@ class CanvasRenderer {
         this.params.scale = this.params.ratio * extra;
     };
 
-    update(props)
-    {
+    update(props) {
         // Save the props so we have access to the application state
         this.props = props;
 
@@ -88,7 +44,45 @@ class CanvasRenderer {
         // Get the view information for this spectra
         this.view = this.params.view;
 
-        this.addBaseData();
+        console.log(this.ui.active)
+        if (this.ui.active)
+            console.log(this.ui.active.getHash())
+
+        // Check if we need to update the base data
+        if (this.params.shouldUpdateBaseData) {
+            console.log("Adding base data")
+            // Reset the flag to update the base data
+            setTimeout(() => clearShouldUpdateBaseData(), 0);
+            // Add the base data
+            this.addBaseData();
+        }
+
+        // Check if we need to update the sky data
+        if (this.params.shouldUpdateSkyData) {
+            console.log("Adding sky data")
+            // Reset the flag to update the base data
+            setTimeout(() => clearShouldUpdateSkyData(), 0);
+            // Add the base data
+            this.addSkyData();
+        }
+
+        // Check if we need to update the base data
+        if (this.params.shouldUpdateTemplateData) {
+            console.log("Adding template data")
+            // Reset the flag to update the base data
+            setTimeout(() => clearShouldUpdateTemplateData(), 0);
+            // Add the base data
+            this.addTemplateData();
+        }
+
+        // Check if we need to update the xcor data
+        if (this.params.shouldUpdateBaseData) {
+            console.log("Adding xcor data")
+            // Reset the flag to update the base data
+            setTimeout(() => clearShouldUpdateXcorData(), 0);
+            // Add the base data
+            this.addxcorData();
+        }
 
         // Force a canvas redraw
         this.handleRedrawRequest();
@@ -1087,7 +1081,7 @@ class CanvasRenderer {
 
     smoothData(id) {
         const smooth = parseInt(this.detailed.smooth);
-        const data = this.params.data.toArray()
+        const data = this.params.data.toArray();
         for (let i = 0; i < this.params.data.count(); i++) {
             if (data[i].id === id) {
                 data[i].y2 = fastSmooth(data[i].y, smooth);
@@ -1123,14 +1117,14 @@ class CanvasRenderer {
     //     return this.ui.active.getHash();
     // };
     //
-    // addxcorData() {
-    //     if (this.ui.active == null || this.ui.active.templateResults == null) {
-    //         params.xcorData = null;
-    //     } else {
-    //         params.xcorData = this.ui.active.templateResults[this.detailed.templateId];
-    //     }
-    // };
-    //
+    addxcorData() {
+        if (this.ui.active == null || this.ui.active.templateResults == null) {
+            this.params.xcorData = null;
+        } else {
+            this.params.xcorData = this.ui.active.templateResults[this.detailed.templateId];
+        }
+    };
+
     addBaseData() {
         // Remove any existing data or variance from the data array
         this.params.data = this.params.data.where(x => x.id !== 'data' && x.id !== 'variance');
@@ -1176,46 +1170,45 @@ class CanvasRenderer {
         this.params.data.orderBy(a => a.id);
     };
 
-    // addSkyData() {
-    //     for (this.i = 0; i < data.length; i++) {
-    //         if (data[i].id == 'sky') {
-    //             data.splice(i, 1);
-    //             break;
-    //         }
-    //     }
-    //     if (this.ui.active != null && this.ui.active.sky != null) {
-    //         data.push({
-    //             id: 'sky',
-    //             colour: this.ui.colours.sky,
-    //             bound: false,
-    //             x: this.ui.active.lambda,
-    //             y: this.ui.active.sky
-    //         })
-    //     }
-    // };
-    //
-    // addTemplateData() {
-    //     for (this.i = 0; i < data.length; i++) {
-    //         if (data[i].id == 'template') {
-    //             data.splice(i, 1);
-    //             break;
-    //         }
-    //     }
-    //     if (this.detailed.templateId != "0" && this.ui.dataSelection.matched) {
-    //         this.h = null;
-    //         this.c = null;
-    //         if (this.ui.active != null) {
-    //             h = this.ui.active.helio;
-    //             c = this.ui.active.cmb;
-    //         }
-    //         this.r = this.templateManager.getTemplateAtRedshift(this.detailed.templateId,
-    //             adjustRedshift(parseFloat(this.detailed.redshift), -h, -c), this.detailed.continuum);
-    //         data.push({id: "template", colour: this.ui.colours.matched, x: r[0], y: r[1]});
-    //     }
-    //     data.sort(function (a, b) {
-    //         return a.id < b.id;
-    //     });
-    // };
+    addSkyData() {
+        this.params.data = this.params.data.where(x => x.id !== 'sky');
+
+        if (this.ui.active != null && this.ui.active.sky != null) {
+            this.params.data = this.params.data.concat(
+                [
+                    {
+                        id: 'sky',
+                        colour: this.ui.colours.sky,
+                        bound: false,
+                        x: this.ui.active.lambda,
+                        y: this.ui.active.sky
+                    }
+                ]
+            );
+        }
+    };
+
+    addTemplateData() {
+        this.params.data = this.params.data.where(x => x.id !== 'template');
+
+        if (this.detailed.templateId !== "0" && this.ui.dataSelection.matched) {
+            let h = null;
+            let c = null;
+            if (this.ui.active != null) {
+                h = this.ui.active.helio;
+                c = this.ui.active.cmb;
+            }
+            let r = this.templateManager.getTemplateAtRedshift(this.detailed.templateId,
+                adjustRedshift(parseFloat(this.detailed.redshift), -h, -c), this.detailed.continuum);
+            this.params.data = this.params.data.concat(
+                [
+                    {id: "template", colour: this.ui.colours.matched, x: r[0], y: r[1]}
+                ]
+            );
+        }
+
+        this.params.data.orderBy(a => a.id);
+    };
 }
 
 export default CanvasRenderer;

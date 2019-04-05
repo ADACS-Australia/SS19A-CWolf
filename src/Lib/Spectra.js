@@ -1,5 +1,6 @@
 import {defaultFor, normaliseViaShift, removeNaNs} from "../Utils/methods";
 import {globalConfig} from "./config";
+import {updateNumberMatched, updateNumberProcessed} from "../Stores/UI/Actions";
 
 class Spectra {
     /** The spectra class is used to store information about each spectra loaded into marz
@@ -101,6 +102,9 @@ class Spectra {
         if (!compute) {
             this.isProcessed = true;
             this.isMatched = true;
+
+            setTimeout(() => updateNumberMatched(), 0);
+            setTimeout(() => updateNumberProcessed(), 0);
         }
     };
 

@@ -9,6 +9,7 @@ class Processor {
         // todo: Maybe process should be false
         this.templateManager = new TemplateManager();
 
+        // todo: refactor to top
         this.spectraManager = new SpectraController(store, resultsManager);
 
         this.processorManager.setInactiveTemplateCallback(() => this.templateManager.getInactiveTemplates());
