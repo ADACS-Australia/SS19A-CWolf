@@ -1,4 +1,5 @@
-var deps = ["./methods", "../lib/dsp"];
+//var deps = ["./methods", "../lib/dsp"];
+var deps = ["./methods"];
 for (var i = 0; i < deps.length; i++) {
     require(deps[i])();
 }

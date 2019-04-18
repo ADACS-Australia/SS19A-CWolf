@@ -3,26 +3,28 @@ classes = require('./classes.js');
 helio = require('./helio.js');
 class SpectrumX {
     constructor(name) {
-        this.id = "";
-        this.name = name;
-        this.rightAscension = null;
-        this.declination = null;
-        this.magnitude = null;
-        this.type = "";
         this.wavelength = [];
         this.intensity = [];
         this.variance = [];
         this.sky = [];
-        this.helio = null;
-        this.cmb = null;
+        this.dohelio = false;
+        this.docmb = false;
 
         //
-        this.longitude = null;
-        this.latitude = null;
-        this.altitude = null;
-        this.juliandate = "";
-        this.epoch = ""
-        this.radecsys = "";
+        this.properties = {};
+        this.properties.id = "";
+        this.properties.name = name;
+        this.properties.ra = null;
+        this.properties.dec = null;
+        this.properties.magnitude = null;
+        this.properties.type = "";
+        this.properties.longitude = null;
+        this.properties.longitude = null;
+        this.properties.latitude = null;
+        this.properties.altitude = null;
+        this.properties.juliandate = "";
+        this.properties.epoch = ""
+        this.properties.radecsys = "";
     }
     fromDictionary(dict)
     {
@@ -35,35 +37,54 @@ class SpectrumX {
         if (dict["variance"]) {
             this.variance = dict["variance"];
         }
-        if (dict["id"]) {
-            this.name = dict["id"];
+        if (dict["sky"]) {
+            this.sky = dict["sky"];
         }
-        if (dict["name"]) {
-            this.name = dict["name"];
+        if (dict["dohelio"]) {
+            this.dohelio = dict["dohelio"];
         }
-        if (dict["type"]) {
-            this.type = dict["type"];
+        if (dict["docmb"]) {
+            this.docmb = dict["docmb"];
         }
-        if (dict["helio"]) {
-            this.helio = dict["helio"];
-            if (this.isDict(this.helio)) {
-                this.rightAscension = this.helio["ra"];
-                this.declination = this.helio["dec"];
-                this.longitude = this.helio["longitude"];
-                this.latitude = this.helio["latitude"];
-                this.altitude = this.helio["altitude"];
-                this.juliandate = this.helio["juliandate"];
-                this.epoch = this.helio["epoch"];
-                this.radecsys = this.helio["radecsys"];
+
+        if (dict["properties"]) {
+            this.properties = dict["properties"];
+            // TODO: The code below is not required (unless I want some kind of checking here)
+            if (this.properties["id"]) {
+                this.properties.id = this.properties["id"];
             }
-        }
-        if (dict["cmb"]) {
-            this.cmb = dict["cmb"];
-            if (this.isDict(this.cmb)) {
-                this.rightAscension = this.cmb["ra"];
-                this.declination = this.cmb["dec"];
-                this.epoch = this.cmb["epoch"];
-                this.radecsys = this.cmb["radecsys"];
+            if (this.properties["name"]) {
+                this.properties.name = this.properties["name"];
+            }
+            if (this.properties["type"]) {
+                this.properties.type = this.properties["type"];
+            }
+            if (this.properties["ra"]) {
+                this.properties.ra = this.properties["ra"];
+            }
+            if (this.properties["dec"]) {
+                this.properties.dec = this.properties["dec"];
+            }
+            if (this.properties["magnitude"]) {
+                this.properties.magnitude = this.properties["magnitude"];
+            }
+            if (this.properties["longitude"]) {
+                this.properties.longitude = this.properties["longitude"];
+            }
+            if (this.properties["latitude"]) {
+                this.properties.latitude = this.properties["latitude"];
+            }
+            if (this.properties["altitude"]) {
+                this.properties.altitude = this.properties["altitude"];
+            }
+            if (this.properties["juliandate"]) {
+                this.properties.juliandate = this.properties["juliandate"];
+            }
+            if (this.properties["epoch"]) {
+                this.properties.epoch = this.properties["epoch"];
+            }
+            if (this.properties["radecsys"]) {
+                this.properties.radecsys = this.properties["radecsys"];
             }
         }
     }
@@ -81,48 +102,58 @@ class SpectrumX {
         this.fromDictionary(dict);
     }
     provide(q) {
-        var spectra = new Spectra(this.id, this.wavelength, this.intensity, this.variance, this.sky,
-             this.name, this.rightAscension, this.declination, this.magnitude, this.type, null, this.getHelio(), this.getCMB(), false);
+/*
+        console.log("provide id="+this.properties.id);
+        console.log("provide name="+this.properties.name);
+        console.log("provide ra="+this.properties.ra);
+        console.log("provide dec="+this.properties.dec);
+        console.log("provide magnitude="+this.properties.magnitude);
+        console.log("provide type="+this.properties.type);
+        console.log("provide helio="+this.getHelio());
+        console.log("provide cmb="+this.getCMB());
+*/
+        var spectra = new Spectra(this.properties.id, this.wavelength, this.intensity, this.variance, this.sky,
+             this.properties.name, this.properties.ra, this.properties.dec, this.properties.magnitude, this.properties.type, null, this.getHelio(), this.getCMB(), false);
         var spectraList = [spectra];
         q.resolve(spectraList); 
         return q.promise;    
     }
     // Description properties
     getId() {
-        return this.id;
+        return this.properties.id;
     }
     setId(id) {
-        this.id = id;
+        this.properties.id = id;
     }
     getName() {
-        return this.name;
+        return this.properties.name;
     }
     setName(name) {
-        this.name = name;
+        this.properties.name = name;
     }
     getRightAscension() {
-        return this.rightAscension;
+        return this.properties.ra;
     }
     setRightAscension(rightAscension) {
-        this.rightAscension = rightAscension;
+        this.properties.ra = rightAscension;
     }
     getDeclination() {
-        return this.declination;
+        return this.properties.dec;
     }
     setDeclination(declination) {
-        this.declination = declination;
+        this.properties.dec = declination;
     }
     getMagnitude() {
-        return this.magnitude;
+        return this.properties.magnitude;
     }
     setMagnitude(magnitude) {
-        this.magnitude = magnitude;
+        this.properties.magnitude = magnitude;
     }
     getType() {
-        return this.type;
+        return this.properties.type;
     }
     setType(type) {
-        this.type = type;
+        this.properties.type = type;
     }
     // Spectra data arrays
     getWavelength() {
@@ -150,27 +181,23 @@ class SpectrumX {
         this.sky = sky;
     }
     getHelio() {
-        if (this.helio) {
-            if (this.isDict(this.helio)) {
-                return getHeliocentricVelocityCorrection(
-                    this.getRightAscension()  * 180 / Math.PI,
-                    this.getDeclination() * 180 / Math.PI,
-                    this.juliandate, this.longitude, this.latitude, this.altitude, this.epoch, this.radecsys);
-            }
+        if (this.dohelio) {
+            return getHeliocentricVelocityCorrection(
+                this.getRightAscension()  * 180 / Math.PI,
+                this.getDeclination() * 180 / Math.PI,
+                this.properties.juliandate, this.properties.longitude, this.properties.latitude, this.properties.altitude, this.properties.epoch, this.properties.radecsys);
         }
-        return this.helio
+        return null;
     }
     getCMB() {
-        if (this.cmb) {
-            if (this.isDict(this.cmb)) {
-                return getCMBCorrection(
-                    this.getRightAscension()  * 180 / Math.PI,
-                    this.getDeclination() * 180 / Math.PI,
-                    this.epoch, this.radecsys
-                )
-            }
+        if (this.docmb) {
+            return getCMBCorrection(
+                this.getRightAscension()  * 180 / Math.PI,
+                this.getDeclination() * 180 / Math.PI,
+                this.properties.epoch, this.properties.radecsys
+            )
         }
-        return this.cmb;
+        return null;
     }
     // Good enough method to tell if v is a dictionary or not
     isDict(v) {

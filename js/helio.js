@@ -22,6 +22,7 @@ try  {
  * @param radecsys - the system for RA and DEC. Set to true if FK5, false for FK4 [default to FK5: true]
  */
 function getHeliocentricVelocityCorrection(ra, dec, jd, longitude, latitude, altitude, epoch, fk5, cmb) {
+
     longitude = defaultFor(longitude, 149.0661);
     latitude = defaultFor(latitude, -31.27704);
     altitude = defaultFor(altitude, 1164);

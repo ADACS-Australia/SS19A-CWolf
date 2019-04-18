@@ -613,6 +613,13 @@ FitsFileLoader.prototype.parseFitsFile = function(q, originalFilename) {
                 cmb = getCMBCorrection(ra * 180 / Math.PI, dec * 180 / Math.PI, this.epoch, this.radecsys);
             }
             var s = new Spectra(id, llambda, int, vari, skyy, name, ra, dec, mag, type, this.originalFilename, helio, cmb, this.node);
+            // RS: Keep the extra bits to make it easier to write out
+            s.juliandate = this.JD;
+            s.longitude = this.longitude;
+            s.latitude = this.latitude;
+            s.altitude = this.altitude;
+            s.epoch = this.epoch;
+            s.radecsys = this.radecsys;
             s.setCompute(int != null && vari != null);
             spectraList.push(s);
         }

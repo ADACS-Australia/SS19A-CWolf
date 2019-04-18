@@ -1,10 +1,4 @@
 {
-    "id": "",
-    "name": "D0221394-2854323",
-    "rightAscension": null,
-    "declination": null,
-    "magnitude": null,
-    "type": "DIRECTPHOT",
     "wavelength": [
         3754.668500000002,
         3755.7064100000002,
@@ -15123,12 +15117,20 @@
         null
     ],
     "sky": [],
-    "helio": -20.661584147768217,
-    "cmb": -196.90871962702772,
-    "longitude": null,
-    "latitude": null,
-    "altitude": null,
-    "juliandate": "",
-    "epoch": "",
-    "radecsys": ""
+    "dohelio": true,
+    "docmb": true,
+    "properties": {
+        "id": 1,
+        "name": "D0221394-2854323",
+        "type": "DIRECTPHOT",
+        "ra": 0.6180956282346627,
+        "dec": -0.5045565547198871,
+        "magnitude": 18.59,
+        "latitude": -31.27704,
+        "longitude": 149.0661,
+        "altitude": 1164,
+        "juliandate": 2457374.05929604,
+        "epoch": 2015.9590945819,
+        "radecsys": true
+    }
 }

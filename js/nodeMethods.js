@@ -78,23 +78,34 @@ function runFitsFile(filename, outputFile, debug, consoleOutput) {
     });
     fl.setFilename(filename, fileData);
     consumer.consume(fl,s).then(function(spectraList) {
-        /*
         var jsonfilename = filename.replace(new RegExp('.fits' + '$'), '.json');
         var spectrum = spectraList[0];
         var spectrumXdict = {};
         spectrumXdict["wavelength"] = spectrum.lambda;
         spectrumXdict["intensity"] = spectrum.intensity;
         spectrumXdict["variance"] = spectrum.variance;
-        spectrumXdict["id"] = spectrum.id;
-        spectrumXdict["name"] = spectrum.name;
-        spectrumXdict["type"] = spectrum.type;
-        spectrumXdict["helio"] = spectrum.helio;
-        spectrumXdict["cmb"] = spectrum.cmb;
+        spectrumXdict["sky"] = spectrum.sky;
+        spectrumXdict["dohelio"] = spectrum.helio!=null;
+        spectrumXdict["docmb"] = spectrum.cmb!=null;
+
+        spectrumXdict["properties"] = {};
+        spectrumXdict["properties"]["id"] = spectrum.id;
+        spectrumXdict["properties"]["name"] = spectrum.name;
+        spectrumXdict["properties"]["type"] = spectrum.type;
+        spectrumXdict["properties"]["ra"] = spectrum.ra;
+        spectrumXdict["properties"]["dec"] = spectrum.dec;
+        spectrumXdict["properties"]["magnitude"] = spectrum.magnitude;
+        spectrumXdict["properties"]["latitude"] = spectrum.latitude;
+        spectrumXdict["properties"]["longitude"] = spectrum.longitude;
+        spectrumXdict["properties"]["altitude"] = spectrum.altitude;
+        spectrumXdict["properties"]["juliandate"] = spectrum.juliandate;
+        spectrumXdict["properties"]["epoch"] = spectrum.epoch;
+        spectrumXdict["properties"]["radecsys"] = spectrum.radecsys;
 
         var spectrumX = new SpectrumX(spectrum.name);
         spectrumX.fromDictionary(spectrumXdict);
-        spectrumX.saveasJSON(jsonfilename);
-        */
+        //console.log("===================!!!!!!!!!!!! SAVE "+Object.getOwnPropertyNames(spectrum))
+        //spectrumX.saveasJSON(jsonfilename);
     });
 
     debug("File loaded");
