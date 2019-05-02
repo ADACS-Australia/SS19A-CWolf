@@ -1,8 +1,13 @@
 import {DataActionTypes} from "./Actions";
 import {setMerge} from "../UI/Actions";
 import FitsFileLoader from "../../Lib/FitsFileLoader";
+import SpectrumConsumer from '../../Lib/SpectrumConsumer';
+import SpectrumX from '../../Lib/spectrumX';
 import ResultsManager from "../../Lib/ResultsManager";
 import Processor from "../../Lib/Processor";
+import {describe} from "../../Utils/methods";
+import * as $q from 'q';
+//import { Stats } from "fs";
 
 class DataStore {
     constructor(store) {
@@ -16,6 +21,7 @@ class DataStore {
     getInitialState() {
         const state = {
             fits: [],
+            json: [],
             types: [],
             fitsFileName: null,
             spectra: [],
@@ -30,8 +36,12 @@ class DataStore {
         state.processorService = new Processor(this.store, state.resultsManager);
         state.fitsFileLoader = new FitsFileLoader(state.processorService, state.resultsManager);
 
-        state.fitsFileLoader.subscribeToInput(s => state.processorService.spectraManager.setSpectra(s));
-        state.fitsFileLoader.subscribeToInput(spectraList => state.processorService.addSpectraListToQueue(spectraList));
+        //state.fitsFileLoader.subscribeToInput(s => state.processorService.spectraManager.setSpectra(s));
+        //state.fitsFileLoader.subscribeToInput(spectraList => state.processorService.addSpectraListToQueue(spectraList));
+
+        state.consumer = new SpectrumConsumer( state.processorService, state.resultsManager);
+        state.consumer.subscribeToInput(s => state.processorService.spectraManager.setSpectra(s));
+        state.consumer.subscribeToInput(spectraList => state.processorService.addSpectraListToQueue(spectraList));
 
         return state;
     }
@@ -43,6 +53,7 @@ class DataStore {
         };
 
         if (files.length === 3) {
+            console.log("SPECIAL CASE FILES.LENGTH===3");
             let numRes = 0;
             const res = [];
             let numFits = 0;
@@ -67,21 +78,30 @@ class DataStore {
 
         const lastNumDrag = state.numDrag;
         const lastFitsLength = state.fits.length;
+        const lastJSONLength = state.json.length;
 
         for (let i = 0; i < files.length; i++) {
-            if (!files[i].name.endsWith('fits') && !files[i].name.endsWith('fit')) {
+            if (!files[i].name.endsWith('fits') && !files[i].name.endsWith('fit') && !files[i].name.endsWith('json')) {
                 resultsLoaderService.loadResults(files[i]);
             }
         }
-        let first = true;
+        let firstfits = true;
+        let firstjson = true;
         for (let i = 0; i < files.length; i++) {
             if (files[i].name.endsWith('fits') || files[i].name.endsWith('fit')) {
                 state.numDrag++;
-                if (first) {
-                    first = false;
+                if (firstfits) {
+                    firstfits = false;
                     state.fits.length = 0;
                 }
                 state.fits.push(files[i]);
+            } else if (files[i].name.endsWith('json')) {
+                state.numDrag++;
+                if (firstjson) {
+                    firstjson = false;
+                    state.json.length = 0;
+                }
+                state.json.push(files[i]);
             }
         }
 
@@ -89,7 +109,49 @@ class DataStore {
         {
             if (state.fits.length > 0)
             {
-                state.fitsFileLoader.loadInFitsFile(state.fits[0]).then(function() { console.log('Fits file loaded');});
+                console.log("RS: DataStore drop FITS");
+                describe(state.fits[0]);
+                state.fitsFileLoader.setFiledata(state.fits[0].name,state.fits[0]);
+                //state.fitsFileLoader.loadInFitsFile(state.fits[0]).then(function() { console.log('Fits file loaded');});
+                state.consumer.consume(state.fitsFileLoader,state.processorService.spectraManager).then(function(spectraList) {
+                    console.log("ok...FITS");
+                });
+            }
+        }
+        if (lastNumDrag !== state.numDrag || lastJSONLength !== state.json.length)
+        {
+            if (state.json.length > 0)
+            {
+                console.log("RS: DataStore drop JSON "+state.json[0]);
+                describe(state.json[0]);
+                let reader = new FileReader();
+  
+        // Closure to capture the file information.
+        reader.onload = (function(theFile) {
+          return function(e) {
+                var spectrumx = new SpectrumX(state.json[0].name);
+                spectrumx.fromDictionary(JSON.parse(e.target.result));
+                state.resultsManager.setHelio(spectrumx.getDoHelio());
+                state.resultsManager.setCMB(spectrumx.getDoCMB());
+                state.consumer.consume(spectrumx,state.processorService.spectraManager).then(function(spectraList) {
+                    console.log("ok...JSON");
+                });
+          };
+        })(state.json[0]);
+  
+        reader.readAsText(state.json[0]);
+
+                //
+                /*
+                var spectrumx = new SpectrumX(state.json[0].name);
+                spectrumx.fromDictionary(JSON.parse(state.json[0]));
+                state.resultsManager.setHelio(spectrumx.getDoHelio());
+                state.resultsManager.setCMB(spectrumx.getDoCMB());
+                state.consumer.consume(spectrumx,state.processorService.spectraManager).then(function(spectraList) {
+                    console.log("ok...JSON");
+                });
+                */
+                
             }
         }
 

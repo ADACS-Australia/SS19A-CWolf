@@ -3,11 +3,12 @@ import {getCMBCorrection, getHeliocentricVelocityCorrection} from "../Utils/heli
 
 import * as $q from "q";
 
-import "./fits"
-import {globalConfig} from "./config";
 import {setFitsFilename, setTypes} from "../Stores/Data/Actions";
+import path from 'path';
 import * as Enumerable from "linq";
 import Spectra from "./Spectra";
+import "./fits";
+import {globalConfig} from "./config";
 
 class FitsFileLoader {
     constructor(processorService, resultsManager, node) {
@@ -34,11 +35,48 @@ class FitsFileLoader {
         this.processorService = processorService;
         this.log = console;
         this.subscribed = [];
+
+        this.filedata = null;
     }
     
     subscribeToInput(fn) {
         this.subscribed.push(fn);
-    };
+    }
+
+    setFilename(ifilename) {
+        var actualName = path.basename(ifilename);
+        this.isLoading = true;
+        this.hasFitsFile = true;
+        this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
+        this.global.data.fitsFileName = this.originalFilename;
+        this.filename = this.originalFilename.replace(/_/g, " ");
+        this.thefilename = ifilename;
+        this.actualName = actualName;
+    }
+    setFiledata(ifilename,ifiledata) {
+        var actualName = path.basename(ifilename);
+        this.isLoading = true;
+        this.hasFitsFile = true;
+        this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
+        //this.global.data.fitsFileName = this.originalFilename;
+        this.filename = this.originalFilename.replace(/_/g, " ");
+        this.thefilename = ifilename;
+        this.actualName = actualName;
+        this.thefiledata = ifiledata;
+    }
+    provide(q) {
+        console.log(" ========== PROVIDE ==============");
+        //const q = this.$q.defer();
+        this.isLoading = true;
+        this.hasFitsFile = true;
+        var fileData = this.thefiledata;
+        this.fits = new window.astro.FITS(fileData, function () {
+            console.log("window.astro.FITS done its thing now parse "+this.filename+" "+this.originalFilename);
+            this.parseFitsFile(q, this.originalFilename);
+            this.processorService.setPause();
+        }.bind(this));
+        return q.promise;
+    }
 
     loadInFitsFile(file) {
         const q = $q.defer();
@@ -55,7 +93,8 @@ class FitsFileLoader {
         this.filename = this.originalFilename.replace(/_/g, " ");
         this.log.debug("Loading FITs file");
         this.fits = new astro.FITS(pass, function () {
-            this.log.debug("Loaded FITS file");
+            this.log.debug("Loaded FITS file "+this.filename+" "+this.originalFilename);
+            console.log("Loaded FITS file "+this.filename+" "+this.originalFilename);
             this.parseFitsFile(q, this.originalFilename);
             this.processorService.setPause();
         }.bind(this));
@@ -173,11 +212,11 @@ class FitsFileLoader {
             }
             this.log.debug("Spectra list made");
             this.isLoading = false;
-            for (let i = 0; i < this.subscribed.length; i++) {
-                this.subscribed[i](spectraList);
-            }
-            this.log.debug("Returning FITs object");
-            q.resolve();
+            //for (let i = 0; i < this.subscribed.length; i++) {
+            //    this.subscribed[i](spectraList);
+            //}
+            //this.log.debug("Returning FITs object");
+            q.resolve(spectraList);
 
         }.bind(this))
     };

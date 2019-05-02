@@ -1208,3 +1208,33 @@ export function getStandardFFT(lambda, intensity, variance, needSubtracted) {
         return fft;
     }
 }
+function getMethods(obj) {
+    const result = [];
+    for (let id in obj) {
+      try {
+        if (typeof(obj[id]) == "function") {
+          result.push(id + ": " + obj[id].toString());
+        }
+      } catch (err) {
+        result.push(id + ": inaccessible");
+      }
+    }
+    return result;
+  }
+export function describe(object)
+{
+    console.log("Description:"+object);
+    for (let p in object) {
+        console.log(p+"="+object[p]);
+    }
+    //console.log("       JSON:"+JSON.stringify(object));
+    /*
+    let methods = getMethods(object);
+    for (let i=0;i<methods.length;i++) {
+        console.log("method["+methods[i]+"]");
+    }
+    for (p in object) {
+        console.log(p+"="+object[p]);
+    }
+    */
+}
