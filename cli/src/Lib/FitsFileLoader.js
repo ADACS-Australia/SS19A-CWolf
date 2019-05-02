@@ -2,10 +2,11 @@ import {convertVacuumFromAir, defaultFor, MJDtoYMD, normaliseViaShift, removeNaN
 import {getCMBCorrection, getHeliocentricVelocityCorrection} from "../Utils/helio";
 
 import * as $q from "q";
+
 import path from 'path';
 import fs from 'fs';
 import { Spectra } from './Spectra';
-import './fits'
+import './fits';
 import { globalConfig, window } from './config';
 //==================
 class FitsFileLoader {
@@ -36,12 +37,6 @@ class FitsFileLoader {
         //this.subscribed = [];
         //this.subscribedContexts = [];
     }
-    /*
-    FitsFileLoader.prototype.subscribeToInput = function(fn, context) {
-        this.subscribed.push(fn);
-        this.subscribedContexts.push(context);
-    };
-    */
     setFilename(ifilename) {
         var actualName = path.basename(ifilename);
         this.isLoading = true;

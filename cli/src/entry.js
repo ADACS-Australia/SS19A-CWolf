@@ -1,5 +1,3 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
 import commandLineArgs from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
 
@@ -52,16 +50,13 @@ const optionDefinitions = [
     { name: 'numAutomatic', type: Number, defaultValue: 3},
     { name: 'disabledTemplates', type: String, multiple: true },
     { name: 'numCPUs', type: Number, defaultValue: 0}
-  ]
-  const options = commandLineArgs(optionDefinitions);
-  //const App = ()=> <h1>Hello React</h1>;
-
-//ReactDOM.render(<App/>, document.getElementById('root'));
+  ];
+const options = commandLineArgs(optionDefinitions);
 if (options.help || !options.spectrumFile) {
     const sections = [
         {
           header: 'Marz Command Line Interface',
-          content: 'Marz auto redshift and soure type classification.'
+          content: 'Marz auto redshift and source type classification.'
         },
         {
           header: 'Synopsis',

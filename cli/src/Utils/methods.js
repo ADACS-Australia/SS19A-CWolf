@@ -1282,17 +1282,15 @@ function getMethods(obj) {
     }
     return result;
   }
-export function describe(object)
+export function describeit(object)
 {
     console.log("Description:"+object);
     //console.log("       JSON:"+JSON.stringify(object));
-    /*
     let methods = getMethods(object);
     for (let i=0;i<methods.length;i++) {
         console.log("method["+methods[i]+"]");
     }
-    for (p in object) {
-        console.log(p+"="+object[p]);
+    for (let p in object) {
+        console.log(p);
     }
-    */
 }

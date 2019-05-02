@@ -21,14 +21,6 @@ import math from 'mathjs';
  * @param radecsys - the system for RA and DEC. Set to true if FK5, false for FK4 [default to FK5: true]
  */
 export function getHeliocentricVelocityCorrection(ra, dec, jd, longitude, latitude, altitude, epoch, fk5, cmb) {
-    console.log("getHELIO ra="+ra);
-    console.log("getHELIO dec="+dec);
-    console.log("getHELIO jd="+jd);
-    console.log("getHELIO longitude="+longitude);
-    console.log("getHELIO latitude="+latitude);
-    console.log("getHELIO altitude="+altitude);
-    console.log("getHELIO epoch="+epoch);
-    console.log("getHELIO fk5="+fk5);
     longitude = defaultFor(longitude, 149.0661);
     latitude = defaultFor(latitude, -31.27704);
     altitude = defaultFor(altitude, 1164);
@@ -219,25 +211,25 @@ export function bprecess(ra, dec, epoch) {
                             [ -0.00000002710544, -0.00000242392702, +0.00000000006585, +0.01118145,     +0.99991613,    -0.00002716    ],
                             [ -0.00000001177742, +0.00000000006585,-0.00000242404995, +0.00485852,   -0.00002717,    +0.99996684] ]);
     M = math.transpose(M);
-    var A_dot = math.matrix([1.244e-3, -1.579e-3, -0.660e-3 ]); //           ;in arc seconds per century
-    var ra_rad = ra/radeg;
-    var dec_rad = dec/radeg;
-    var cosra =  Math.cos( ra_rad );
-    var sinra = Math.sin( ra_rad );
-    var cosdec = Math.cos( dec_rad );
-    var sindec = Math.sin( dec_rad );
+    const A_dot = math.matrix([1.244e-3, -1.579e-3, -0.660e-3 ]); //           ;in arc seconds per century
+    const ra_rad = ra/radeg;
+    const dec_rad = dec/radeg;
+    const cosra =  Math.cos( ra_rad );
+    const sinra = Math.sin( ra_rad );
+    const cosdec = Math.cos( dec_rad );
+    const sindec = Math.sin( dec_rad );
 
-    var dec_1950 = dec*0.0;
-    var ra_1950 = ra*0.0;
+    let dec_1950 = dec*0.0;
+    let ra_1950 = ra*0.0;
 
 
-    var A = math.matrix([ -1.62557e-6, -0.31919e-6, -0.13843e-6]);
+    let A = math.matrix([ -1.62557e-6, -0.31919e-6, -0.13843e-6]);
 
-    var R_0 = math.matrix([ cosra*cosdec, sinra*cosdec, sindec, 0.0, 0.0, 0.0 ]);
-    var R_1 = math.multiply(M, R_0);
+    const R_0 = math.matrix([ cosra*cosdec, sinra*cosdec, sindec, 0.0, 0.0, 0.0 ]);
+    const R_1 = math.multiply(M, R_0);
 
-    var r1 = math.subset(R_1, math.index([0,1,2]));
-    var r1_dot = math.subset(R_1, math.index([3,4,5]));
+    let r1 = math.subset(R_1, math.index([0,1,2]));
+    const r1_dot = math.subset(R_1, math.index([3,4,5]));
 
     r1 = math.add(r1, math.multiply(r1_dot, sec_to_radian*(epoch - 1950.0)/100.0));
     A = math.add(A,  math.multiply(A_dot, sec_to_radian*(epoch - 1950.0)/100.0));
@@ -248,14 +240,15 @@ export function bprecess(ra, dec, epoch) {
 
     var s1 = math.divide(r1,rmag), s1_dot = math.divide(r1_dot, rmag);
 
-    var s = s1;
-    for (var j = 0; j < 3; j++) {
+    let s = s1;
+    let r = null;
+    for (let j = 0; j < 3; j++) {
         r = math.subtract(math.add(s1,A), math.multiply(math.sum(math.multiply(s, A)), s));
         s = math.divide(r, rmag);
     }
 
-    var x = r.get([0]), y = r.get([1]), z = r.get([2]);
-    var r2 = x*x + y*y + z*z;
+    const x = r.get([0]), y = r.get([1]), z = r.get([2]);
+    const r2 = x*x + y*y + z*z;
     rmag = Math.sqrt( r2 );
 
     dec_1950 = math.asin( z / rmag);

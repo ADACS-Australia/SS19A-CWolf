@@ -10,7 +10,7 @@ import {defaultFor, linearScale, convertVacuumFromAir, subtractPolyFit, smoothAn
 } from '../../Utils/methods';
 import {adjustRedshift} from '../../Utils/dsp';
 let node = false;
-const templateManager = new TemplateManager(true, true);
+export const templateManager = new TemplateManager(true, true);
 
 /**
  * Handles all worker related events, including data processing and spectra matching.
@@ -298,3 +298,4 @@ function getAutoQOP(coalesced) {
     }
     return (pqop > 2 && isStar ? 6 : pqop);
 }
+
