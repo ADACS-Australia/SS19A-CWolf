@@ -1,4 +1,4 @@
-import {convertVacuumFromAir, defaultFor, MJDtoYMD, normaliseViaShift, removeNaNs} from "../Utils/methods";
+import {convertVacuumFromAir, defaultFor, MJDtoYMD, normaliseViaShift, removeNaNs, makeUnique} from "../Utils/methods";
 import {getCMBCorrection, getHeliocentricVelocityCorrection} from "../Utils/helio";
 
 import * as $q from "q";
@@ -48,13 +48,11 @@ class FitsFileLoader {
         this.actualName = actualName;
     }
     provide(q) {
-        console.log(" ========== PROVIDE ==============");
         //var q = this.$q.defer();
         this.isLoading = true;
         this.hasFitsFile = true;
         var fileData = fs.readFileSync(this.thefilename);
         this.fits = new window.astro.FITS(fileData, function () {
-            console.log("window.astro.FITS done its thing now parse");
             this.parseFitsFile(q, this.originalFilename);
             this.processorService.setPause();
         }.bind(this));
@@ -145,7 +143,7 @@ class FitsFileLoader {
             }
             this.log.debug("Have indexes to remove");
             indexesToRemove.sort();
-            indexesToRemove = indexesToRemove.unique();
+            indexesToRemove = makeUnique(indexesToRemove);
             var shouldPerformHelio = this.shouldPerformHelio();
             var shouldPerformCMB = this.shouldPerformCMB();
             this.resultGenerator.setHelio(shouldPerformHelio);

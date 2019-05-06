@@ -1,12 +1,14 @@
 
 import {expect} from "chai";
 import {broadenError, maxMedianAdjust} from "../src/Utils/methods";
+import cluster from 'cluster';
 
 var testArray = [3,5,4,2,5,-3,6,3,9,5,3,2,4,3,-10,5,3,8,7,7,2,4];
 var testArray2 = [3,5,4,2,5,-3,6,3,9,5,9e19,2,4,3,-10,5,3,8,7,7,2,4];
 var testArray3 = [3, 5, 4, 2, 5, 3, 6, 3, 9, 5, 3, 2, 4, 3, 5, 3, 8, 7, 7, 2, 4];
 const tol=0.000000000001;
 
+if (cluster.isMaster) {
 /**
  * Tests for basic algorithms
  */
@@ -33,3 +35,4 @@ describe("Tests for basic algorithms", () => {
         actual.every((x, i) => expect(x).closeTo(expected[i],tol));
     });
 });
+}

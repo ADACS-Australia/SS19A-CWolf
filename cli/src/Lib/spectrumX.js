@@ -102,14 +102,6 @@ class SpectrumX {
         this.fromDictionary(dict);
     }
     provide(q) {
-        console.log("provide id="+this.properties.id);
-        console.log("provide name="+this.properties.name);
-        console.log("provide ra="+this.properties.ra);
-        console.log("provide dec="+this.properties.dec);
-        console.log("provide magnitude="+this.properties.magnitude);
-        console.log("provide type="+this.properties.type);
-        console.log("provide helio="+this.getHelio());
-        console.log("provide cmb="+this.getCMB());
         var spectra = new Spectra(this.properties.id, this.wavelength, this.intensity, this.variance, this.sky,
              this.properties.name, this.properties.ra, this.properties.dec, this.properties.magnitude, this.properties.type, null, this.getHelio(), this.getCMB(), false);
         var spectraList = [spectra];

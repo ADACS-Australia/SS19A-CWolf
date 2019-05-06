@@ -3,11 +3,13 @@ import {getMean, getMeanMask, getStdDev, getStdDevMask, absMax, absMean} from ".
 import {linearScale, interpolate} from "../src/Utils/methods";
 import {boxCarSmooth} from "../src/Utils/methods";
 import {addAllToSorted, getList, removeAddAndFindMedian, medianFilter} from "../src/Utils/methods";
+import cluster from 'cluster';
 
 const testArray = [3,5,4,2,5,3,6,3,9,5,3,2,4,3,5,3,8,7,7,2,4];
 const testArray2 = [3,5,4,2,5,-3,6,3,9,5,3,2,4,3,-10,5,3,8,7,7,2,4];
 const tol=0.000000000001;
 
+if (cluster.isMaster) {
 /**
  * Tests for basic functions like mean and stdDev
  */
@@ -137,3 +139,4 @@ describe("Tests for the linked lists and median filter", () => {
         expect(actual).to.eql(expected);
     });
   });
+}

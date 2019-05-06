@@ -1206,6 +1206,13 @@ export function getRedshiftForNonIntegerIndex(t, index) {
 export function round(num, dec) {
     return Math.round(num * Math.pow(10, dec)) / Math.pow(10, dec);
 }
+export function makeUnique(inarray) {
+    const a = [];
+    for (let i=0, l=inarray.length; i<l; i++)
+        if (a.indexOf(inarray[i]) === -1)
+            a.push(inarray[i]);
+    return a;
+}
 /**
  * Clips the input array at the specific std range. Modifies array in place.
  * @param variance - the array to clip

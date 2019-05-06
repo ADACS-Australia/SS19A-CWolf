@@ -10,7 +10,7 @@
     "serve": "node ./dist/entry.js",
     "start:webpack": "webpack-dev-server --mode development --open",
     "build:webpack": "npm run prebuild; webpack --mode production",
-    "test": "mocha --require @babel/register ./dist/basicTests.js ./dist/algorithmTests.js ./dist/translationTests.js  ./dist/generatedSpectrumTests.js ./dist/verificationTests.js"
+    "test": "mocha --require @babel/register ./dist/tests.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",

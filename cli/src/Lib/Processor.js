@@ -27,6 +27,7 @@ export class Processor {
         }
     }
     respond(e) {
+        console.log("Processor responding and resolving promise");
         this.promise.resolve(e);
         this.promise = null;
         if (this.flaggedForDeletion) {

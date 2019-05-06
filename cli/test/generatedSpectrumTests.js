@@ -2,6 +2,7 @@ import {expect} from "chai";
 import {defaultFor, linearScale, round, range} from "../src/Utils/methods";
 import { handleEvent} from '../src/Lib/worker/workerMethods'; 
 import { templateManager } from '../src/Lib/worker/workerMethods'
+import cluster from 'cluster';
 const node = true;
 
 //var dependencies = ['../js/methods', '../js/workerMethods', '../js/templates', '../js/spectralLines', '../js/config', './test'];
@@ -91,6 +92,7 @@ var dummyTemplate = {
 };
 const pZs = linearScale(dummyTemplate.z_start + edgeThreshold, dummyTemplate.z_end - edgeThreshold, 50);
 
+if (cluster.isMaster) {
 describe("Generated Spectrum Test", function () {
     it("Dummy Precision Template Permutation", () => {
         const original = templateManager.originalTemplates;
@@ -119,3 +121,4 @@ describe("Generated Spectrum Test", function () {
 
     });
 });
+}

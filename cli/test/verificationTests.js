@@ -1,9 +1,11 @@
 import {expect} from "chai";
 import {getMean, getMeanMask, getStdDev, getStdDevMask, absMax, absMean, defaultFor, linearScale, interpolate, round, range} from "../src/Utils/methods";
 import TemplateManager from "../src/Lib/TemplateManager";
-import { handleEvent } from '../src/Lib/worker/workerMethods'; 
+import { handleEvent } from '../src/Lib/worker/workerMethods';
+import cluster from 'cluster';
 var node = true;
 
+if (cluster.isMaster) {
 //console.log("Loading dependencies for verification");
 //var dependencies = ['../js/methods', '../js/workerMethods', '../js/templates', '../js/spectralLines', '../js/config', './test'];
 //for (var i = 0; i < dependencies.length; i++) {
@@ -128,3 +130,4 @@ for (let i = 0; i < templates.length; i++) {
     
 }
 });
+}

@@ -7,6 +7,7 @@ import { handleEvent } from './Lib/worker/workerMethods';
 import path from 'path';
 import fs from 'fs';
 import cluster from 'cluster';
+import {makeUnique} from './Lib/methods';
 import './js/extension';
 import minimist from 'minimist';
 import os from 'os';
@@ -157,9 +158,7 @@ if (options.help || !options.spectrumFile) {
                 queue.push(path.normalize(filenames[i]));
             }
         }
-        queue = queue.unique();
-        //debug("Queue contains:");
-        //debug(queue);
+        queue = makeUnique(queue);
         var globalStartTime = new Date();
     
         struct.init(workers, log, argv);
@@ -190,6 +189,7 @@ if (options.help || !options.spectrumFile) {
     
     } else {
         process.on('message', function(event) {
+            console.log("worker go message "+event);
             let result = handleEvent(event);
             process.send({data: result});
         });

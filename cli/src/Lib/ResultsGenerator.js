@@ -10,7 +10,6 @@ class ResultsGenerator {
         this.cmb = false;
     }
     setHelio(val) {
-        console.log("SET HELIO NOW "+val);
         this.helio = val;
     }
     setCMB(val) {

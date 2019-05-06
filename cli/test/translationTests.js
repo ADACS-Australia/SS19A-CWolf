@@ -1,8 +1,10 @@
 import { expect } from "chai";
 import math from "mathjs";
 import { getHeliocentricVelocityCorrection, precess, bprecess, celestialToGalactic, ct2lst, premat } from "../src/Utils/helio";
+import cluster from 'cluster';
 const tol = 0.000001;
 
+if (cluster.isMaster) {
 /**
  * Tests for heliocentric corrections
  */
@@ -215,53 +217,44 @@ describe("Tests for ct2lst", () => {
     });
 });
 
-/*
+
 describe("Tests for premat", () => {
+
     it("premat test (1)", () => {
-        const actual = premat(2000.0, 2000.0, false);
-        const expected = math.matrix([[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]]);
-        console.log("actual="+actual);
+        const actual = premat(2000.0, 2000.0, false).toArray();
+        const expected = math.matrix([[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]]).toArray();
         for (let p in actual) {
-            console.log("p="+p);
-            p.every((x, i) => expect(x).closeTo(expected[0][i], tol));
+            actual[p].every((x, i) => expect(x).closeTo(expected[p][i], tol));
         }
-        expect(actual).to.eql(expected);
     });
-    */
-    /*
 
+    it("premat test (2)", () => {
+        const actual = premat(2000.0, 2000.0, true).toArray();
+        const expected = math.matrix([[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]]).toArray();
+        for (let p in actual) {
+            actual[p].every((x, i) => expect(x).closeTo(expected[p][i], tol));
+        }
+    });
 
+    it("premat test (3)", () => {
+        const actual = premat(1990.0, 2010.0, false).toArray();
+        const expected = math.transpose(math.matrix([[0.9999881106223780,0.0044723266234603,0.0019434269885729],
+            [-0.0044723266237506,0.9999899990878337,-0.0000043456965697],
+            [-0.0019434269879047, -0.0000043459953602, 0.9999981115345443]])).toArray();
+        for (let p in actual) {
+            actual[p].every((x, i) => expect(x).closeTo(expected[p][i], tol));
+        }
+    });
 
-
-
-
-
-
-
-
-tests.addTest(new Test("premat test (1)",
-    function() {
-        return premat(2000.0, 2000.0, false);
-    }).setExpectedEquals(math.matrix([[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]])));
-
-tests.addTest(new Test("premat test (2)",
-    function() {
-        return premat(2000.0, 2000.0, true);
-    }).setExpectedEquals(math.matrix([[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]])));
-
-tests.addTest(new Test("premat test (3)",
-    function() {
-        return premat(1990.0, 2010.0, false);
-    }).setExpectedEquals(math.transpose(math.matrix([[0.9999881106223780,0.0044723266234603,0.0019434269885729],
-        [-0.0044723266237506,0.9999899990878337,-0.0000043456965697],
-        [-0.0019434269879047, -0.0000043459953602, 0.9999981115345443]]))));
-
-tests.addTest(new Test("premat test (4)",
-    function() {
-        return premat(1990.0, 2010.0, true);
-    }).setExpectedEquals(math.transpose(math.matrix([[0.9999881164478237, 0.0044712259919042, 0.0019429619818773],
-        [-0.0044712259921946, 0.9999900040096701, -0.0000043435874016],
-        [-0.0019429619812091, -0.0000043438863308, 0.9999981124381536]]))));
-
-*/
-//});
+    it("premat test (4)", () => {
+        const actual = premat(1990.0, 2010.0, true).toArray();
+        const expected = math.transpose(math.matrix([[0.9999881164478237, 0.0044712259919042, 0.0019429619818773],
+            [-0.0044712259921946, 0.9999900040096701, -0.0000043435874016],
+            [-0.0019429619812091, -0.0000043438863308, 0.9999981124381536]])).toArray();
+        for (let p in actual) {
+            actual[p].every((x, i) => expect(x).closeTo(expected[p][i], tol));
+        }
+    });
+   
+});
+    }

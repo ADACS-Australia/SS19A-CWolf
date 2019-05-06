@@ -1,15 +1,11 @@
 import { expect } from "chai";
-import commandLineArgs from 'command-line-args';
 
 import defaults from '../src/autoConfig';
 import {default as struct} from '../src/js/nodeMethods';
 import { handleEvent } from '../src/Lib/worker/workerMethods'; 
 import path from 'path';
-import fs from 'fs';
 import cluster from 'cluster';
-import '../src/js/extension';
-import minimist from 'minimist';
-import os from 'os';
+//import '../src/js/extension';
 import * as $q from "q";
 // iojs head script to run marz from a command line interface
 
@@ -51,7 +47,6 @@ const optionDefinitions = [
     { name: 'disabledTemplates', type: String, multiple: true },
     { name: 'numCPUs', type: Number, defaultValue: 0}
   ];
-//const options = commandLineArgs(optionDefinitions);
 {
 
     var debugFlag = false;
@@ -68,154 +63,150 @@ const optionDefinitions = [
     args["numCPUs"] = 0;
     let argv = defaults;
     argv["_"] = "";
+    const redshiftThreshold=1.5e-5;
     //details("ARGS",args);
     //details("ARGV",argv);
     if (cluster.isMaster) {
-    
-    
-        var n = argv['numCPUs'] || Math.max(1, os.cpus().length - 1);
-    
-        var workers = [];
-        for (var i = 0; i < n; i++) {
-            workers.push(cluster.fork());
-        }
+        const workers = [cluster.fork()];
     
         var globalStartTime = new Date();
+        struct.init(workers, log, argv);
 
         //
-        describe("FITS Tests", () => {
+        describe("FITS Tests", function () {
+            this.timeout(50000);
             it("FITS Quasar\tlinear header air wavelength, with sky, no helio, no cmb", () => {
-                var q = $q.defer();
-                argv["_"] = "./testFits/quasarLinearSkyAirNoHelio.fits";
-                struct.init(workers, log, argv);
+                const q = $q.defer();
+                //argv["_"] = "./testFits/quasarLinearSkyAirNoHelio.fits";
                 struct.runFitsFile("./testFits/quasarLinearSkyAirNoHelio.fits", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(spectra.getFinalRedshift());
+                    const spectra = res[0];
+                    expect(spectra.getFinalRedshift()).closeTo(2.00303,redshiftThreshold);
+                    //q.resolve();
+                });
+            });
+            it("FITS Quasar\tlinear header air wavelength, with sky, no helio, no cmb", () => {
+                const q = $q.defer();
+                struct.runFitsFile("./testFits/quasarLinearSkyAirNoHelio.fits", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(spectra.getFinalRedshift()).closeTo(2.00303, redshiftThreshold);
+                    //q.resolve();
+                });
+            });
+            it("JSON Quasar\tlinear header air wavelength, with sky, no helio, no cmb", () => {
+                const q = $q.defer();
+                struct.runJSONFile("./testFits/quasarLinearSkyAirNoHelio.json", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(spectra.getFinalRedshift()).closeTo(2.00303, redshiftThreshold);
+                    //q.resolve();
+                });
+            });
+            it("FITS ELG\tlinear header air wavelength, with sky, no helio, no cmb", () => {
+                const q = $q.defer();
+                struct.runFitsFile("./testFits/emlLinearSkyAirNoHelio.fits", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(spectra.getFinalRedshift()).closeTo(0.11245, redshiftThreshold);
+                    //q.resolve();
+                });
+            });
+            it("JSON ELG\tlinear header air wavelength, with sky, no helio, no cmb", () => {
+                const q = $q.defer();
+                struct.runJSONFile("./testFits/emlLinearSkyAirNoHelio.json", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(spectra.getFinalRedshift()).closeTo(0.11245, redshiftThreshold);
+                    //q.resolve();
+                });
+            });
+            it("JSON ELG\tlinear header air wavelength, with sky, helio, no cmb", () => {
+                const q = $q.defer();
+                struct.runJSONFile("./testFits/emlLinearSkyAirHelio.json", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps)) - 1).closeTo(0.11245, redshiftThreshold);
+                    //q.resolve();
+                });
+            });
+            it("FITS ELG\tlinear header air wavelength, with sky, helio, no cmb", () => {
+                const q = $q.defer();
+                struct.runFitsFile("./testFits/emlLinearSkyAirHelio.fits", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps)) - 1).closeTo(0.11245, redshiftThreshold);
+                    //q.resolve();
                 });
             });
             /*
-            tests.addTest(new Test("FITS Quasar\tlinear header air wavelength, with sky, no helio, no cmb", function() {
-                var q = $q.defer();
-                struct.runFitsFile("./testFits/quasarLinearSkyAirNoHelio.fits", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(spectra.getFinalRedshift());
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(2.00303, redshiftThreshold));
-            tests.addTest(new Test("JSON Quasar\tlinear header air wavelength, with sky, no helio, no cmb", function() {
-                var q = $q.defer();
-                struct.runJSONFile("./testFits/quasarLinearSkyAirNoHelio.json", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(spectra.getFinalRedshift());
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(2.00303, redshiftThreshold));
-            tests.addTest(new Test("FITS ELG\tlinear header air wavelength, with sky, no helio, no cmb", function() {
-                var q = $q.defer();
-                struct.runFitsFile("./testFits/emlLinearSkyAirNoHelio.fits", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(spectra.getFinalRedshift());
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
-            tests.addTest(new Test("JSON ELG\tlinear header air wavelength, with sky, no helio, no cmb", function() {
-                var q = $q.defer();
-                struct.runJSONFile("./testFits/emlLinearSkyAirNoHelio.json", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(spectra.getFinalRedshift());
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
-        
-            tests.addTest(new Test("JSON ELG\tlinear header air wavelength, with sky, helio, no cmb", function() {
-                var q = $q.defer();
-                struct.runJSONFile("./testFits/emlLinearSkyAirHelio.json", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps)) - 1);
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
-            tests.addTest(new Test("FITS ELG\tlinear header air wavelength, with sky, helio, no cmb", function() {
-                var q = $q.defer();
-                struct.runFitsFile("./testFits/emlLinearSkyAirHelio.fits", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps)) - 1);
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
-            tests.addTest(new Test("FITS ELG\tlinear header air wavelength, with sky, helio, cmb", function() {
-                var q = $q.defer();
+            it("FITS ELG\tlinear header air wavelength, with sky, helio, cmb", () => {
+                const q = $q.defer();
                 struct.runFitsFile("./testFits/emlLinearSkyAirHelioCMB.fits", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps) * (1 - spectra.cmb/ckps)) - 1);
+                    console.log("!!!!!!!!!!!!!!!!!!!!!!!!res="+res);
+                    //const spectra = res[0];
+                    //expect(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps) * (1 - spectra.cmb/ckps)) - 1).closeTo(0.11245, redshiftThreshold);
+                    //q.resolve();
                 });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
-            tests.addTest(new Test("JSON ELG\tlinear header air wavelength, with sky, helio, cmb", function() {
-                var q = $q.defer();
-                struct.runJSONFile("./testFits/emlLinearSkyAirHelioCMB.json", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps) * (1 - spectra.cmb/ckps)) - 1);
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
-            tests.addTest(new Test("FITS ELG\tlinear header vacuum wavelength, no sky, no helio, no cmb", function() {
-                var q = $q.defer();
-                struct.runFitsFile("./testFits/emlLinearVacuumNoHelio.fits", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(spectra.getFinalRedshift());
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
-            tests.addTest(new Test("JSON ELG\tlinear header vacuum wavelength, no sky, no helio, no cmb", function() {
-                var q = $q.defer();
-                struct.runJSONFile("./testFits/emlLinearVacuumNoHelio.json", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(spectra.getFinalRedshift());
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
-            tests.addTest(new Test("FITS ELG\tlog array vacuum wavelength, no sky, no helio, no cmb", function() {
-                var q = $q.defer();
-                struct.runFitsFile("./testFits/emlLogVacuumNoHelio.fits", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(spectra.getFinalRedshift());
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
-            tests.addTest(new Test("JSON ELG\tlog array vacuum wavelength, no sky, no helio, no cmb", function() {
-                var q = $q.defer();
-                struct.runJSONFile("./testFits/emlLogVacuumNoHelio.json", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(spectra.getFinalRedshift());
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
-            tests.addTest(new Test("FITS ELG\tlog array vacuum wavelength, no sky, helio, cmb", function() {
-                var q = $q.defer();
-                struct.runFitsFile("./testFits/emlLogVacuumHelioCMB.fits", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps) * (1 - spectra.cmb/ckps)) - 1);
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
-            tests.addTest(new Test("JSON ELG\tlog array vacuum wavelength, no sky, helio, cmb", function() {
-                var q = $q.defer();
-                struct.runJSONFile("./testFits/emlLogVacuumHelioCMB.json", null, debug, false).then(function(res) {
-                    var spectra = res[0];
-                    q.resolve(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps) * (1 - spectra.cmb/ckps)) - 1);
-                });
-                return q.promise;
-            }).setAbsoluteDeviationFromValue(0.11245, redshiftThreshold));
+            });
             */
+            it("JSON ELG\tlinear header air wavelength, with sky, helio, cmb", () => {
+                const q = $q.defer();
+                struct.runJSONFile("./testFits/emlLinearSkyAirHelioCMB.json", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps) * (1 - spectra.cmb/ckps)) - 1).closeTo(0.11245, redshiftThreshold);
+                    //q.resolve();
+                });
+            });
+            it("FITS ELG\tlinear header vacuum wavelength, no sky, no helio, no cmb", () => {
+                const q = $q.defer();
+                struct.runFitsFile("./testFits/emlLinearVacuumNoHelio.fits", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(spectra.getFinalRedshift()).closeTo(0.11245, redshiftThreshold);
+                    //q.resolve();
+                });
+            });
+            it("JSON ELG\tlinear header vacuum wavelength, no sky, no helio, no cmb", () => {
+                const q = $q.defer();
+                struct.runJSONFile("./testFits/emlLinearVacuumNoHelio.json", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(spectra.getFinalRedshift()).closeTo(0.11245, redshiftThreshold);
+                    //q.resolve();
+                });
+            });
+            it("FITS ELG\tlog array vacuum wavelength, no sky, no helio, no cmb", () => {
+                const q = $q.defer();
+                struct.runFitsFile("./testFits/emlLogVacuumNoHelio.fits", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(spectra.getFinalRedshift()).closeTo(0.11245, redshiftThreshold);
+                    //q.resolve();
+                });
+            });
+            it("JSON ELG\tlog array vacuum wavelength, no sky, no helio, no cmb", () => {
+                const q = $q.defer();
+                struct.runJSONFile("./testFits/emlLogVacuumNoHelio.json", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(spectra.getFinalRedshift()).closeTo(0.11245, redshiftThreshold);
+                    //q.resolve();
+                });
+            });
+            it("FITS ELG\tlog array vacuum wavelength, no sky, helio, cmb", () => {
+                const q = $q.defer();
+                struct.runFitsFile("./testFits/emlLogVacuumHelioCMB.fits", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps) * (1 - spectra.cmb/ckps)) - 1).closeTo(0.11245, redshiftThreshold);
+                    q.resolve();
+                });
+            });
+            it("JSON ELG\tlog array vacuum wavelength, no sky, helio, cmb", () => {
+                const q = $q.defer();
+                struct.runJSONFile("./testFits/emlLogVacuumHelioCMB.json", null, debug, false).then(function(res) {
+                    const spectra = res[0];
+                    expect(((1 + spectra.getFinalRedshift()) * (1 - spectra.helio/ckps) * (1 - spectra.cmb/ckps)) - 1).closeTo(0.11245, redshiftThreshold);
+                    q.resolve();
+                });
+            });
           });
         //
-    
     
     } else {
         process.on('message', function(event) {
             let result = handleEvent(event);
             process.send({data: result});
+            this.disconnect();
         });
     }
 }
