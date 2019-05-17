@@ -15,62 +15,11 @@ class SpectraController {
     constructor(store, resultsManager) {
         this.store = store;
 
-        this.downloadAutomaticallyCookie = "downloadAutomatically";
-        this.downloadAutomatically = CookieManager.registerCookieValue(this.downloadAutomaticallyCookie, false);
-        this.saveAutomaticallyCookie = "saveInBackground";
-        this.saveAutomatically = CookieManager.registerCookieValue(this.saveAutomaticallyCookie, true);
-        this.assignAutoQOPsCookie = "assignAutoQOPs";
-
         this.spectraManager = new SpectraManager(store);
         this.qualityManager = new QualityManager(store);
         this.localStorageManager = new LocalStorageManager(store);
         this.resultsManager = resultsManager;
-
-        const assignAutoQOPs = CookieManager.registerCookieValue(this.assignAutoQOPsCookie, false);
-        this.spectraManager.setAssignAutoQOPs(assignAutoQOPs);
     }
-    
-    setDownloadAutomaticallyDefault() {
-        this.setDownloadAutomatically(CookieManager.setToDefault(this.downloadAutomaticallyCookie));
-    };
-
-    setSaveAutomaticallyDefault() {
-        this.setSaveAutomatically(CookieManager.setToDefault(this.saveAutomaticallyCookie));
-    };
-
-    setDefaultAssignAutoQOPs() {
-        this.setAssignAutoQOPs(CookieManager.setToDefault(this.assignAutoQOPsCookie));
-    };
-
-    setDownloadAutomatically(value) {
-        this.downloadAutomatically = value;
-        CookieManager.setCookie(this.downloadAutomaticallyCookie, this.downloadAutomatically);
-    };
-
-    setAssignAutoQOPs(value, cookieIt) {
-        cookieIt = defaultFor(cookieIt, true);
-        this.spectraManager.setAssignAutoQOPs(value);
-        if (cookieIt) {
-            CookieManager.setCookie(this.assignAutoQOPsCookie, value);
-        }
-    };
-
-    getAssignAutoQOPs() {
-        return this.spectraManager.autoQOPs;
-    };
-
-    getDownloadAutomatically() {
-        return this.downloadAutomatically;
-    };
-
-    setSaveAutomatically(value) {
-        this.saveAutomatically = value;
-        CookieManager.setCookie(this.saveAutomaticallyCookie, this.saveAutomatically);
-    };
-
-    getSaveAutomatically() {
-        return this.saveAutomatically;
-    };
 
     hasSpectra() {
         return this.getData().spectra.length > 0;

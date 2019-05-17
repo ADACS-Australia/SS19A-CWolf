@@ -7,7 +7,8 @@ import {
 } from "../Detailed/Actions";
 
 class UIStore {
-    constructor() {
+    constructor(store) {
+        this.store = store;
     }
 
     key() {

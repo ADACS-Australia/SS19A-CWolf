@@ -138,3 +138,15 @@ p.fill-height {
 .bold {
   font-weight: bold;
 }
+
+.settings-p {
+  display: inline;
+  vertical-align: top;
+  line-height: 35px;
+  padding-left: 20px;
+}
+
+.settings-input {
+  width: 100px;
+  display: inline;
+}

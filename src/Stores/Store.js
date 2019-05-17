@@ -5,6 +5,7 @@ import PersonalStore from "./Personal/PersonalStore";
 import DataStore from "./Data/DataStore";
 import DetailedStore from "./Detailed/DetailedStore";
 import * as Enumerable from "linq";
+import SettingsStore from "./Settings/SettingsStore";
 
 class Store extends ReduceStore {
     constructor() {
@@ -16,15 +17,17 @@ class Store extends ReduceStore {
         this.stores = Enumerable.from([
             new UIStore(this),
             new DataStore(this),
-            new DetailedStore(this)
+            new DetailedStore(this),
         ]);
 
         // Create any singleton objects
         this.personalStore = new PersonalStore(this);
+        this.settingsStore = new SettingsStore(this);
 
         // Create the resulting initial dictionary state object
         const result = {
             personal: this.personalStore.getInitialState(),
+            settings: this.settingsStore.getInitialState(),
             index: 0,
             s: [{}]
         };
@@ -40,9 +43,10 @@ class Store extends ReduceStore {
 
     reduce(state, action) {
         // First reduce singletons
-        this.personalStore.reduce(state, action);
+        state.personal = this.personalStore.reduce(state.personal, action);
+        state.settings = this.settingsStore.reduce(state.settings, action);
 
-        // Then reduce any indexed spectra
+        // Then reduce any indexed stores
         this.stores.forEach(s => {
             state.s[state.index][s.key()] = s.reduce(state.s[state.index][s.key()], action);
         });

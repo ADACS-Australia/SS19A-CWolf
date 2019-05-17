@@ -25,6 +25,7 @@ function getState() {
         detailed: state.s[index].detailed,
         data: state.s[index].data,
         ui: state.s[index].ui,
+        settings: state.settings
     }
 }
 

@@ -2,7 +2,8 @@ import {PersonalActionTypes} from "./Actions";
 import CookieManager from "../../Lib/CookieManager";
 
 class PersonalStore {
-    constructor() {
+    constructor(store) {
+        this.store = store;
     }
 
     key() {
