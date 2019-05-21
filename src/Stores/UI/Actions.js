@@ -13,6 +13,16 @@ const UIActionTypes = {
     // TODO: refactor these somewhere more relevant
     UPDATE_NUMBER_PROCESSED: "UIActionTypes.UPDATE_NUMBER_PROCESSED",
     UPDATE_NUMBER_MATCHED: "UIActionTypes.UPDATE_NUMBER_MATCHED",
+    //
+    SET_SMOOTH: "UIActionTypes.SET_SMOOTH",
+    SET_TEMPLATE_MATCHED: "UIActionTypes.SET_TEMPLATE_MATCHED",
+    SET_CONTINUUM: "UIActionTypes.SET_CONTINUUM",
+    SET_RANGE_INDEX: "UIActionTypes.SET_RANGE_INDEX",
+    SELECT_MATCH: "UIActionTypes.SELECT_MATCH",
+    TOGGLE_SPECTRAL_LINES: "UIActionTypes.TOGGLE_SPECTRAL_LINES",
+    PREVIOUS_SPECTRAL_LINE: "UIActionTypes.PREVIOUS_SPECTRAL_LINE",
+    NEXT_SPECTRAL_LINE: "UIActionTypes.NEXT_SPECTRAL_LINE",
+    CLICK_SPECTRAL_LINE: "UIActionTypes.CLICK_SPECTRAL_LINE",
 };
 
 function setMerge(merge) {
@@ -88,6 +98,67 @@ function updateNumberMatched() {
     })
 }
 
+function setSmooth(smoothValue) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_SMOOTH,
+        smoothValue: smoothValue
+    })
+}
+
+function setTemplateMatched(matched) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_TEMPLATE_MATCHED,
+        matched: matched
+    })
+}
+
+function setContinuum(continuum) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_CONTINUUM,
+        continuum: continuum
+    })
+}
+
+function setRangeIndex(rangeIndex) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_RANGE_INDEX,
+        rangeIndex: rangeIndex
+    })
+}
+
+function selectMatch(match) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SELECT_MATCH,
+        redshift: match.z,
+        templateId: match.templateId
+    })
+}
+
+function toggleSpectralLines() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.TOGGLE_SPECTRAL_LINES,
+    })
+}
+
+function previousSpectralLine() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.PREVIOUS_SPECTRAL_LINE,
+    })
+}
+
+function nextSpectralLine() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.NEXT_SPECTRAL_LINE,
+    })
+}
+
+function clickSpectralLine(id) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.CLICK_SPECTRAL_LINE,
+        id: id,
+    })
+}
+
 export {
     setMerge,
     updateTemplateOffset,
@@ -100,5 +171,14 @@ export {
     resetToManual,
     updateNumberMatched,
     updateNumberProcessed,
+    setSmooth,
+    setTemplateMatched,
+    setContinuum,
+    setRangeIndex,
+    selectMatch,
+    toggleSpectralLines,
+    previousSpectralLine,
+    nextSpectralLine,
+    clickSpectralLine,
     UIActionTypes,
 };

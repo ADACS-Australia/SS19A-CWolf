@@ -1,13 +1,13 @@
 import ProcessorManager from "./ProcessorManager";
 import CookieManager from "./CookieManager";
-import TemplateManager from "./TemplateManager";
 import SpectraController from "./SpectraController";
+import {templateManager} from "./TemplateManager";
 
 class Processor {
     constructor(store, resultsManager) {
         this.processorManager = new ProcessorManager(store);
         // todo: Maybe process should be false
-        this.templateManager = new TemplateManager();
+        this.templateManager = templateManager;
 
         // todo: refactor to top
         this.spectraManager = new SpectraController(store, resultsManager);

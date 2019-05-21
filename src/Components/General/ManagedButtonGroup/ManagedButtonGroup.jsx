@@ -16,6 +16,9 @@ class ManagedButtonGroup extends React.Component {
         this.setState({
             value: i
         });
+
+        if (this.props.onChange)
+            this.props.onChange(c.props.value)
     }
 
     render() {

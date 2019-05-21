@@ -13,6 +13,7 @@ class SettingsStore {
         this.assignAutoQOPsCookie = "assignAutoQOPs";
         this.coreCookie = "numCores";
         this.processTogetherCookie = "processTogether";
+        this.numAutomaticCookie = "numAutomatic";
     }
 
     key() {
@@ -25,7 +26,8 @@ class SettingsStore {
             saveAutomatically: CookieManager.registerCookieValue(this.saveAutomaticallyCookie, true),
             assignAutoQOPs: CookieManager.registerCookieValue(this.assignAutoQOPsCookie, false),
             processTogether: CookieManager.registerCookieValue(this.processTogetherCookie, true),
-            numberProcessors: CookieManager.registerCookieValue(this.coreCookie, SettingsStore.getDefaultNumberProcessors())
+            numberProcessors: CookieManager.registerCookieValue(this.coreCookie, SettingsStore.getDefaultNumberProcessors()),
+            numAutomatic: CookieManager.registerCookieValue(this.numAutomaticCookie, 1),
         }
     }
 
@@ -117,6 +119,29 @@ class SettingsStore {
                     processTogether: process_together_value
                 };
 
+            case SettingsActionTypes.UPDATE_NUM_AUTOMATIC:
+                let numAutomatic = action.numAutomatic;
+                if (numAutomatic < 0) {
+                    numAutomatic = 0;
+                } else if (numAutomatic > 5) {
+                    numAutomatic = 5;
+                }
+
+                CookieManager.setCookie(this.numAutomaticCookie, numAutomatic);
+                this.updateNumAutomatic(numAutomatic);
+                return {
+                    ...state,
+                    numAutomatic: numAutomatic
+                };
+
+            case SettingsActionTypes.RESET_NUM_AUTOMATIC:
+                const numAutomaticValue = CookieManager.setToDefault(this.numAutomaticCookie);
+                this.updateNumAutomatic(numAutomaticValue);
+                return {
+                    ...state,
+                    numAutomatic: numAutomaticValue
+                };
+
             case StoreActionTypes.STORE_READY:
                 // Set the auto QOP value for any spectra
                 this.updateAutoQOPs(state.assignAutoQOPs);
@@ -126,6 +151,9 @@ class SettingsStore {
 
                 // Set the default number of processors
                 this.updateNumberProcessors(state.numberProcessors);
+
+                // Set the default number of automatic
+                this.updateNumAutomatic(state.numAutomatic);
                 return state;
 
             default:
@@ -161,6 +189,12 @@ class SettingsStore {
     updateNumberProcessors(value) {
         Enumerable.from(this.store.getState().s).forEach((s) => {
             s.data.processorService.processorManager.setNumberProcessors(value)
+        });
+    }
+
+    updateNumAutomatic(value) {
+        Enumerable.from(this.store.getState().s).forEach((s) => {
+            s.data.resultsManager.resultsGenerator.setNumAutomatic(value)
         });
     }
 }

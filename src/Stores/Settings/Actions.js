@@ -11,7 +11,9 @@ const SettingsActionTypes = {
     UPDATE_PROCESS_TOGETHER: 'SettingsActionTypes.UPDATE_PROCESS_TOGETHER',
     RESET_NUMBER_PROCESSORS: 'SettingsActionTypes.RESET_NUMBER_PROCESSORS',
     UPDATE_NUMBER_PROCESSORS: 'SettingsActionTypes.UPDATE_NUMBER_PROCESSORS',
-}
+    RESET_NUM_AUTOMATIC: 'SettingsActionTypes.RESET_NUM_AUTOMATIC',
+    UPDATE_NUM_AUTOMATIC: 'SettingsActionTypes.UPDATE_NUM_AUTOMATIC',
+};
 
 function updateDownloadAutomatically(downloadAutomatically) {
     AppDispatcher.dispatch({
@@ -79,6 +81,28 @@ function resetNumberProcessors() {
     })
 }
 
+function updateNumAutomatic(numAutomatic) {
+    AppDispatcher.dispatch({
+        type: SettingsActionTypes.UPDATE_NUM_AUTOMATIC,
+        numAutomatic: parseInt(numAutomatic)
+    })
+}
+
+function resetNumAutomatic() {
+    AppDispatcher.dispatch({
+        type: SettingsActionTypes.RESET_NUM_AUTOMATIC
+    })
+}
+
+function resetToDefaults() {
+    resetDownloadAutomatically();
+    resetSaveAutomatically();
+    resetNumberProcessors();
+    resetAssignAutoQOPs();
+    resetProcessTogether();
+    resetNumAutomatic();
+}
+
 export {
     updateDownloadAutomatically,
     resetDownloadAutomatically,
@@ -90,5 +114,8 @@ export {
     resetProcessTogether,
     updateNumberProcessors,
     resetNumberProcessors,
+    updateNumAutomatic,
+    resetNumAutomatic,
+    resetToDefaults,
     SettingsActionTypes
 };

@@ -3,8 +3,9 @@ import ToggleButton from "../General/ToggleButton/ToggleButton";
 import ManagedToggleButton from "../General/ToggleButton/ManagedToggleButton";
 import {setProcessed} from "../../Stores/UI/Actions";
 import {
+    resetToDefaults,
     updateAssignAutoQOPs,
-    updateDownloadAutomatically,
+    updateDownloadAutomatically, updateNumAutomatic,
     updateNumberProcessors,
     updateProcessTogether, updateSaveAutomatically
 } from "../../Stores/Settings/Actions";
@@ -31,7 +32,7 @@ class Settings extends React.Component {
                                 <label htmlFor="auto" className="col-sm-3 control-label">Assign AutoQOPs</label>
                                 <div className="col-sm-9">
                                     <ManagedToggleButton
-                                        default={this.props.settings.assignAutoQOPs}
+                                        value={this.props.settings.assignAutoQOPs}
                                         on={"On"}
                                         off={"Off"}
                                         handle={" "}
@@ -46,7 +47,7 @@ class Settings extends React.Component {
                                     Automatically</label>
                                 <div className="col-sm-9">
                                     <ManagedToggleButton
-                                        default={this.props.settings.downloadAutomatically}
+                                        value={this.props.settings.downloadAutomatically}
                                         on={"On"}
                                         off={"Off"}
                                         handle={" "}
@@ -76,7 +77,7 @@ class Settings extends React.Component {
                                     together</label>
                                 <div className="col-sm-9">
                                     <ManagedToggleButton
-                                        default={this.props.settings.processTogether}
+                                        value={this.props.settings.processTogether}
                                         on={"On"}
                                         off={"Off"}
                                         handle={" "}
@@ -96,7 +97,7 @@ class Settings extends React.Component {
                                 background</label>
                             <div className="col-sm-9">
                                 <ManagedToggleButton
-                                    default={this.props.settings.saveAutomatically}
+                                    value={this.props.settings.saveAutomatically}
                                     on={"On"}
                                     off={"Off"}
                                     handle={" "}
@@ -113,6 +114,7 @@ class Settings extends React.Component {
                                 output in <code>.mz</code> files</label>
                             <div className="col-sm-9">
                                 <input type="number" className="form-control settings-input"
+                                       value={this.props.settings.numAutomatic}
                                        id="numAuto" min="0"
                                        max="5" required={true} onChange={e => updateNumAutomatic(e.target.value)} />
                                     <p className="settings-p">Must
@@ -127,13 +129,16 @@ class Settings extends React.Component {
                     <hr/>
                     <p>Be careful with these buttons. They are not reversible, and if you haven't downloaded your
                         results, you will lose work.</p>
-                {/*    <button className="btn btn-warning" style="margin-right: 20px;" ng-if="fileLoaded()"*/}
-                {/*            ng-click="clearCurrentFile()" tooltip="Cleared!" tooltip-trigger="focus"*/}
-                {/*            tooltip-placement="bottom">Clear ALL results for this file*/}
-                {/*    </button>*/}
-                {/*    <button className="btn btn-danger" ng-click="clearAll()" tooltip="Cleared!" tooltip-trigger="focus"*/}
-                {/*            tooltip-placement="bottom">Clear all internally saved results for ALL files*/}
-                {/*    </button>*/}
+                    <p>
+                        TODO: How do we want to clear individual files now that we can load multiple?
+                    </p>
+                    {/*<button className="btn btn-warning clear" ng-if="fileLoaded()"*/}
+                    {/*        onClick={() => clearCurrentFile()} tooltip="Cleared!" tooltip-trigger="focus"*/}
+                    {/*        tooltip-placement="bottom">Clear ALL results for ALL files*/}
+                    {/*</button>*/}
+                    <button className="btn btn-danger" onClick={() => clearAll()} tooltip="Cleared!" tooltip-trigger="focus"
+                            tooltip-placement="bottom">Clear all internally saved results for ALL files
+                    </button>
                 </div>
             </div>
         )

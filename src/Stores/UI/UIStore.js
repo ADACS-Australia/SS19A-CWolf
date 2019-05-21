@@ -5,6 +5,7 @@ import {
     setShouldUpdateTemplateData,
     setShouldUpdateXcorData
 } from "../Detailed/Actions";
+import {spectraLineService} from "../../Components/General/DetailedCanvas/spectralLines";
 
 class UIStore {
     constructor(store) {
@@ -51,7 +52,7 @@ class UIStore {
                 rangeIndex: 0,
                 ranges: [100, 99.5, 99, 98],
                 mergeIndex: 0,
-                smooth: "3",
+                smooth: 3,
                 width: 300,
                 spectraFocus: null,
                 spectralLines: true,
@@ -69,7 +70,11 @@ class UIStore {
                 template: '#8C0623',
                 variance: '#E3A700',
                 merges: ["#009DFF", "#005201"]
-            }
+            },
+            waitingOnFit: false,
+            fitZ: null,
+            fitTID: null,
+            lineSelected: null,
         }
     }
 
@@ -105,10 +110,12 @@ class UIStore {
             case UIActionTypes.SET_ACTIVE:
                 // Check if the old active is different to the new active
                 if (state.active !== action.spectra) {
-                    setTimeout(() => setShouldUpdateBaseData(), 0);
-                    setTimeout(() => setShouldUpdateSkyData(), 0);
-                    setTimeout(() => setShouldUpdateTemplateData(), 0);
-                    setTimeout(() => setShouldUpdateXcorData(), 0);
+                    setTimeout(() => {
+                        setShouldUpdateBaseData();
+                        setShouldUpdateSkyData();
+                        setShouldUpdateTemplateData();
+                        setShouldUpdateXcorData();
+                    }, 0);
                 }
 
                 // Update the active spectra
@@ -187,8 +194,104 @@ class UIStore {
                     ...state
                 };
 
+            case UIActionTypes.SET_SMOOTH:
+                // Update the smooth value
+                state.detailed.smooth = action.smoothValue;
+
+                return {
+                    ...state,
+                };
+
+            case UIActionTypes.SET_TEMPLATE_MATCHED:
+                // Update the matched value
+                state.dataSelection.matched = action.matched;
+
+                return {
+                    ...state,
+                };
+
+            case UIActionTypes.SET_CONTINUUM:
+                // Update the continuum value
+                state.detailed.continuum = action.continuum;
+
+                return {
+                    ...state,
+                };
+
+            case UIActionTypes.SET_RANGE_INDEX:
+                // Update the range index value
+                state.detailed.rangeIndex = action.rangeIndex;
+
+                return {
+                    ...state,
+                };
+
+            case UIActionTypes.SELECT_MATCH:
+                // Set the match redshift and template ID
+                state.detailed.redshift = action.redshift;
+                state.detailed.templateId = action.templateId;
+
+                return {
+                    ...state,
+                };
+
+            case UIActionTypes.TOGGLE_SPECTRAL_LINES:
+                // Toggle the spectral line display
+                state.detailed.spectralLines = !state.detailed.spectralLines;
+
+                return {
+                    ...state,
+                };
+
+            case UIActionTypes.PREVIOUS_SPECTRAL_LINE:
+                const prev = spectraLineService.getPrevious(state.lineSelected);
+                if (prev != null)
+                    UIStore.clickSpectralLine(prev, state);
+                else {
+                    const lines = spectraLineService.getAll();
+                    if (lines.length > 0)
+                        UIStore.clickSpectralLine(lines[0].id, state)
+                }
+                
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.NEXT_SPECTRAL_LINE:
+                const next = spectraLineService.getNext(state.lineSelected);
+                if (next != null) {
+                    UIStore.clickSpectralLine(next, state);
+                } else {
+                    const lines = spectraLineService.getAll();
+                    if (lines.length > 0) {
+                        UIStore.clickSpectralLine(lines[0].id, state);
+                    }
+                }
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.CLICK_SPECTRAL_LINE:
+                UIStore.clickSpectralLine(action.id, state);
+                return {
+                    ...state
+                };
+
             default:
                 return state;
+        }
+    }
+
+    static clickSpectralLine(id, state) {
+        if (state.detailed.spectraFocus != null) {
+            state.detailed.spectralLines = true;
+            state.lineSelected = id;
+            const currentWavelength = spectraLineService.getFromID(id).wavelength;
+            const desiredWavelength = state.detailed.spectraFocus;
+            const z = desiredWavelength/currentWavelength - 1;
+            state.detailed.redshift = z.toFixed(5);
+            state.detailed.oldRedshift = state.detailed.redshift;
         }
     }
 }

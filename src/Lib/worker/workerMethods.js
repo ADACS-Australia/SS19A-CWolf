@@ -11,8 +11,8 @@ import {
     removeNaNs
 } from "../../Utils/methods";
 import {adjustRedshift} from "../../Utils/dsp";
-import TemplateManager from "../TemplateManager";
 import {globalConfig} from "../config";
+import {TemplateManager} from "../TemplateManager";
 
 let node = false;
 const templateManager = new TemplateManager(true, true);
