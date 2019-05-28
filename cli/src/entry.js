@@ -7,7 +7,7 @@ import { handleEvent } from './Lib/worker/workerMethods';
 import path from 'path';
 import fs from 'fs';
 import cluster from 'cluster';
-import {makeUnique} from './Lib/methods';
+import {makeUnique} from './Utils/methods';
 import './js/extension';
 import minimist from 'minimist';
 import os from 'os';
