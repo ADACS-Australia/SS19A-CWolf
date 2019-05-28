@@ -96,10 +96,18 @@ class SpectrumX {
             //debug("File saved to " + filename);
         });
     }
-    fromJSON(filename) {
+    static fromJSON(filename) {
         var fileData = fs.readFileSync(filename);
+        console.log('start parse')
         var dict = JSON.parse(fileData);
-        this.fromDictionary(dict);
+        console.log('continue parse')
+        let result = []
+        for (let i=0; i < dict.length; i++) {
+            let thisSpectrum = new SpectrumX(str(i));
+            thisSpectrum.fromDictionary(dict(i));
+            result.push(thisSpectrum)
+        }
+        return result
     }
     provide(q) {
         var spectra = new Spectra(this.properties.id, this.wavelength, this.intensity, this.variance, this.sky,

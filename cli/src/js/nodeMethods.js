@@ -6,7 +6,7 @@ import TemplateManager from "../Lib/TemplateManager";
 import ResultsGenerator from '../Lib/ResultsGenerator';
 import FitsFileLoader from '../Lib/FitsFileLoader';
 import SpectrumConsumer from '../Lib/SpectrumConsumer';
-import SpectrumX from '../Lib/spectrumX';
+import SpectrumJSONProvider from '../Lib/SpectrumJSONProvider';
 //var dependencies = [ './templates.js', './classes.js', './spectrumX'];
 //for (var i = 0; i < dependencies.length; i++) {
 //    require(dependencies[i])();
@@ -129,11 +129,11 @@ function runJSONFile(filename, outputFile, debug, consoleOutput) {
         var elapsed = (endTime - startTime) / 1000;
         debug("File processing took " + elapsed + " seconds, " + (num / elapsed).toFixed(2) + " spectra per second");
     });
-    var spectrumx = new SpectrumX("asfile");
-    spectrumx.fromJSON(filename);
-    r.setHelio(spectrumx.getDoHelio());
-    r.setCMB(spectrumx.getDoCMB());
-    consumer.consume(spectrumx,s).then(function(spectraList) {
+    const spectrumprovider = new SpectrumJSONProvider();
+    spectrumprovider.fromJSON(filename);
+    r.setHelio(spectrumprovider.getDoHelio());
+    r.setCMB(spectrumprovider.getDoCMB());
+    consumer.consume(spectrumprovider,s).then(function(spectraList) {
         //console.log("consumed");
     });
 

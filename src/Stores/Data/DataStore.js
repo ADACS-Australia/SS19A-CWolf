@@ -2,7 +2,7 @@ import {DataActionTypes} from "./Actions";
 import {setMerge} from "../UI/Actions";
 import FitsFileLoader from "../../Lib/FitsFileLoader";
 import SpectrumConsumer from '../../Lib/SpectrumConsumer';
-import SpectrumX from '../../Lib/spectrumX';
+import SpectrumJSONProvider from '../../Lib/SpectrumJSONProvider';
 import ResultsManager from "../../Lib/ResultsManager";
 import Processor from "../../Lib/Processor";
 import {describe} from "../../Utils/methods";
@@ -129,11 +129,11 @@ class DataStore {
         // Closure to capture the file information.
         reader.onload = (function(theFile) {
           return function(e) {
-                var spectrumx = new SpectrumX(state.json[0].name);
-                spectrumx.fromDictionary(JSON.parse(e.target.result));
-                state.resultsManager.setHelio(spectrumx.getDoHelio());
-                state.resultsManager.setCMB(spectrumx.getDoCMB());
-                state.consumer.consume(spectrumx,state.processorService.spectraManager).then(function(spectraList) {
+                const spectrumprovider = new SpectrumJSONProvider();
+                spectrumprovider.fromJSON(JSON.parse(e.target.result));
+                state.resultsManager.setHelio(spectrumprovider.getDoHelio());
+                state.resultsManager.setCMB(spectrumprovider.getDoCMB());
+                state.consumer.consume(spectrumprovider,state.processorService.spectraManager).then(function(spectraList) {
                     console.log("ok...JSON");
                 });
           };
