@@ -55,15 +55,34 @@ readHeaderValue(ext, kw) {
             val = this.fits.header0.cards[kw].value
         } catch (TypeError) {}
     }
-    return val;
+    return val
 }
 
 
 parseSingleExtensionFitsFile(q, originalFilename) {
+
+    // Read header information into properties
+    var spectrum = {
+        'properties': {}
+    }
+    spectrum.properties["name"] = readHeaderValue(0, "OBJID") || readHeaderValue("OBJNAME") || ""
+    spectrum.properties["ra"] = readHeaderValue(0, "RA") || ""
+    spectrum.properties["dec"] = readHeaderValue(0, "DEC") || ""
+    spectrum.properties["jd"] = readHeaderValue(0, "JD") || readHeaderValue(0, "JULIAN") || readHeaderValue(0, "MJD") || readHeaderValue(0, "UTMJD") || ""
+    spectrum.properties["longitude"] = readHeaderValue(0, "LONG_OBS") || readHeaderValue(0, "LONGITUD") || ""
+    spectrum.properties["latitude"] = readHeaderValue(0, "LAT_OBS") || readHeaderValue(0, "LATITUDE") || ""
+    spectrum.properties["altitude"] = readHeaderValue(0, "ALT_OBS") || readHeaderValue(0, "ALTITUDE") || ""
+    spectrum.properties["epoch"] = readHeaderValue(0, "EPOCH") || ""
+    spectrum.properties["radecsys"] = readHeaderValue(0, "RADECSYS") || ""
 
 }
 
 parseMultiExtensionFitsFile(q, originalFilename) {
     // Re-check the 'properties' information in case more relevant information
     // is contained in the data extension header
+    var spectrum = {
+        'properties': {}
+    }
+
+    //
 }
