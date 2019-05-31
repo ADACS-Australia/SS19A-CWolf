@@ -58,6 +58,50 @@ readHeaderValue(ext, kw) {
     return val
 }
 
+getRawWavelengthsSpectrum(ext) {
+    const q = $q.defer();
+    const crval = readHeaderValue(ext, 'CRVAL1') || readHeaderValue(ext, 'CV1_1');
+    const crpix = readHeaderValue(ext, 'CRPIX1') || readHeaderValue(ext, 'CP1_1');
+    const cdelt = readHeaderValue(ext, 'CDELT1') || readHeaderValue(ext, 'CD1_1');
+
+    if (crval == null || crpix == null || cdelt == null) {
+        q.reject("Wavelength header values incorrect: CRVAL1=" + crval + ", CRPIX1=" + crpix + ", CDELT1=" + cdelt + ".");
+    }
+
+    const lambdas = [];
+    const lambda = [];
+    for (let i = 0; i < this.numPoints; i++) {
+        lambda.push(((i + 1 - crpix) * cdelt) + crval);
+    }
+    lambdas.push(lambda);
+    q.resolve(lambdas)
+
+    return q.promise;
+}
+
+getRawWavelengthsTable(ext) {
+    var wavlTypeKW = [];
+    for (var headerkw in this.getHeader(ext).cards) {
+        try {
+                if (this.getHeader(ext).cards[headerkw].indexOf('wave') !== -1 && headerkw.indexOf('TYPE') !== -1) {
+                    wavlTypeKW.push(headerkw);
+                    console.log("BINGO");
+                }
+            } catch (TypeError) {}
+    }
+
+    if (wavlTypeKW.length !== 1) {
+        console.log('Unable to determine table column for wavelength');
+        q.reject;  // FIXME What's the correct pattern here?
+        return;
+    }
+
+    // Get the column index from the header keyword
+    const wavColumnIndex = parseInt(wavlTypeKW[0][wavlTypeKW[0].length - 1]);
+    // TODO Check if this aligns with JS index convention
+}
+
+
 
 parseSingleExtensionFitsFile(q, originalFilename) {
 
@@ -74,6 +118,14 @@ parseSingleExtensionFitsFile(q, originalFilename) {
     spectrum.properties["altitude"] = readHeaderValue(0, "ALT_OBS") || readHeaderValue(0, "ALTITUDE") || ""
     spectrum.properties["epoch"] = readHeaderValue(0, "EPOCH") || ""
     spectrum.properties["radecsys"] = readHeaderValue(0, "RADECSYS") || ""
+
+    // Now need to determine which flavour of information read functions
+    // we need to send to
+    // This is basically two flavours - table read, and spectrum (1D image) read
+
+    $q.all([this.getWavelengths(), this.getIntensityData(), this.getVarianceData(), this.getSkyData(), this.getDetailsData()]).then(function (data) {
+
+    });
 
 }
 
