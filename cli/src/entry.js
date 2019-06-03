@@ -189,7 +189,6 @@ if (options.help || !options.spectrumFile) {
     
     } else {
         process.on('message', function(event) {
-            console.log("worker go message "+event);
             let result = handleEvent(event);
             process.send({data: result});
         });

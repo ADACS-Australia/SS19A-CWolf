@@ -13,7 +13,6 @@ class FitsFileLoader {
     constructor($q, global, log, processorService, resultGenerator, node) {
         this.node = defaultFor(node, false);
         this.isLoading = false;
-        this.hasFitsFile = false;
         this.originalFilename = null;
         this.filename = null;
         this.MJD = null;
@@ -40,9 +39,7 @@ class FitsFileLoader {
     setFilename(ifilename) {
         var actualName = path.basename(ifilename);
         this.isLoading = true;
-        this.hasFitsFile = true;
         this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
-        this.global.data.fitsFileName = this.originalFilename;
         this.filename = this.originalFilename.replace(/_/g, " ");
         this.thefilename = ifilename;
         this.actualName = actualName;
@@ -50,7 +47,6 @@ class FitsFileLoader {
     provide(q) {
         //var q = this.$q.defer();
         this.isLoading = true;
-        this.hasFitsFile = true;
         var fileData = fs.readFileSync(this.thefilename);
         this.fits = new window.astro.FITS(fileData, function () {
             this.parseFitsFile(q, this.originalFilename);
@@ -62,7 +58,6 @@ class FitsFileLoader {
     loadInFitsFile(file) {
         var q = $q.defer();
         this.isLoading = true;
-        this.hasFitsFile = true;
         this.fits = new window.astro.FITS(this.pass, function () {
             console.log("Loaded FITS file");
             this.parseFitsFileAndGiveMeASpectra(q, this.originalFilename);

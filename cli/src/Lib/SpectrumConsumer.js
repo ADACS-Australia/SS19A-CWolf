@@ -4,7 +4,6 @@ class SpectrumConsumer {
     constructor($q, global, log, processorService, resultGenerator, node) {
         this.node = defaultFor(node, false);
         this.isLoading = false;
-        this.hasFitsFile = false;
         this.originalFilename = null;
         this.filename = null;
         this.MJD = null;

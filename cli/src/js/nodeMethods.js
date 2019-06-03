@@ -26,9 +26,7 @@ var p = null, s = null, t = null, r = null, fl = null, data = null, global = nul
 
 function init(workers, log, argv) {
     data = {
-        fits: [],
         types: [],
-        fitsFileName: null,
         spectra: [],
         spectraHash: {},
         history: []
@@ -67,7 +65,7 @@ function runFitsFile(filename, outputFile, debug, consoleOutput) {
         total: 30
     }));
     s.setFinishedCallback(function () {
-        const values = r.getResultsCSV();
+        const values = r.getResultsCSV("cli", filename);
         const num = s.data.spectra.length;
         if (consoleOutput) {
             console.log(values);
@@ -109,7 +107,7 @@ function runJSONFile(filename, outputFile, debug, consoleOutput) {
         total: 30
     }));
     s.setFinishedCallback(function () {
-        const values = r.getResultsCSV();
+        const values = r.getResultsCSV("cli", filename);
         const num = s.data.spectra.length;
         if (consoleOutput) {
             console.log(values);
