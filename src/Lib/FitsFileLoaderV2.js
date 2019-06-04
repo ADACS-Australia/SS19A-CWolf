@@ -63,6 +63,7 @@ getRawWavelengthsSpectrum(ext) {
     const crval = readHeaderValue(ext, 'CRVAL1') || readHeaderValue(ext, 'CV1_1');
     const crpix = readHeaderValue(ext, 'CRPIX1') || readHeaderValue(ext, 'CP1_1');
     const cdelt = readHeaderValue(ext, 'CDELT1') || readHeaderValue(ext, 'CD1_1');
+    const scale = readHeaderValue(ext, 'DC-FLAG') || 'F';
 
     if (crval == null || crpix == null || cdelt == null) {
         q.reject("Wavelength header values incorrect: CRVAL1=" + crval + ", CRPIX1=" + crpix + ", CDELT1=" + cdelt + ".");
@@ -70,8 +71,14 @@ getRawWavelengthsSpectrum(ext) {
 
     const lambdas = [];
     const lambda = [];
-    for (let i = 0; i < this.numPoints; i++) {
-        lambda.push(((i + 1 - crpix) * cdelt) + crval);
+    if (scale == 'T' || scale == 1) {
+        for (let i = 0; i < this.numPoints; i++) {
+            lambda.push(((i + 1 - crpix) * Math.pow(10, cdelt)) + Math.pow(10, crval));
+        }
+    } else {
+        for (let i = 0; i < this.numPoints; i++) {
+            lambda.push(((i + 1 - crpix) * cdelt) + crval);
+        }
     }
     lambdas.push(lambda);
     q.resolve(lambdas)
@@ -85,20 +92,27 @@ getRawWavelengthsTable(ext) {
         try {
                 if (this.getHeader(ext).cards[headerkw].indexOf('wave') !== -1 && headerkw.indexOf('TYPE') !== -1) {
                     wavlTypeKW.push(headerkw);
-                    console.log("BINGO");
                 }
             } catch (TypeError) {}
     }
 
     if (wavlTypeKW.length !== 1) {
         console.log('Unable to determine table column for wavelength');
-        q.reject;  // FIXME What's the correct pattern here?
+        q.reject('Unable to determine table column for wavelength');
         return;
     }
 
-    // Get the column index from the header keyword
-    const wavColumnIndex = parseInt(wavlTypeKW[0][wavlTypeKW[0].length - 1]);
-    // TODO Check if this aligns with JS index convention
+    // Get the column index from the header keyword, by stripping off the
+    // number at the end of the keyword
+    // Need to subtract one because arrays in JavaScript are zero-indexed
+    const wavColumnIndex = parseInt(wavlTypeKW[0][wavlTypeKW[0].length - 1]) - 1;
+
+    // Extract the column data
+    var col_data = []
+    this.getDataUnit(ext).getColumn('wave', function (column) {
+        col_data = column;
+    })
+
 }
 
 
