@@ -1,6 +1,111 @@
+import {convertVacuumFromAir, defaultFor, MJDtoYMD, normaliseViaShift, removeNaNs} from "../Utils/methods";
+import {getCMBCorrection, getHeliocentricVelocityCorrection} from "../Utils/helio";
+
+import * as $q from "q";
+
+import {setFitsFilename, setTypes} from "../Stores/Data/Actions";
+import path from 'path';
+import * as Enumerable from "linq";
+import Spectra from "./Spectra";
+import "./fits";
+import {globalConfig} from "./config";
+
 class FitsFileLoader {
 
-    var
+    constructor(processorService, resultsManager, node) {
+        this.node = defaultFor(node, false);
+        this.isLoading = false;
+        this.hasFitsFile = false;
+        this.originalFilename = null;
+        this.filename = null;
+
+        /*
+        this.MJD = null;
+        this.date = null;
+        this.header0 = null;
+        this.epoch = null;
+        this.radecsys = null;
+        this.JD = null;
+        this.longitude = null;
+        this.latitude = null;
+        this.altitude = null;
+        */
+
+        this.resultGenerator = resultsManager;
+
+        // We will now add all the metadata into the 'spectra' array
+        this.spectra = null;
+        this.primaryIndex = 0;
+        this.numPoints = null;
+
+        this.processorService = processorService;
+        this.log = console;
+        this.subscribed = [];
+
+        this.filedata = null;
+    }
+
+    subscribeToInput(fn) {
+        this.subscribed.push(fn);
+    }
+
+    setFilename(ifilename) {
+        var actualName = path.basename(ifilename);
+        this.isLoading = true;
+        this.hasFitsFile = true;
+        this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
+        this.global.data.fitsFileName = this.originalFilename;
+        this.filename = this.originalFilename.replace(/_/g, " ");
+        this.thefilename = ifilename;
+        this.actualName = actualName;
+    }
+    setFiledata(ifilename,ifiledata) {
+        var actualName = path.basename(ifilename);
+        this.isLoading = true;
+        this.hasFitsFile = true;
+        this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
+        //this.global.data.fitsFileName = this.originalFilename;
+        this.filename = this.originalFilename.replace(/_/g, " ");
+        this.thefilename = ifilename;
+        this.actualName = actualName;
+        this.thefiledata = ifiledata;
+    }
+    provide(q) {
+        console.log(" ========== PROVIDE ==============");
+        //const q = this.$q.defer();
+        this.isLoading = true;
+        this.hasFitsFile = true;
+        var fileData = this.thefiledata;
+        this.fits = new window.astro.FITS(fileData, function () {
+            console.log("window.astro.FITS done its thing now parse "+this.filename+" "+this.originalFilename);
+            this.parseFitsFile(q, this.originalFilename);
+            this.processorService.setPause();
+        }.bind(this));
+        return q.promise;
+    }
+
+    loadInFitsFile(file) {
+        const q = $q.defer();
+        this.isLoading = true;
+        this.hasFitsFile = true;
+        let pass = file;
+        if (file.actualName != null) {
+            this.originalFilename = file.actualName.replace(/\.[^/.]+$/, "");
+            pass = file.file;
+        } else {
+            this.originalFilename = file.name.replace(/\.[^/.]+$/, "");
+        }
+        setTimeout(() => setFitsFilename(this.originalFilename), 0);
+        this.filename = this.originalFilename.replace(/_/g, " ");
+        this.log.debug("Loading FITs file");
+        this.fits = new astro.FITS(pass, function () {
+            this.log.debug("Loaded FITS file "+this.filename+" "+this.originalFilename);
+            console.log("Loaded FITS file "+this.filename+" "+this.originalFilename);
+            this.parseFitsFile(q, this.originalFilename);
+            this.processorService.setPause();
+        }.bind(this));
+        return q.promise;
+    };
 
     parseFitsFile(q, originalFilename) {
         // q is the promise object to resolve
@@ -12,25 +117,20 @@ class FitsFileLoader {
         const phu = this.header0
         this.originalFilename = originalFilename;
 
-        var spectrumList = []
-
-        // Read the basic information from the PHU
-        // Get the object name
-        var spectrum = {'properties': {}}
+        this.spectra = [];
 
         // Count the number of extensions within the file
         const noExt = this.fits.hdus.length()
         // If single-extension, pass off to the single extension reader(s)
         if (noExt == 1) {
-            spectra = parseSingleExtensionFitsFile(q, originalFilename);
+            spectra = parseSingleExtensionFitsFile(q, originalFilename, 0);
+        // If multi-extension, pass off to the multi-extension reader
         } else {
             spectra = parseMultiExtensionFitsFile(q, originalFilename);
         }
-        // If multi-extension, pass off to the multi-extension reader
 
-        // Pass off to reader functions, and process returned information into
-        // data structure
-        // This step resolves the promise and binds 'this' correctly
+        q.resolve(spectra);
+
     }
 
 
@@ -115,21 +215,21 @@ class FitsFileLoader {
 
 
 
-    parseSingleExtensionFitsFile(q, originalFilename) {
+    parseSingleExtensionFitsFile(q, originalFilename, ext) {
 
         // Read header information into properties
         var spectrum = {
             'properties': {}
         }
-        spectrum.properties["name"] = readHeaderValue(0, "OBJID") || readHeaderValue("OBJNAME") || ""
-        spectrum.properties["ra"] = readHeaderValue(0, "RA") || ""
-        spectrum.properties["dec"] = readHeaderValue(0, "DEC") || ""
-        spectrum.properties["jd"] = readHeaderValue(0, "JD") || readHeaderValue(0, "JULIAN") || readHeaderValue(0, "MJD") || readHeaderValue(0, "UTMJD") || ""
-        spectrum.properties["longitude"] = readHeaderValue(0, "LONG_OBS") || readHeaderValue(0, "LONGITUD") || ""
-        spectrum.properties["latitude"] = readHeaderValue(0, "LAT_OBS") || readHeaderValue(0, "LATITUDE") || ""
-        spectrum.properties["altitude"] = readHeaderValue(0, "ALT_OBS") || readHeaderValue(0, "ALTITUDE") || ""
-        spectrum.properties["epoch"] = readHeaderValue(0, "EPOCH") || ""
-        spectrum.properties["radecsys"] = readHeaderValue(0, "RADECSYS") || ""
+        spectrum.properties["name"] = readHeaderValue(ext, "OBJID") || readHeaderValue("OBJNAME") || ""
+        spectrum.properties["ra"] = readHeaderValue(ext, "RA") || ""
+        spectrum.properties["dec"] = readHeaderValue(ext, "DEC") || ""
+        spectrum.properties["jd"] = readHeaderValue(ext, "JD") || readHeaderValue(ext, "JULIAN") || readHeaderValue(ext, "MJD") || readHeaderValue(ext, "UTMJD") || ""
+        spectrum.properties["longitude"] = readHeaderValue(ext, "LONG_OBS") || readHeaderValue(ext, "LONGITUD") || ""
+        spectrum.properties["latitude"] = readHeaderValue(ext, "LAT_OBS") || readHeaderValue(ext, "LATITUDE") || ""
+        spectrum.properties["altitude"] = readHeaderValue(ext, "ALT_OBS") || readHeaderValue(ext, "ALTITUDE") || ""
+        spectrum.properties["epoch"] = readHeaderValue(ext, "EPOCH") || ""
+        spectrum.properties["radecsys"] = readHeaderValue(ext, "RADECSYS") || ""
 
         // Now need to determine which flavour of information read functions
         // we need to send to
@@ -163,11 +263,20 @@ class FitsFileLoader {
             detailReadFunc()
         ]).then(function (data) {
 
-        });
+        }).bind(this);
+
+        // Note that the calling function resolves the promise, not this one
+        return spectra;
 
     }
 
     parseMultiExtensionFitsFile(q, originalFilename) {
+        // See if we are dealing with one of the following:
+        // - Different data product (flux, var, sky etc) in each extension;
+        // - Different object in each extension;
+        // - Single extension with independent PHU
+        // In the last two cases, we can re-use parseSingleExtensionFits
+
         // Re-check the 'properties' information in case more relevant information
         // is contained in the data extension header
         var spectrum = {
