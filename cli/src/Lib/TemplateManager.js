@@ -336,25 +336,25 @@ export class TemplateManager {
         catch (err) { }
         return res;
     }
-    ;
+
     getOriginalTemplates() {
         return this.originalTemplates;
     }
-    ;
+
     saveInactives() {
         if (typeof document != "undefined" && document != null) {
             saveCookie(this.templateEnabledCookieKey, this.inactiveArray);
         }
     }
-    ;
+
     getTemplateFromId(id) {
         return this.templatesHash[id];
     }
-    ;
+
     isQuasar(id) {
         return id != "0" && Boolean(this.getTemplateFromId(id).quasar);
     }
-    ;
+
     getTemplate(id, z, withContinuum) {
         var t = this.templatesHash[id];
         var fact = (1 + z) / (1 + t.redshift);
@@ -369,7 +369,7 @@ export class TemplateManager {
             return [lambda, t.spec_linear];
         }
     }
-    ;
+
     getNameForTemplate(templateId) {
         if (this.templatesHash[templateId]) {
             return this.templatesHash[templateId].name;
@@ -378,7 +378,7 @@ export class TemplateManager {
             return "Unspecified";
         }
     }
-    ;
+
     processTemplates() {
         for (var i = 0; i < this.originalTemplates.length; i++) {
             var t = this.originalTemplates[i];
@@ -418,13 +418,13 @@ export class TemplateManager {
         this.processed = true;
         this.setInactiveTemplates(this.inactiveArray);
     }
-    ;
+
     shiftToMatchSpectra() {
         for (var i = 0; i < this.templates.length; i++) {
             this.shiftTemplate(this.templates[i]);
         }
     }
-    ;
+
     shiftTemplate(t) {
         var ll = t.quasar ? this.logLambdaQ : this.logLambda;
         polyFitReject(t.lambda, t.spec);

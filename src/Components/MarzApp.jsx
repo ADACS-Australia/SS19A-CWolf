@@ -8,6 +8,7 @@ import Footer from "./Footer";
 import Detailed from "./Pages/Detailed";
 import {storeReady} from "../Stores/StoreUtils";
 import Settings from "./Pages/Settings";
+import Templates from "./Pages/Templates";
 
 const Router = process.env.NODE_ENV === 'development' ? BrowserRouter : MemoryRouter;
 
@@ -42,6 +43,7 @@ function MarzApp(props) {
                             <Route path="/detailed/"
                                    render={(routeProps) => <Detailed {...props} {...routeProps}/>}/>
                             <Route path="/settings/" render={(routeProps) => <Settings {...props} {...routeProps}/>}/>
+                            <Route path="/templates/" render={(routeProps) => <Templates {...props} {...routeProps}/>}/>
                         </div>
                     </div>
                 </div>
