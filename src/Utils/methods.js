@@ -1025,6 +1025,14 @@ export function getMeanMask(data, mask) {
     return r / c;
 }
 
+export function makeUnique(inarray) {
+    const a = [];
+    for (let i=0, l=inarray.length; i<l; i++)
+        if (a.indexOf(inarray[i]) === -1)
+            a.push(inarray[i]);
+    return a;
+}
+
 /**
  * Clips the input array at the specific std range. Modifies array in place.
  * @param variance - the array to clip

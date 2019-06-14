@@ -1,7 +1,7 @@
 import { expect } from "chai";
 
 import defaults from '../src/autoConfig';
-import {default as struct} from '../src/js/nodeMethods';
+import {default as struct} from '../src/nodeMethods';
 import { handleEvent } from '../src/Lib/worker/workerMethods'; 
 import path from 'path';
 import cluster from 'cluster';

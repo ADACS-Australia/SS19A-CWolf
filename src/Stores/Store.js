@@ -6,6 +6,7 @@ import DataStore from "./Data/DataStore";
 import DetailedStore from "./Detailed/DetailedStore";
 import * as Enumerable from "linq";
 import SettingsStore from "./Settings/SettingsStore";
+import TemplateStore from "./Templates/TemplateStore";
 
 class Store extends ReduceStore {
     constructor() {
@@ -23,11 +24,13 @@ class Store extends ReduceStore {
         // Create any singleton objects
         this.personalStore = new PersonalStore(this);
         this.settingsStore = new SettingsStore(this);
+        this.templateStore = new TemplateStore(this);
 
         // Create the resulting initial dictionary state object
         const result = {
             personal: this.personalStore.getInitialState(),
             settings: this.settingsStore.getInitialState(),
+            template: this.templateStore.getInitialState(),
             index: 0,
             s: [{}]
         };
@@ -45,6 +48,7 @@ class Store extends ReduceStore {
         // First reduce singletons
         state.personal = this.personalStore.reduce(state.personal, action);
         state.settings = this.settingsStore.reduce(state.settings, action);
+        state.template = this.templateStore.reduce(state.template, action);
 
         // Then reduce any indexed stores
         this.stores.forEach(s => {
