@@ -1,6 +1,7 @@
 import {defaultFor} from "../Utils/methods";
 import * as $q from "q";
-import Worker from './worker/marz.worker';
+import BrowserWorker from './worker/browser.worker';
+import CliWorker from './worker/cli.worker';
 
 /**
  * The processor is responsible for hosting the worker and communicating with it.
@@ -12,7 +13,10 @@ class Processor {
         this.node = node;
         this.$q = $q;
         if (worker == null) {
-            this.worker = new Worker('js/worker.js');
+            if (node)
+                this.worker = new CliWorker();
+            else
+                this.worker = new BrowserWorker();
         } else {
             this.worker = worker;
         }
@@ -118,13 +122,13 @@ class ProcessorManager {
         }
     };
 
-    setWorkers(workers, $q) {
+    setWorkers(workers) {
         while (this.processors.length > 0) {
             this.processors[0].flagForDeletion();
             this.processors.splice(0, 1);
         }
         for (let i = 0; i < workers.length; i++) {
-            this.processors.push(new Processor($q, true, workers[i]));
+            this.processors.push(new Processor(true, workers[i]));
         }
     };
 

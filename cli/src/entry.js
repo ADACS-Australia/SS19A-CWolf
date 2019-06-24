@@ -18,6 +18,8 @@ function details(title,object) {
     }
 }
 
+let debugFlag = undefined;
+
 function debug(output) {
     if (debugFlag) {
         if (typeof output == "string") {
@@ -109,7 +111,7 @@ if (options.help || !options.spectrumFile) {
     console.log(commandLineUsage(sections));
 } else {
 
-    const debugFlag = options.verbose;
+    debugFlag = options.verbose;
     const log = {
         "debug": function (e) {
             debug(e);

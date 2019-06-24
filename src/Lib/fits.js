@@ -5,6 +5,9 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
+  if (typeof window === "undefined")
+    window = {};
+
   if (window.astro == null) {
     window.astro = {};
   }
@@ -184,7 +187,7 @@
     Parser.prototype.createDataUnit = function(header, blob) {
       var type;
       type = header.getDataType();
-      return new astro.FITS[type](header, blob);
+      return new window.astro.FITS[type](header, blob);
     };
 
     Parser.prototype.excessBytes = function(length) {

@@ -26,13 +26,13 @@ function init(workers, log, argv) {
     s = new SpectraManager(data, log);
     t = new TemplateManager(false);
     r = new ResultsGenerator(data, t, false);
-    fl = new FitsFileLoader($q, global, log, p, r, true);
+    fl = new FitsFileLoader(p, r, true);
 
-    consumer = new SpectrumConsumer($q, global, p, r, true);
+    consumer = new SpectrumConsumer(p, r, true);
     consumer.subscribeToInput(s.setSpectra, s);
     consumer.subscribeToInput(p.addSpectraListToQueue, p);
     p.setNode();
-    p.setWorkers(workers, $q);
+    p.setWorkers(workers);
     s.setAssignAutoQOPs(argv["assignAutoQOPs"]);
     r.setNumAutomatic(argv["numAutomatic"]);
     p.setProcessTogether(argv["processTogether"]);
@@ -76,6 +76,7 @@ function runFitsFile(filename, outputFile, debug, consoleOutput) {
         debug("File processing took " + elapsed + " seconds, " + (num / elapsed).toFixed(2) + " spectra per second");
     });
     fl.setFilename(filename, fileData);
+    fl.setFiledata(filename, fileData);
     consumer.consume(fl,s).then(function(spectraList) {
        
     });

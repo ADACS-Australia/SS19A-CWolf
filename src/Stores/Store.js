@@ -13,6 +13,19 @@ class Store extends ReduceStore {
         super(AppDispatcher);
     }
 
+    getProps() {
+        const state = this.getState();
+        const index = state.index;
+        return {
+            personal: state.personal,
+            settings: state.settings,
+            template: state.template,
+            detailed: state.s[index].detailed,
+            data: state.s[index].data,
+            ui: state.s[index].ui,
+        }
+    }
+
     getInitialState() {
         // Register all stores that we manage here
         this.stores = Enumerable.from([

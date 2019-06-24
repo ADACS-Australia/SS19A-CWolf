@@ -44,20 +44,22 @@ class FitsFileLoader {
     }
 
     setFilename(ifilename) {
-        var actualName = path.basename(ifilename);
+        const actualName = path.basename(ifilename);
         this.isLoading = true;
         this.hasFitsFile = true;
         this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
-        this.global.data.fitsFileName = this.originalFilename;
+        // todo: Important?
+        //this.global.data.fitsFileName = this.originalFilename;
         this.filename = this.originalFilename.replace(/_/g, " ");
         this.thefilename = ifilename;
         this.actualName = actualName;
     }
     setFiledata(ifilename,ifiledata) {
-        var actualName = path.basename(ifilename);
+        const actualName = path.basename(ifilename);
         this.isLoading = true;
         this.hasFitsFile = true;
         this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
+        // todo: Important?
         //this.global.data.fitsFileName = this.originalFilename;
         this.filename = this.originalFilename.replace(/_/g, " ");
         this.thefilename = ifilename;
@@ -69,7 +71,7 @@ class FitsFileLoader {
         //const q = this.$q.defer();
         this.isLoading = true;
         this.hasFitsFile = true;
-        var fileData = this.thefiledata;
+        const fileData = this.thefiledata;
         this.fits = new window.astro.FITS(fileData, function () {
             console.log("window.astro.FITS done its thing now parse "+this.filename+" "+this.originalFilename);
             this.parseFitsFile(q, this.originalFilename);
