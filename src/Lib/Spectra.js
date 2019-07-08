@@ -1,6 +1,7 @@
 import {defaultFor, normaliseViaShift, removeNaNs} from "../Utils/methods";
 import {globalConfig} from "./config";
 import {updateNumberMatched, updateNumberProcessed} from "../Stores/UI/Actions";
+import DrawingService from "./DrawingService";
 
 class Spectra {
     /** The spectra class is used to store information about each spectra loaded into marz
@@ -151,11 +152,11 @@ class Spectra {
         return this.dec * 180 / Math.PI;
     };
 
-    getImage(drawingService) {
+    getImage(colours) {
         if (this.getFinalRedshift() !== this.imageZ || this.imageTID !== this.getFinalTemplateID() || this.image == null) {
             this.imageTID = this.getFinalTemplateID();
             this.imageZ = this.getFinalRedshift();
-            this.image = this.getImageUrl(drawingService);
+            this.image = this.getImageUrl(colours);
         }
         return this.image;
 
@@ -169,16 +170,16 @@ class Spectra {
         this.comment = comment;
     };
 
-    getImageUrl(drawingService) {
-        var canvas = document.createElement('canvas');
-        var ratio = window.devicePixelRatio || 1.0;
-        var width = 318;
-        var height = 118;
+    getImageUrl(colours) {
+        const canvas = document.createElement('canvas');
+        const ratio = window.devicePixelRatio || 1.0;
+        const width = 318;
+        const height = 118;
         canvas.width = width * ratio;
         canvas.height = height * ratio;
-        var ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d');
         ctx.scale(ratio, ratio);
-        drawingService.drawOverviewOnCanvas(this, canvas, width, height);
+        DrawingService.drawOverviewOnCanvas(this, canvas, width, height, colours);
         return canvas.toDataURL();
     };
 

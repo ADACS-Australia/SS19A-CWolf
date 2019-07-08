@@ -47,7 +47,7 @@ body {
   right: 0;
 }
 
-#sidebar {
+.sidebar {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -55,11 +55,11 @@ body {
   width: 230px;
 }
 
-.sidebarSmall #sidebar {
+.sidebar.sidebarSmall {
   width: 55px;
 }
 
-#afterSideBarContainer {
+.afterSideBarContainer {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -68,7 +68,7 @@ body {
   overflow: auto;
 }
 
-.sidebarSmall #afterSideBarContainer {
+.afterSideBarContainer.sidebarSmall {
   left: 55px;
 }
 

@@ -6,6 +6,8 @@ import {
     setShouldUpdateXcorData
 } from "../Detailed/Actions";
 import {spectraLineService} from "../../Components/General/DetailedCanvas/spectralLines";
+import {templateManager as templatesService} from "../../Lib/TemplateManager";
+import {getFit, getQuasarFFT, getStandardFFT, matchTemplate} from "../../Utils/methods";
 
 class UIStore {
     constructor(store) {
@@ -129,6 +131,10 @@ class UIStore {
 
                 // Update the template id
                 state.detailed.templateId = action.id;
+
+                setTimeout(() => {
+                    setShouldUpdateTemplateData();
+                }, 0);
 
                 return {
                     ...state,
@@ -278,6 +284,46 @@ class UIStore {
                     ...state
                 };
 
+            case UIActionTypes.PERFORM_FIT:
+                console.log("Performing fit")
+                state.fitTID = state.detailed.templateId;
+                state.fitZ = state.detailed.redshift;
+                state.waitingOnFit = true;
+                if (state.active != null) {
+                    if (state.active.processedIntensity == null) {
+                        console.log("Added to priority queue")
+                        this.store.getState().s[this.store.getState().index].data.addToPriorityQueue(state.active, true);
+                        return {
+                            ...state
+                        };
+                    }
+                }
+                const tid = state.detailed.templateId;
+                if (tid == null || tid === "0" || state.active == null) {
+                    state.waitingOnFit = false;
+                } else {
+                    console.log("dofit")
+                    this.doFit(state);
+                }
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.TOGGLE_SMALL_SIDEBAR:
+                state.sidebarSmall = !state.sidebarSmall;
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.SET_GRAPHICAL_LAYOUT:
+                state.graphicalLayout = action.graphical;
+
+                return {
+                    ...state
+                };
+
             default:
                 return state;
         }
@@ -294,6 +340,34 @@ class UIStore {
             state.detailed.oldRedshift = state.detailed.redshift;
         }
     }
+
+    doFit(state) {
+        const s = state.active;
+        if (state.fitTID === '0') {
+            state.fitTID = state.detailed.templateId;
+        }
+        if (state.fitTID !== '0') {
+            const template = templatesService.getFFTReadyTemplate(state.fitTID);
+            let fft = null;
+            if (templatesService.isQuasar(state.fitTID)) {
+                fft = getQuasarFFT(s.processedLambda, s.processedIntensity.slice(), s.processedVariance.slice());
+            } else {
+                fft = getStandardFFT(s.processedLambda, s.processedIntensity.slice(), s.processedVariance.slice());
+            }
+
+            const results = matchTemplate([template], fft);
+            const currentZ = parseFloat(state.fitZ);
+            let helio = 0;
+            let cmb = 0;
+            if (state.active != null && state.active.helio != null) {
+                helio = state.active.helio;
+                cmb = state.active.cmb;
+            }
+            const bestZ = getFit(template, results.xcor, currentZ, helio, cmb);
+            state.detailed.redshift = bestZ.toFixed(5);
+        }
+        state.waitingOnFit = false;
+    };
 }
 
 export default UIStore;

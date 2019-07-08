@@ -14,6 +14,7 @@ function addFiles(files) {
 }
 
 function setFitsFilename(filename) {
+    console.log("Setting fits file name", filename)
     AppDispatcher.dispatch({
         type: DataActionTypes.SET_FITS_FILENAME,
         filename: filename

@@ -53,6 +53,7 @@
     "mathjs": "^5.8.0",
     "minimist": ">=1.2.0",
     "progress": ">=1.0.0",
-    "q": "^1.5.1"
+    "q": "^1.5.1",
+    "react-bootstrap-table-next": "^3.1.5"
   }
 }

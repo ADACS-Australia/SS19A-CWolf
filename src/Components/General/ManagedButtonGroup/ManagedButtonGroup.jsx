@@ -33,7 +33,7 @@ class ManagedButtonGroup extends React.Component {
             );
         });
         return (
-            <ButtonGroup className='margin-right-4px'>
+            <ButtonGroup className={"margin-right-4px " + this.props.className}>
                 {children}
             </ButtonGroup>
         )

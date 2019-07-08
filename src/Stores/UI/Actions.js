@@ -1,4 +1,5 @@
 import AppDispatcher from "../AppDispatcher";
+import {DataActionTypes} from "../Data/Actions";
 
 const UIActionTypes = {
     SET_MERGE: 'UIActionTypes.SET_MERGE',
@@ -23,6 +24,13 @@ const UIActionTypes = {
     PREVIOUS_SPECTRAL_LINE: "UIActionTypes.PREVIOUS_SPECTRAL_LINE",
     NEXT_SPECTRAL_LINE: "UIActionTypes.NEXT_SPECTRAL_LINE",
     CLICK_SPECTRAL_LINE: "UIActionTypes.CLICK_SPECTRAL_LINE",
+    PERFORM_FIT: "UIActionTypes.PERFORM_FIT",
+
+    // TODO: refactor to Overview store?
+    TOGGLE_SMALL_SIDEBAR: "UIActionTypes.TOGGLE_SMALL_SIDEBAR",
+    //
+
+    SET_GRAPHICAL_LAYOUT: "UIActionTypes.SET_GRAPHICAL_LAYOUT",
 };
 
 function setMerge(merge) {
@@ -159,6 +167,25 @@ function clickSpectralLine(id) {
     })
 }
 
+function performFit() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.PERFORM_FIT,
+    })
+}
+
+function toggleSmallSidebar() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.TOGGLE_SMALL_SIDEBAR,
+    })
+}
+
+function setGraphicalLayout(graphical) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_GRAPHICAL_LAYOUT,
+        graphical: graphical
+    })
+}
+
 export {
     setMerge,
     updateTemplateOffset,
@@ -180,5 +207,8 @@ export {
     previousSpectralLine,
     nextSpectralLine,
     clickSpectralLine,
+    performFit,
+    toggleSmallSidebar,
+    setGraphicalLayout,
     UIActionTypes,
 };

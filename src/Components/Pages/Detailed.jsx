@@ -14,7 +14,7 @@ import {spectraLineService} from "../General/DetailedCanvas/spectralLines";
 import * as Enumerable from "linq";
 import {
     clickSpectralLine,
-    nextSpectralLine,
+    nextSpectralLine, performFit,
     previousSpectralLine,
     resetToAutomatic, resetToManual, selectMatch, setContinuum,
     setProcessed, setRangeIndex, setSmooth, setTemplateId, setTemplateMatched,
@@ -261,8 +261,7 @@ class Detailed extends React.Component {
                                     color='primary'
                                     size='sm'
                                     onClick={() => {
-                                       //todo
-                                        alert("todo")
+                                       performFit()
                                     }}
                                 >
                                     Perform Fit

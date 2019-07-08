@@ -95,7 +95,6 @@ class SpectraController {
         // Set the active spectra
         setActive(spectra);
 
-        console.log("Potato")
         let id = spectra.getFinalTemplateID();
         let z = spectra.getFinalRedshift();
         if (spectra.getMerges().length > 0) {
@@ -112,7 +111,6 @@ class SpectraController {
             setTemplateId("0");
             updateRedShift("0");
         }
-        console.log("ded")
     };
 
     setSpectra(spectraList) {

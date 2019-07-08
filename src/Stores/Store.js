@@ -7,6 +7,7 @@ import DetailedStore from "./Detailed/DetailedStore";
 import * as Enumerable from "linq";
 import SettingsStore from "./Settings/SettingsStore";
 import TemplateStore from "./Templates/TemplateStore";
+import SidebarStore from "./Sidebar/SidebarStore";
 
 class Store extends ReduceStore {
     constructor() {
@@ -21,6 +22,7 @@ class Store extends ReduceStore {
             settings: state.settings,
             template: state.template,
             detailed: state.s[index].detailed,
+            sidebar: state.sidebar,
             data: state.s[index].data,
             ui: state.s[index].ui,
         }
@@ -38,12 +40,14 @@ class Store extends ReduceStore {
         this.personalStore = new PersonalStore(this);
         this.settingsStore = new SettingsStore(this);
         this.templateStore = new TemplateStore(this);
+        this.sidebarStore = new SidebarStore(this);
 
         // Create the resulting initial dictionary state object
         const result = {
             personal: this.personalStore.getInitialState(),
             settings: this.settingsStore.getInitialState(),
             template: this.templateStore.getInitialState(),
+            sidebar: this.sidebarStore.getInitialState(),
             index: 0,
             s: [{}]
         };
@@ -62,6 +66,7 @@ class Store extends ReduceStore {
         state.personal = this.personalStore.reduce(state.personal, action);
         state.settings = this.settingsStore.reduce(state.settings, action);
         state.template = this.templateStore.reduce(state.template, action);
+        state.sidebar = this.sidebarStore.reduce(state.sidebar, action);
 
         // Then reduce any indexed stores
         this.stores.forEach(s => {
