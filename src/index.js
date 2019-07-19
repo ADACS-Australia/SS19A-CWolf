@@ -6,6 +6,9 @@ import ReactDOM from 'react-dom';
 // Include Bootstrap
 import './Assets/css/bootstrap.min.css';
 
+// Import the react bootstrap table styling
+import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+
 // Include remaining CSS
 import './Assets/css/common.scss';
 import './Assets/css/dialogs.scss';

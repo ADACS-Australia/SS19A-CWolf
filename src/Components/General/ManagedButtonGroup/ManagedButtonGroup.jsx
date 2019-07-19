@@ -16,6 +16,9 @@ class ManagedButtonGroup extends React.Component {
         this.setState({
             value: i
         });
+
+        if (this.props.onChange)
+            this.props.onChange(c.props.value)
     }
 
     render() {
@@ -30,7 +33,7 @@ class ManagedButtonGroup extends React.Component {
             );
         });
         return (
-            <ButtonGroup className='margin-right-4px'>
+            <ButtonGroup className={"margin-right-4px " + this.props.className}>
                 {children}
             </ButtonGroup>
         )

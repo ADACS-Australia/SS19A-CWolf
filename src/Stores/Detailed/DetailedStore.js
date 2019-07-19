@@ -137,7 +137,8 @@ const defaultState = {
 };
 
 class DetailedStore {
-    constructor() {
+    constructor(store) {
+        this.store = store;
     }
 
     key() {

@@ -2,6 +2,7 @@ import {getDataPowered, polynomial, polynomial3} from "./regression";
 
 import {globalConfig} from "../Lib/config";
 import FFT from "../Lib/dsp/FFT";
+import {adjustRedshift} from "./dsp";
 
 export function binarySearch(data, val) {
     let highIndex = data.length - 1;
@@ -142,7 +143,7 @@ export function convertVacuumFromAir(lambda) {
 export function convertVacuumFromAirWithLogLambda(lambda) {
     for (let i = 0; i < lambda.length; i++) {
         const l = Math.pow(10, lambda[i]);
-        lambda[i] = Math.log(convertSingleVacuumFromAir(l))/Math.LN10;
+        lambda[i] = Math.log(convertSingleVacuumFromAir(l)) / Math.LN10;
     }
 }
 
@@ -158,7 +159,9 @@ export function convertLambdaToLogLambda(lambda, intensity, numel, quasar) {
     const s = quasar ? globalConfig.startPowerQ : globalConfig.startPower;
     const e = quasar ? globalConfig.endPowerQ : globalConfig.endPower;
     const logLambda = linearScale(s, e, numel);
-    const rescale = logLambda.map(function(x) { return Math.pow(10, x);});
+    const rescale = logLambda.map(function (x) {
+        return Math.pow(10, x);
+    });
     const newIntensity = interpolate(rescale, lambda, intensity);
     return {lambda: logLambda, intensity: newIntensity};
 }
@@ -169,7 +172,7 @@ export function convertLambdaToLogLambda(lambda, intensity, numel, quasar) {
  * @returns {number} the vacuum wavelength
  */
 export function convertSingleAirFromVacuum(lambda) {
-    return lambda / (1 + 2.735192e-4 + (131.4182/Math.pow(lambda, 2)) + (2.76249E8 /Math.pow(lambda, 4)));
+    return lambda / (1 + 2.735192e-4 + (131.4182 / Math.pow(lambda, 2)) + (2.76249E8 / Math.pow(lambda, 4)));
 }
 
 /**
@@ -191,7 +194,7 @@ export function convertAirFromVacuum(lambda) {
  * @returns {number} the redshifted wavelength
  */
 export function shiftWavelength(lambda, z) {
-    return (1+z)*lambda;
+    return (1 + z) * lambda;
 }
 
 /**
@@ -208,14 +211,14 @@ export function findCorrespondingFloatIndex(xs, x, optionalStartIndex) {
     for (let i = s; i < xs.length; i++) {
         if (xs[i] >= x) {
             if (i === 0) return i;
-            return (i - 1) + (x - xs[i - 1])/(xs[i] - xs[i - 1]);
+            return (i - 1) + (x - xs[i - 1]) / (xs[i] - xs[i - 1]);
         }
     }
     return xs.length - 1;
 }
 
 export function distance(x1, y1, x2, y2) {
-    return Math.pow((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2), 0.5);
+    return Math.pow((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2), 0.5);
 }
 
 /**
@@ -230,7 +233,7 @@ export function fastSmooth(y, num) {
         return y;
     }
     num += 1;
-    const frac = 2*num + 1;
+    const frac = 2 * num + 1;
     // Remove NaNs
     for (let i = 0; i < y.length; i++) {
         if (isNaN(y[i])) {
@@ -281,11 +284,11 @@ export function normaliseViaShift(array, bottom, top, optional) {
             min = array[j];
         }
     }
-    const r = (top-bottom)/(max-min);
+    const r = (top - bottom) / (max - min);
     for (let j = 0; j < array.length; j++) {
-        const newVal = bottom + r*(array[j]-min);
+        const newVal = bottom + r * (array[j] - min);
         if (optional != null) {
-            optional[j] = bottom + r*(optional[j]- min);
+            optional[j] = bottom + r * (optional[j] - min);
         }
         array[j] = newVal;
     }
@@ -318,9 +321,9 @@ export function removeNaNs(y) {
 export function linearScale(start, end, num) {
     const result = [];
     for (let i = 0; i < num; i++) {
-        const w0 = 1 - (i/(num-1));
+        const w0 = 1 - (i / (num - 1));
         const w1 = 1 - w0;
-        result.push(start*w0 + end*w1);
+        result.push(start * w0 + end * w1);
     }
     return result;
 }
@@ -482,8 +485,8 @@ export function removeCosmicRay(intensity, variance) {
             if (maxNeighbour > deviationFactor * rms) {
                 let r = 0;
                 let c = 0;
-                for (let j = i - 2*numPoints; j < (i + 1 + 2*numPoints); j++) {
-                    if (j >= 0 && j < intensity.length && Math.abs(intensity[j]-mean) < rms) {
+                for (let j = i - 2 * numPoints; j < (i + 1 + 2 * numPoints); j++) {
+                    if (j >= 0 && j < intensity.length && Math.abs(intensity[j] - mean) < rms) {
                         c++;
                         r += intensity[j];
                     }
@@ -491,7 +494,7 @@ export function removeCosmicRay(intensity, variance) {
                 if (c !== 0) {
                     r = r / c;
                 }
-                for (let k = i-numPoints; k < i+numPoints + 1; k++) {
+                for (let k = i - numPoints; k < i + numPoints + 1; k++) {
                     if (k > 0 && k < (intensity.length - 1)) {
                         intensity[k] = r;
                         variance[k] = max_error;
@@ -512,7 +515,7 @@ export function removeCosmicRay(intensity, variance) {
 function getNewSubtract(data, subtract) {
     const subtracted = new Array(data.length), dataLength = data.length;
     for (let i = 0; i < dataLength; i++) {
-        subtracted[i|0] = data[i|0] - subtract[i|0];
+        subtracted[i | 0] = data[i | 0] - subtract[i | 0];
     }
     return subtracted;
 }
@@ -530,7 +533,7 @@ export function polyFitReject(lambda, intensity, interactions, threshold, polyDe
 
     const intLength = intensity.length, mask = new Array(intLength);
     for (let i = 0; i < intLength; i++) {
-        mask[i|0] = 1;
+        mask[i | 0] = 1;
     }
     const dataPowered = getDataPowered(lambda, polyDegree);
     let subtracted, fit;
@@ -542,8 +545,8 @@ export function polyFitReject(lambda, intensity, interactions, threshold, polyDe
         const cutoff = stdDev * threshold;
         let c = true;
         for (let j = 0; j < intLength; j++) {
-            if (mask[j|0] && Math.abs(subtracted[j|0]) > cutoff) {
-                mask[j|0] = 0;
+            if (mask[j | 0] && Math.abs(subtracted[j | 0]) > cutoff) {
+                mask[j | 0] = 0;
                 c = false;
             }
         }
@@ -601,15 +604,15 @@ export function medianFilter(data, window) {
     for (i = 0; i < n + 1; i++) {
         addToSorted(head, data[0]);
     }
-    for (i = 0; i < n; i++ ) {
-        addToSorted(head, data[i|0]);
+    for (i = 0; i < n; i++) {
+        addToSorted(head, data[i | 0]);
     }
     let add = 0;
     let remove = 0;
     const dataLength = data.length;
     for (i = 0; i < dataLength; i++) {
-        remove = i < (n + 1) ? data[0] : data[(i - n - 1)|0];
-        add = i + n >= dataLength ? data[dataLength - 1] : data[(i + n)|0];
+        remove = i < (n + 1) ? data[0] : data[(i - n - 1) | 0];
+        add = i + n >= dataLength ? data[dataLength - 1] : data[(i + n) | 0];
         result.push(removeAddAndFindMedian(head, remove, add, n));
     }
     return result;
@@ -623,7 +626,7 @@ export function medianFilter(data, window) {
  */
 export function boxCarSmooth(data, window) {
     const result = [];
-    const num = (window - 1)/2;
+    const num = (window - 1) / 2;
     const r = 1 / window;
     const dataLength = data.length, dlmo = dataLength - 1;
     let tot = 0, i1 = 0, i2 = 0, i;
@@ -643,7 +646,7 @@ export function boxCarSmooth(data, window) {
         if (i2 > dlmo) {
             i2 = dlmo;
         }
-        tot += (data[i2|0] - data[i1|0]) * r;
+        tot += (data[i2 | 0] - data[i1 | 0]) * r;
         result.push(tot);
     }
     return result;
@@ -693,11 +696,11 @@ export function broadenError(data) {
 
     for (i = 0; i < dataLength; i++) {
         if (i < dataLength - 1) {
-            next = data[(i+1)|0];
+            next = data[(i + 1) | 0];
         } else {
-            next = data[(dataLength - 1)|0];
+            next = data[(dataLength - 1) | 0];
         }
-        current = data[i|0];
+        current = data[i | 0];
         if (current < prior) {
             current = prior;
         }
@@ -708,7 +711,7 @@ export function broadenError(data) {
         prior = data[i];
     }
     for (i = 0; i < dataLength; i++) {
-        data[i|0] = result[i|0];
+        data[i | 0] = result[i | 0];
     }
 }
 
@@ -725,9 +728,9 @@ export function maxMedianAdjust(data, window, weight) {
     const dataLength = data.length;
     let i, val = 0.0;
     for (i = 0; i < dataLength; i++) {
-        val = weight * medians[i|0];
-        if (data[i|0] < val) {
-            data[i|0] = val;
+        val = weight * medians[i | 0];
+        if (data[i | 0] < val) {
+            data[i | 0] = val;
         }
     }
 }
@@ -759,14 +762,15 @@ export function absMean(data) {
     let running = 0, i;
 
     for (i = 0; i < dataLength; i++) {
-        if (data[i|0] < 0) {
-            running -= data[i|0];
+        if (data[i | 0] < 0) {
+            running -= data[i | 0];
         } else {
-            running += data[i|0];
+            running += data[i | 0];
         }
     }
     return running / dataLength;
 }
+
 /**
  * Returns the maximum value of the absolute of the input.
  * @param data
@@ -776,10 +780,10 @@ export function absMax(data) {
     let max = 0;
     const dataLength = data.length;
     for (let i = 0; i < dataLength; i++) {
-        if (data[i|0] < 0 && -data[i|0] > max) {
-            max = -data[i|0];
-        } else if (data[i|0] > 0 && data[i|0] > max) {
-            max = data[i|0];
+        if (data[i | 0] < 0 && -data[i | 0] > max) {
+            max = -data[i | 0];
+        } else if (data[i | 0] > 0 && data[i | 0] > max) {
+            max = data[i | 0];
         }
     }
     return max;
@@ -794,10 +798,10 @@ export function normaliseMeanDev(intensity, clipValue) {
         const clipVal = (clipValue + 0.01) * meanDeviation;
         if (absMax(intensity) > clipVal) {
             for (i = 0; i < intLength; i++) {
-                if (intensity[i|0] > clipVal) {
-                    intensity[i|0] = clipVal;
-                } else if (intensity[i|0] < -clipVal) {
-                    intensity[i|0] = -clipVal;
+                if (intensity[i | 0] > clipVal) {
+                    intensity[i | 0] = clipVal;
+                } else if (intensity[i | 0] < -clipVal) {
+                    intensity[i | 0] = -clipVal;
                 }
             }
         } else {
@@ -805,7 +809,7 @@ export function normaliseMeanDev(intensity, clipValue) {
         }
     }
     for (i = 0; i < intLength; i++) {
-        intensity[i|0] /= meanDeviation;
+        intensity[i | 0] /= meanDeviation;
     }
 }
 
@@ -817,7 +821,7 @@ export function circShift(data, num) {
     const result = new Array(data.length);
     const l = data.length;
     for (let i = 0; i < l; i++) {
-        result[i|0] = data[((i + num) % l)|0];
+        result[i | 0] = data[((i + num) % l) | 0];
     }
     return result;
 }
@@ -835,11 +839,11 @@ export function subtractMeanReject2(final, stdDev) {
     const cutoff = stdDev * getStdDev(final);
     const mean = getMean(final);
     for (let i = 0; i < finalLength; i++) {
-        mask.push((final[i|0] - mean) < cutoff && (final[i|0] - mean) > -cutoff);
+        mask.push((final[i | 0] - mean) < cutoff && (final[i | 0] - mean) > -cutoff);
     }
     const maskedMean = getMeanMask(final, mask);
     for (let i = 0; i < finalLength; i++) {
-        final[i|0] -= maskedMean;
+        final[i | 0] -= maskedMean;
     }
 }
 
@@ -848,10 +852,10 @@ export function getPeaks(final, both) {
     const is = [];
     const vals = [];
     for (let i = 2; i < final.length - 2; i++) {
-        if (final[i] >= final[i + 1] && final[i] >= final[i+2] && final[i] > final[i - 1] && final[i] > final[i - 2]) {
+        if (final[i] >= final[i + 1] && final[i] >= final[i + 2] && final[i] > final[i - 1] && final[i] > final[i - 2]) {
             vals.push(final[i]);
             is.push(i);
-        } else if (both && (final[i] <= final[i + 1] && final[i] <= final[i+2] && final[i] < final[i - 1] && final[i] < final[i - 2])) {
+        } else if (both && (final[i] <= final[i + 1] && final[i] <= final[i + 2] && final[i] < final[i - 1] && final[i] < final[i - 2])) {
             vals.push(final[i]);
             is.push(i);
         }
@@ -861,7 +865,7 @@ export function getPeaks(final, both) {
 
 export function addToSorted(head, value) {
     let current = head;
-    while(current[0] != null && current[0][1] < value) {
+    while (current[0] != null && current[0][1] < value) {
         current = current[0];
     }
     current[0] = [current[0], value];
@@ -913,7 +917,7 @@ export function getStdDev(data) {
     const dataLength = data.length;
     let squared = 0, temp = 0.0, i;
     for (i = 0; i < dataLength; i++) {
-        temp = (data[i|0] - mean);
+        temp = (data[i | 0] - mean);
         squared += temp * temp;
     }
     return Math.sqrt(squared / dataLength);
@@ -930,8 +934,8 @@ export function getStdDevMask(data, mask) {
     let squared = 0, temp = 0.0, i, c = 0;
 
     for (i = 0; i < dataLength; i++) {
-        if (mask[i|0]) {
-            temp = (data[i|0] - mean);
+        if (mask[i | 0]) {
+            temp = (data[i | 0] - mean);
             squared += temp * temp;
             c++;
         }
@@ -980,13 +984,13 @@ export function rollingPointMean(intensity, numPoints, falloff) {
     const weights = [];
     let total = 0;
     let i;
-    for (i = 0; i < 2*numPoints + 1; i++) {
+    for (i = 0; i < 2 * numPoints + 1; i++) {
         const w = Math.pow(falloff, Math.abs(numPoints - i));
         weights.push(w);
         total += w;
     }
     for (i = 0; i < weights.length; i++) {
-        weights[i|0] /= total;
+        weights[i | 0] /= total;
     }
     const intLength = intensity.length;
     let r = 0, c = 0;
@@ -995,7 +999,7 @@ export function rollingPointMean(intensity, numPoints, falloff) {
         r = 0;
         for (let j = i - numPoints; j <= i + numPoints; j++) {
             if (j > 0 && j < intLength) {
-                r += intensity[j|0] * weights[c|0];
+                r += intensity[j | 0] * weights[c | 0];
                 c++;
             }
         }
@@ -1007,7 +1011,7 @@ export function rollingPointMean(intensity, numPoints, falloff) {
 export function getMean(data) {
     let r = 0, i;
     for (i = 0; i < data.length; i++) {
-        r += data[i|0];
+        r += data[i | 0];
     }
     return r / data.length;
 }
@@ -1017,12 +1021,20 @@ export function getMeanMask(data, mask) {
     let c = 0, r = 0, i;
 
     for (i = 0; i < dataLength; i++) {
-        if (mask[i|0]) {
-            r += data[i|0];
+        if (mask[i | 0]) {
+            r += data[i | 0];
             c++;
         }
     }
     return r / c;
+}
+
+export function makeUnique(inarray) {
+    const a = [];
+    for (let i = 0, l = inarray.length; i < l; i++)
+        if (a.indexOf(inarray[i]) === -1)
+            a.push(inarray[i]);
+    return a;
 }
 
 /**
@@ -1053,12 +1065,29 @@ export function cullLines(data) {
     const minV = mean - 30 * std;
     const dataLength = data.length;
     for (let i = 0; i < dataLength; i++) {
-        if (data[i|0] > maxV) {
-            data[i|0] = maxV;
-        } else if (data[i|0] < minV) {
-            data[i|0] = minV;
+        if (data[i | 0] > maxV) {
+            data[i | 0] = maxV;
+        } else if (data[i | 0] < minV) {
+            data[i | 0] = minV;
         }
     }
+}
+
+export function getFit(template, xcor, val, helio, cmb) {
+    const fitWindow = globalConfig.fitWindow;
+    const startIndex = binarySearch(template.zs, val)[0] - Math.floor(fitWindow / 2);
+    let bestPeak = -9e9;
+    let bestIndex = -1;
+    for (let i = 0; i < fitWindow; i++) {
+        const index = startIndex + i;
+        if (index >= 0 && index < xcor.length) {
+            if (Math.abs(xcor[index]) > bestPeak) {
+                bestPeak = Math.abs(xcor[index]);
+                bestIndex = index;
+            }
+        }
+    }
+    return adjustRedshift(getRedshiftForNonIntegerIndex(template, fitAroundIndex(xcor, bestIndex)), helio, cmb);
 }
 
 export function extractResults(templates, finals) {
@@ -1068,7 +1097,7 @@ export function extractResults(templates, finals) {
         if (i === 0) {
             if (finals.length > 1) {
                 for (let j = 0; j < final.length; j++) {
-                    final[j] *=  final[j] / ev;
+                    final[j] *= final[j] / ev;
                 }
             }
 
@@ -1079,7 +1108,7 @@ export function extractResults(templates, finals) {
             }
         }
     }
-    final = circShift(final, final.length/2);
+    final = circShift(final, final.length / 2);
     final = pruneResults(final, templates[0]);
     normaliseXCorr(final);
 
@@ -1096,6 +1125,7 @@ export function extractResults(templates, finals) {
         peaks: finalPeaks
     };
 }
+
 /**
  * Determines the cross correlation (and peaks in it) between a spectra and a template
  *
@@ -1106,7 +1136,7 @@ export function extractResults(templates, finals) {
  * results of the template and a list of peaks in the xcor array.
  */
 export function matchTemplate(templates, fft) {
-    const finals = templates.map(function(template) {
+    const finals = templates.map(function (template) {
         const fftNew = fft.multiply(template.fft);
         const final = fftNew.inverse();
         return final
@@ -1132,7 +1162,9 @@ export function fitAroundIndex(data, index) {
         if (index - window < 0 || index + window >= data.length) {
             return index; // On boundary failure, return index
         }
-        const d = data.slice(index - window, index + window + 1).map(function(v,i) { return [i - window,v]; });
+        const d = data.slice(index - window, index + window + 1).map(function (v, i) {
+            return [i - window, v];
+        });
         e = polynomial(d).equation;
         if (e[2] < 0) {
             break;
@@ -1140,7 +1172,7 @@ export function fitAroundIndex(data, index) {
             window++;
         }
     }
-    let offset = (-e[1]/(2*e[2]));
+    let offset = (-e[1] / (2 * e[2]));
     if (Math.abs(offset) > 1) {
         offset = 0;
     }
@@ -1155,7 +1187,7 @@ export function fitAroundIndex(data, index) {
  * @returns {number} the redshift of the index
  */
 export function getRedshiftForNonIntegerIndex(t, index) {
-    const gap =  (t.lambda[t.lambda.length - 1] - t.lambda[0]) / (t.lambda.length - 1);
+    const gap = (t.lambda[t.lambda.length - 1] - t.lambda[0]) / (t.lambda.length - 1);
     const num = t.lambda.length / 2;
     const z = (Math.pow(10, (index + t.startZIndex - num) * gap) * (1 + t.redshift)) - 1;
     return z;
@@ -1208,24 +1240,25 @@ export function getStandardFFT(lambda, intensity, variance, needSubtracted) {
         return fft;
     }
 }
+
 function getMethods(obj) {
     const result = [];
     for (let id in obj) {
-      try {
-        if (typeof(obj[id]) == "function") {
-          result.push(id + ": " + obj[id].toString());
+        try {
+            if (typeof (obj[id]) == "function") {
+                result.push(id + ": " + obj[id].toString());
+            }
+        } catch (err) {
+            result.push(id + ": inaccessible");
         }
-      } catch (err) {
-        result.push(id + ": inaccessible");
-      }
     }
     return result;
-  }
-export function describe(object)
-{
-    console.log("Description:"+object);
+}
+
+export function describe(object) {
+    console.log("Description:" + object);
     for (let p in object) {
-        console.log(p+"="+object[p]);
+        console.log(p + "=" + object[p]);
     }
     //console.log("       JSON:"+JSON.stringify(object));
     /*

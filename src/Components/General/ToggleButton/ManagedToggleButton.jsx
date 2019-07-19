@@ -10,18 +10,21 @@ class ManagedToggleButton extends React.Component {
     }
 
     onToggle() {
-        this.setState({ toggleActive: !this.state.toggleActive });
+        const new_state = this.props.value !== undefined ? !this.props.value : !this.state.toggleActive;
+
         // Check if the toggle callback is set
         if (this.props.onToggle)
             // Call the toggle callback with the current state
-            this.props.onToggle(this.state.toggleActive);
+            this.props.onToggle(new_state);
+
+        this.setState({ toggleActive:  new_state});
     }
 
     render() {
         return (
             <ToggleButton
                 onClick={this.onToggle}
-                active={this.state.toggleActive}
+                active={this.props.value !== undefined ? this.props.value : this.state.toggleActive}
                 {...this.props}
             />
             )

@@ -5,10 +5,6 @@ class ResultsManager {
     constructor(templatesService) {
         this.resultsGenerator = new ResultsGenerator(templatesService);
         this.downloading = false;
-
-        this.numAutomaticCookie = "numAutomatic";
-
-        this.setNumAutomatic(CookieManager.registerCookieValue(this.numAutomaticCookie, 1));
     }
     
     setHelio(val) {
@@ -17,17 +13,6 @@ class ResultsManager {
 
     setCMB(val) {
         this.resultsGenerator.setCMB(val);
-    };
-
-    setNumAutomatic(num) {
-        if (num <= 5) {
-            this.resultsGenerator.setNumAutomatic(num);
-            CookieManager.setCookie(this.numAutomaticCookie, num);
-        }
-    };
-
-    getNumAutomatic() {
-        return this.resultsGenerator.numAutomatic;
     };
 
     downloadResults() {

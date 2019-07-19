@@ -18,14 +18,7 @@ function getStores() {
 
 // Returns a dictionary that describes how the state is transposed from stores to components
 function getState() {
-    const state = Store.getState();
-    const index = state.index;
-    return {
-        personal: state.personal,
-        detailed: state.s[index].detailed,
-        data: state.s[index].data,
-        ui: state.s[index].ui,
-    }
+    return Store.getProps();
 }
 
 export default Container.createFunctional(MarzApp, getStores, getState);

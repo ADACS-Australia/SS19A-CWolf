@@ -683,4 +683,9 @@ class TemplateManager {
     }
 }
 
-export default TemplateManager;
+const templateManager = new TemplateManager();
+
+export {
+    TemplateManager,
+    templateManager
+};

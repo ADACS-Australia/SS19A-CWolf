@@ -1,12 +1,13 @@
-import {DataActionTypes} from "./Actions";
+import {DataActionTypes, setFitsFilename} from "./Actions";
 import {setMerge} from "../UI/Actions";
 import FitsFileLoader from "../../Lib/FitsFileLoader";
 import SpectrumConsumer from '../../Lib/SpectrumConsumer';
-import SpectrumX from '../../Lib/spectrumX';
+import SpectrumJSONProvider from '../../Lib/SpectrumJSONProvider';
 import ResultsManager from "../../Lib/ResultsManager";
 import Processor from "../../Lib/Processor";
 import {describe} from "../../Utils/methods";
 import * as $q from 'q';
+
 //import { Stats } from "fs";
 
 class DataStore {
@@ -39,7 +40,7 @@ class DataStore {
         //state.fitsFileLoader.subscribeToInput(s => state.processorService.spectraManager.setSpectra(s));
         //state.fitsFileLoader.subscribeToInput(spectraList => state.processorService.addSpectraListToQueue(spectraList));
 
-        state.consumer = new SpectrumConsumer( state.processorService, state.resultsManager);
+        state.consumer = new SpectrumConsumer(state.processorService, state.resultsManager);
         state.consumer.subscribeToInput(s => state.processorService.spectraManager.setSpectra(s));
         state.consumer.subscribeToInput(spectraList => state.processorService.addSpectraListToQueue(spectraList));
 
@@ -105,41 +106,55 @@ class DataStore {
             }
         }
 
-        if (lastNumDrag !== state.numDrag || lastFitsLength !== state.fits.length)
-        {
-            if (state.fits.length > 0)
-            {
+        if (lastNumDrag !== state.numDrag || lastFitsLength !== state.fits.length) {
+            if (state.fits.length > 0) {
                 console.log("RS: DataStore drop FITS");
-                describe(state.fits[0]);
-                state.fitsFileLoader.setFiledata(state.fits[0].name,state.fits[0]);
+
+                // Get the fits file to load (We don't handle multiple files)
+                const fitsFile = state.fits[0];
+
+                // Handle setting the filename correctly
+                let originalFilename = null;
+                if (fitsFile.actualName != null) {
+                    originalFilename = fitsFile.actualName.replace(/\.[^/.]+$/, "");
+                } else {
+                    originalFilename = fitsFile.name.replace(/\.[^/.]+$/, "");
+                }
+                setTimeout(() => setFitsFilename(originalFilename.replace(/_/g, " ")), 0);
+
+                describe(fitsFile);
+
+                state.fitsFileLoader.setFiledata(fitsFile.name, fitsFile);
                 //state.fitsFileLoader.loadInFitsFile(state.fits[0]).then(function() { console.log('Fits file loaded');});
-                state.consumer.consume(state.fitsFileLoader,state.processorService.spectraManager).then(function(spectraList) {
+                state.consumer.consume(state.fitsFileLoader, state.processorService.spectraManager).then(function (spectraList) {
                     console.log("ok...FITS");
                 });
             }
         }
-        if (lastNumDrag !== state.numDrag || lastJSONLength !== state.json.length)
-        {
-            if (state.json.length > 0)
-            {
-                console.log("RS: DataStore drop JSON "+state.json[0]);
+        if (lastNumDrag !== state.numDrag || lastJSONLength !== state.json.length) {
+            if (state.json.length > 0) {
+                console.log("RS: DataStore drop JSON " + state.json[0]);
+
+                // FIXME: Filename for json files. Should this come from the real file name, or should it be an attribute
+                // FIXME: of the json object?
+
                 describe(state.json[0]);
                 let reader = new FileReader();
-  
-        // Closure to capture the file information.
-        reader.onload = (function(theFile) {
-          return function(e) {
-                var spectrumx = new SpectrumX(state.json[0].name);
-                spectrumx.fromDictionary(JSON.parse(e.target.result));
-                state.resultsManager.setHelio(spectrumx.getDoHelio());
-                state.resultsManager.setCMB(spectrumx.getDoCMB());
-                state.consumer.consume(spectrumx,state.processorService.spectraManager).then(function(spectraList) {
-                    console.log("ok...JSON");
-                });
-          };
-        })(state.json[0]);
-  
-        reader.readAsText(state.json[0]);
+
+                // Closure to capture the file information.
+                reader.onload = (function (theFile) {
+                    return function (e) {
+                        const spectrumprovider = new SpectrumJSONProvider();
+                        spectrumprovider.fromJSON(JSON.parse(e.target.result));
+                        state.resultsManager.setHelio(spectrumprovider.getDoHelio());
+                        state.resultsManager.setCMB(spectrumprovider.getDoCMB());
+                        state.consumer.consume(spectrumprovider, state.processorService.spectraManager).then(function (spectraList) {
+                            console.log("ok...JSON");
+                        });
+                    };
+                })(state.json[0]);
+
+                reader.readAsText(state.json[0]);
 
                 //
                 /*
@@ -151,7 +166,7 @@ class DataStore {
                     console.log("ok...JSON");
                 });
                 */
-                
+
             }
         }
 

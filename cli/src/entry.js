@@ -1,27 +1,26 @@
 import commandLineArgs from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
 
-import defaults from './autoConfig';
-import {default as struct} from './js/nodeMethods';
-import { handleEvent } from './Lib/worker/workerMethods'; 
+import defaults from './../../autoConfig';
+import {default as struct} from './nodeMethods';
 import path from 'path';
 import fs from 'fs';
 import cluster from 'cluster';
-import {makeUnique} from './Lib/methods';
-import './js/extension';
-import minimist from 'minimist';
 import os from 'os';
-import * as $q from "q";
+import {makeUnique} from "../../src/Utils/methods";
+import {handleEvent} from "../../src/Lib/worker/workerMethods";
 // iojs head script to run marz from a command line interface
 
-var details = function(title,object) {
+function details(title,object) {
     console.log(title);
-    for (var p in object) {
+    for (let p in object) {
         console.log(" "+p+"="+object[p]);
     }
 }
 
-var debug = function (output) {
+let debugFlag = undefined;
+
+function debug(output) {
     if (debugFlag) {
         if (typeof output == "string") {
             console.log(output);
@@ -29,15 +28,15 @@ var debug = function (output) {
             console.dir(output);
         }
     }
-};
+}
 
 function getOutputFilename(fitsFile, argv) {
-    var fname = argv["outFile"] || path.basename(fitsFile);
-    var dname = argv['dir'] || path.dirname(fitsFile);
+    let fname = argv["outFile"] || path.basename(fitsFile);
+    const dname = argv['dir'] || path.dirname(fitsFile);
     if (!fname.endsWith(".mz")) {
         fname = fname.substring(0, fname.lastIndexOf('.')) + ".mz";
     }
-    var outputFile = path.normalize(path.join(dname, fname));
+    const outputFile = path.normalize(path.join(dname, fname));
     debug("Input file " + fitsFile + " output going to " + outputFile);
     return outputFile;
 }
@@ -51,8 +50,10 @@ const optionDefinitions = [
     { name: 'numAutomatic', type: Number, defaultValue: 3},
     { name: 'disabledTemplates', type: String, multiple: true },
     { name: 'numCPUs', type: Number, defaultValue: 0}
-  ];
+    ];
+
 const options = commandLineArgs(optionDefinitions);
+
 if (options.help || !options.spectrumFile) {
     const sections = [
         {
@@ -106,50 +107,50 @@ if (options.help || !options.spectrumFile) {
                 },
             ]
         }
-      ]
+      ];
     console.log(commandLineUsage(sections));
 } else {
 
-    var debugFlag = options.verbose;
-    var log = {
+    debugFlag = options.verbose;
+    const log = {
         "debug": function (e) {
             debug(e);
         }
     };
 
-    var args = {};
+    const args = {};
     args["_"] = [options.spectrumFile];
     args["outFile"] = options.outFile;
     args["debug"] = false;
     args["numCPUs"] = options.numCPUs
-    let argv = defaults;
+    const argv = defaults;
     argv["_"] = [options.spectrumFile];
     //details("ARGS",args);
     //details("ARGV",argv);
     if (cluster.isMaster) {
 
-        var filenames = argv['_'];
+        const filenames = argv['_'];
     
         //debug("MASTER.Input Parameters:");
         //debug(argv);
         
-        var filename = filenames[0];
+        const filename = filenames[0];
     
     
-        var n = argv['numCPUs'] || Math.max(1, os.cpus().length - 1);
+        const n = argv['numCPUs'] || Math.max(1, os.cpus().length - 1);
     
-        var workers = [];
-        for (var i = 0; i < n; i++) {
+        const workers = [];
+        for (let i = 0; i < n; i++) {
             workers.push(cluster.fork());
         }
     
-        var queue = [];
-        var totalNum = 0;
-        for (var i = 0; i < filenames.length; i++) {
-            var stat = fs.lstatSync(filenames[i]);
+        let queue = [];
+        let totalNum = 0;
+        for (let i = 0; i < filenames.length; i++) {
+            const stat = fs.lstatSync(filenames[i]);
             if (stat.isDirectory()) {
-                var files = fs.readdirSync(filenames[i]);
-                for (var j = 0; j < files.length; j++) {
+                const files = fs.readdirSync(filenames[i]);
+                for (let j = 0; j < files.length; j++) {
                     if (files[j].endsWith(".fits")) {
                         queue.push(path.normalize(path.resolve(filenames[i], files[j])));
                     }
@@ -159,18 +160,18 @@ if (options.help || !options.spectrumFile) {
             }
         }
         queue = makeUnique(queue);
-        var globalStartTime = new Date();
+        const globalStartTime = new Date();
     
         struct.init(workers, log, argv);
-        var counter = 0;
-        var totalLength = queue.length;
-        var handleReturn = function (num) {
+        let counter = 0;
+        const totalLength = queue.length;
+        const handleReturn = function (num) {
             totalNum += num;
             if (queue.length > 0) {
-                var filename = queue.shift();
+                const filename = queue.shift();
                 counter += 1;
                 console.log(counter + "/" + totalLength + ": Analysing " + filename);
-                var outputName = getOutputFilename(filename, argv);
+                const outputName = getOutputFilename(filename, argv);
                 if (filename.endsWith(".fits")) {
                     struct.runFitsFile(filename, outputName, debug, debugFlag).then(handleReturn);
                 }
@@ -178,8 +179,8 @@ if (options.help || !options.spectrumFile) {
                     struct.runJSONFile(filename, outputName, debug, debugFlag).then(handleReturn);
                 }
             } else {
-                var globalEndTime = new Date();
-                var elapsed = (globalEndTime - globalStartTime) / 1000;
+                const globalEndTime = new Date();
+                const elapsed = (globalEndTime - globalStartTime) / 1000;
                 debug("All files processed in " + elapsed + " seconds, an average of " + (totalNum / elapsed).toFixed(2) + " spectra per second");
                 cluster.disconnect();
             }
@@ -189,7 +190,6 @@ if (options.help || !options.spectrumFile) {
     
     } else {
         process.on('message', function(event) {
-            console.log("worker go message "+event);
             let result = handleEvent(event);
             process.send({data: result});
         });

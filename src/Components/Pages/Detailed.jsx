@@ -2,7 +2,7 @@ import React from "react";
 
 import '../../Assets/css/detailed.scss';
 import ManagedToggleButton from "../General/ToggleButton/ManagedToggleButton";
-import {Button, Form, FormGroup, ListGroup} from "reactstrap";
+import {Button, ButtonGroup, Form, FormGroup, ListGroup} from "reactstrap";
 import ListGroupItem from "reactstrap/es/ListGroupItem";
 import InputGroup from "reactstrap/es/InputGroup";
 import InputGroupAddon from "reactstrap/es/InputGroupAddon";
@@ -13,12 +13,16 @@ import DetailedCanvas from "../General/DetailedCanvas/DetailedCanvas";
 import {spectraLineService} from "../General/DetailedCanvas/spectralLines";
 import * as Enumerable from "linq";
 import {
-    resetToAutomatic, resetToManual,
-    setProcessed,
-    setVariance,
+    clickSpectralLine,
+    nextSpectralLine, performFit,
+    previousSpectralLine,
+    resetToAutomatic, resetToManual, selectMatch, setContinuum,
+    setProcessed, setRangeIndex, setSmooth, setTemplateId, setTemplateMatched,
+    setVariance, toggleSpectralLines,
     updateRedShift,
     updateTemplateOffset
 } from "../../Stores/UI/Actions";
+import {templateManager} from "../../Lib/TemplateManager";
 
 const boldItems = Enumerable.from(['O2', 'Hb', 'Ha']);
 
@@ -28,18 +32,6 @@ class Detailed extends React.Component {
     }
 
     render() {
-        // Get the list of spectral lines
-        const spectralLines = Enumerable.from(spectraLineService.getAll()).select(
-            (l, i) => {
-                const bold = boldItems.contains(l.id);
-                return (
-                    <li className={"sline lined " + (bold ? "bold" : "")} key={l.id}>
-                        {l.label}
-                    </li>
-                )
-            }
-        );
-
         return (
             <div className="detailedView filler">
                 <div className="panel panel-default detailed-control panel-header">
@@ -98,26 +90,22 @@ class Detailed extends React.Component {
                                     }}
                                 />
                                 <ManagedToggleButton
-                                    default={true}
+                                    default={this.props.ui.dataSelection.matched}
                                     handle={"Template"}
                                     size="xs"
                                     offstyle="secondary"
                                     onstyle="danger"
+                                    onToggle={(toggled) => setTemplateMatched(toggled)}
                                 />
-                                {/*<toggle-switch className="switch-danger" style="width: 170px"*/}
-                                {/*ng-model="ui.dataSelection.matched"*/}
-                                {/*knob-label="Template"></toggle-switch>*/}
 
                                 <ManagedToggleButton
-                                    default={true}
+                                    default={this.props.ui.detailed.continuum}
                                     handle={"Continuum"}
                                     size="xs"
                                     offstyle="secondary"
                                     onstyle="primary"
+                                    onToggle={(toggled) => setContinuum(toggled)}
                                 />
-                                {/*<toggle-switch className="switch-primary" style="width: 170px"*/}
-                                {/*ng-model="settings.continuum" knob-label="Continuum"></toggle-switch>*/}
-
 
                                 <ManagedToggleButton
                                     default={this.props.ui.dataSelection.variance}
@@ -129,44 +117,44 @@ class Detailed extends React.Component {
                                         setVariance(toggled)
                                     }}
                                 />
-                                {/*<toggle-switch className="switch-warning" style="width: 170px"*/}
-                                {/*ng-model="ui.dataSelection.variance"*/}
-                                {/*knob-label="Variance"></toggle-switch>*/}
 
-
-                                <ManagedButtonGroup>
+                                <ButtonGroup className='margin-right-4px'>
                                     <Button color='light' size='sm' onClick={() => resetToAutomatic()}>Reset auto</Button>
                                     <Button color='light' size='sm' onClick={() => resetToManual()}>Reset manual</Button>
-                                </ManagedButtonGroup>
+                                </ButtonGroup>
 
                                 <ManagedSliderInput
-                                    defaultValue={3}
+                                    defaultValue={this.props.ui.detailed.smooth}
                                     min={0}
-                                    max={7}
+                                    max={this.props.ui.detailed.bounds.maxSmooth}
                                     width={190}
                                     sliderWidth={60}
                                     label='Smooth'
+                                    onChange={(value) => setSmooth(value)}
                                 />
-
                                 <InputGroup className='force-inline-layout' size='sm'>
                                     <InputGroupAddon addonType="prepend">
                                         Range
                                     </InputGroupAddon>
-                                    <ManagedButtonGroup>
-                                        <Button color='light' size='sm'>100</Button>
-                                        <Button color='light' size='sm'>99.5</Button>
-                                        <Button color='light' size='sm'>99</Button>
-                                        <Button color='light' size='sm'>98</Button>
-                                    </ManagedButtonGroup>
+                                    <ButtonGroup>
+                                        {
+                                            Enumerable.from(this.props.ui.detailed.ranges).select((e, i) => {
+                                                return (
+                                                    <Button
+                                                        color='light'
+                                                        size='sm'
+                                                        onClick={() => setRangeIndex(i)}
+                                                        key={i}
+                                                        active={this.props.ui.detailed.rangeIndex === i}
+                                                    >
+                                                        {e}
+                                                    </Button>
+                                                )
+                                            }).toArray()
+                                        }
+                                    </ButtonGroup>
                                 </InputGroup>
                             </Form>
-
-                            {/*<div className="input-group input-group-sm range-toggle-container">*/}
-                            {/*<span className="input-group-addon">Range</span>*/}
-                            {/*<div className="btn-group">*/}
-                            {/*<button className="btn btn-sm btn-default"></button>*/}
-                            {/*</div>*/}
-                            {/*</div>*/}
                         </ListGroupItem>
                         <ListGroupItem>
                             <Form inline>
@@ -178,7 +166,44 @@ class Detailed extends React.Component {
                                         <InputGroupAddon addonType="prepend">
                                             Top Results
                                         </InputGroupAddon>
-                                        <Button color='light' size='sm'>Analyse spectra</Button>
+                                        {
+                                            this.props.ui.active && this.props.ui.active.hasMatches() ? (
+                                                <ManagedButtonGroup onChange={(match) => selectMatch(match)}>
+                                                    {
+                                                        Enumerable.from(this.props.ui.active.getMatches(
+                                                            this.props.ui.detailed.bounds.maxMatches
+                                                        )).select((e, i) => {
+                                                            return (
+                                                                <Button
+                                                                    size="sm"
+                                                                    key={i}
+                                                                    value={e}
+                                                                >
+                                                                    {i + 1}
+                                                                </Button>
+                                                            )
+                                                        }).toArray()
+                                                    }
+                                                </ManagedButtonGroup>
+                                            ) : null
+                                        }
+                                        {
+                                            !this.props.ui.active || this.props.ui.active.getNumBestResults() === 0 ? (
+                                                <Button
+                                                    color='light'
+                                                    size='sm'
+                                                    onClick={() => {
+                                                        if (this.props.ui.active)
+                                                            this.props.data.processorService.addToPriorityQueue(
+                                                                this.props.ui.active,
+                                                                true
+                                                            )
+                                                    }}
+                                                >
+                                                    Analyse spectra
+                                                </Button>
+                                            ) : null
+                                        }
                                     </InputGroup>
                                 </FormGroup>
                                 <FormGroup inline>
@@ -189,7 +214,23 @@ class Detailed extends React.Component {
                                         <InputGroupAddon addonType="prepend">
                                             Template
                                         </InputGroupAddon>
-                                        <Input type='select'>
+                                        <Input
+                                            type='select'
+                                            onChange={(e) => setTemplateId(e.target.value)}
+                                            value={this.props.ui.detailed.templateId}
+                                        >
+                                            {
+                                                (() => {
+                                                    const data = [{id: '0', name: "Select a template"}];
+                                                    Enumerable.from(templateManager.getTemplates()).forEach(e => {
+                                                        data.push({id: e.id, name: e.name});
+                                                    });
+                                                    // return data;
+                                                    return Enumerable.from(data).select((e, i) => {
+                                                        return (<option key={i} value={e.id}>{e.id + ' - ' + e.name}</option>)
+                                                    }).toArray()
+                                                })()
+                                            }
                                         </Input>
                                     </InputGroup>
                                 </FormGroup>
@@ -216,16 +257,42 @@ class Detailed extends React.Component {
                                     }}
                                     onChange={value => updateRedShift(value)}
                                 />
-                                <Button color='primary' size='sm'>Perform Fit</Button>
+                                <Button
+                                    color='primary'
+                                    size='sm'
+                                    onClick={() => {
+                                       performFit()
+                                    }}
+                                >
+                                    Perform Fit
+                                </Button>
                             </Form>
                         </ListGroupItem>
                         <ListGroupItem>
                             <Form inline>
-                                <Button color='primary' size='sm'>Hide</Button>
-                                <Button size='sm'>Back</Button>
-                                <Button size='sm'>Forward</Button>
+                                <Button color='primary' size='sm' onClick={() => toggleSpectralLines()}>
+                                    {
+                                        this.props.ui.detailed.spectralLines ? "Hide" : "Show"
+                                    }
+                                </Button>
+                                <Button size='sm' onClick={() => previousSpectralLine()}>Back</Button>
+                                <Button size='sm' onClick={() => nextSpectralLine()}>Forward</Button>
                                 <ul className="list-unstyled list-inline">
-                                    {spectralLines.toArray()}
+                                    {
+                                        Enumerable.from(spectraLineService.getAll()).select(
+                                            (l, i) => {
+                                                return (
+                                                    <li
+                                                        className={"sline lined " + (boldItems.contains(l.id) ? "bold" : "")}
+                                                        key={l.id}
+                                                        onClick={() => clickSpectralLine(l.id)}
+                                                    >
+                                                        {l.label}
+                                                    </li>
+                                                )
+                                            }
+                                        ).toArray()
+                                    }
                                 </ul>
                             </Form>
                         </ListGroupItem>

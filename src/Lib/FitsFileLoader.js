@@ -44,20 +44,22 @@ class FitsFileLoader {
     }
 
     setFilename(ifilename) {
-        var actualName = path.basename(ifilename);
+        const actualName = path.basename(ifilename);
         this.isLoading = true;
         this.hasFitsFile = true;
         this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
-        this.global.data.fitsFileName = this.originalFilename;
+        // todo: Important?
+        //this.global.data.fitsFileName = this.originalFilename;
         this.filename = this.originalFilename.replace(/_/g, " ");
         this.thefilename = ifilename;
         this.actualName = actualName;
     }
     setFiledata(ifilename,ifiledata) {
-        var actualName = path.basename(ifilename);
+        const actualName = path.basename(ifilename);
         this.isLoading = true;
         this.hasFitsFile = true;
         this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
+        // todo: Important?
         //this.global.data.fitsFileName = this.originalFilename;
         this.filename = this.originalFilename.replace(/_/g, " ");
         this.thefilename = ifilename;
@@ -69,7 +71,7 @@ class FitsFileLoader {
         //const q = this.$q.defer();
         this.isLoading = true;
         this.hasFitsFile = true;
-        var fileData = this.thefiledata;
+        const fileData = this.thefiledata;
         this.fits = new window.astro.FITS(fileData, function () {
             console.log("window.astro.FITS done its thing now parse "+this.filename+" "+this.originalFilename);
             this.parseFitsFile(q, this.originalFilename);
@@ -78,28 +80,28 @@ class FitsFileLoader {
         return q.promise;
     }
 
-    loadInFitsFile(file) {
-        const q = $q.defer();
-        this.isLoading = true;
-        this.hasFitsFile = true;
-        let pass = file;
-        if (file.actualName != null) {
-            this.originalFilename = file.actualName.replace(/\.[^/.]+$/, "");
-            pass = file.file;
-        } else {
-            this.originalFilename = file.name.replace(/\.[^/.]+$/, "");
-        }
-        setTimeout(() => setFitsFilename(this.originalFilename), 0);
-        this.filename = this.originalFilename.replace(/_/g, " ");
-        this.log.debug("Loading FITs file");
-        this.fits = new astro.FITS(pass, function () {
-            this.log.debug("Loaded FITS file "+this.filename+" "+this.originalFilename);
-            console.log("Loaded FITS file "+this.filename+" "+this.originalFilename);
-            this.parseFitsFile(q, this.originalFilename);
-            this.processorService.setPause();
-        }.bind(this));
-        return q.promise;
-    };
+    // loadInFitsFile(file) {
+    //     const q = $q.defer();
+    //     this.isLoading = true;
+    //     this.hasFitsFile = true;
+    //     let pass = file;
+    //     if (file.actualName != null) {
+    //         this.originalFilename = file.actualName.replace(/\.[^/.]+$/, "");
+    //         pass = file.file;
+    //     } else {
+    //         this.originalFilename = file.name.replace(/\.[^/.]+$/, "");
+    //     }
+    //     setTimeout(() => setFitsFilename(this.originalFilename), 0);
+    //     this.filename = this.originalFilename.replace(/_/g, " ");
+    //     this.log.debug("Loading FITs file");
+    //     this.fits = new astro.FITS(pass, function () {
+    //         this.log.debug("Loaded FITS file "+this.filename+" "+this.originalFilename);
+    //         console.log("Loaded FITS file "+this.filename+" "+this.originalFilename);
+    //         this.parseFitsFile(q, this.originalFilename);
+    //         this.processorService.setPause();
+    //     }.bind(this));
+    //     return q.promise;
+    // };
 
     getHDUFromName(name) {
         const n = name.toUpperCase();
@@ -212,10 +214,10 @@ class FitsFileLoader {
             }
             this.log.debug("Spectra list made");
             this.isLoading = false;
-            //for (let i = 0; i < this.subscribed.length; i++) {
-            //    this.subscribed[i](spectraList);
-            //}
-            //this.log.debug("Returning FITs object");
+            for (let i = 0; i < this.subscribed.length; i++) {
+                this.subscribed[i](spectraList);
+            }
+            this.log.debug("Returning FITs object");
             q.resolve(spectraList);
 
         }.bind(this))

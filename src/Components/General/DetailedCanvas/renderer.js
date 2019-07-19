@@ -14,12 +14,12 @@ import {getStrengthOfLine} from "./spectralAnalysis";
 import download_image from '../../../Assets/images/download.png';
 import lens_image from '../../../Assets/images/lens.png';
 import {spectraLineService} from "./spectralLines";
-import TemplateManager from "../../../Lib/TemplateManager";
 import {
     clearShouldUpdateBaseData,
     clearShouldUpdateSkyData,
     clearShouldUpdateTemplateData, clearShouldUpdateXcorData
 } from "../../../Stores/Detailed/Actions";
+import {templateManager} from "../../../Lib/TemplateManager";
 
 class CanvasRenderer {
 
@@ -103,7 +103,7 @@ class CanvasRenderer {
         this.downloadImg.src = download_image;
 
         // Todo: Convert this to a singleton for the entire project
-        this.templateManager = new TemplateManager();
+        this.templateManager = templateManager;
 
         // Force a redraw
         this.update(props);
