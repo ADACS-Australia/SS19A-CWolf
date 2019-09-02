@@ -6,7 +6,6 @@ import BootstrapTable from 'react-bootstrap-table-next';
 import marzIcon from '../../Assets/images/Marz2.png';
 import * as Enumerable from "linq";
 import {templateManager} from "../../Lib/TemplateManager";
-import {setActive} from "../../Stores/UI/Actions";
 
 class Overview extends React.Component {
     constructor(props) {
@@ -243,8 +242,11 @@ class Overview extends React.Component {
                     Enumerable.from(this.props.data.spectra).select((e) => {
                         return (
                             <div className={"overview-item lined" + (this.props.ui.active.id === e.id ? " activeSelect" : "")}
-                            onClick={() => setActive(e)}
-                             onDoubleClick={() => console.log("go to detailed:", e)}
+                            onClick={() => this.props.data.processorService.spectraManager.setActive(e)}
+                             onDoubleClick={() => {
+                                 this.props.data.processorService.spectraManager.setActive(e)
+                                 this.props.history.push('/detailed')
+                             }}
                                  key={e.id}
                              >
                                  {/*// ng-repeat="i in data.spectra | overviewFilter track by i.getHash()">*/}

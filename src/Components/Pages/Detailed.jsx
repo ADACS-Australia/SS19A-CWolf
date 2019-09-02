@@ -244,7 +244,7 @@ class Detailed extends React.Component {
                                     onChange={value => updateTemplateOffset(value)}
                                 />
                                 <ManagedSliderInput
-                                    defaultValue={0}
+                                    value={this.props.ui.detailed.redshift}
                                     min={0}
                                     max={5}
                                     width={305}

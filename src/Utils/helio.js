@@ -1,5 +1,4 @@
 import {defaultFor} from './methods';
-import math from 'mathjs';
 // TODO:RS
 //try  {
 //    math.sin(1);

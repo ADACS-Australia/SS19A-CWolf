@@ -25,6 +25,7 @@ class ManagedSliderInput extends React.Component {
     }
 
     render() {
+        console.log("more props:", this.props)
         return (
             <FormGroup inline>
                 <InputGroup
@@ -42,7 +43,7 @@ class ManagedSliderInput extends React.Component {
                         bsSize="xs"
                         min={this.props.min}
                         max={this.props.max}
-                        value={this.state.value}
+                        value={this.props.value || this.state.value}
                         onChange={this.onChange}
                         step={this.props.step}
                         style={this.props.inputStyle}
@@ -59,7 +60,7 @@ class ManagedSliderInput extends React.Component {
                                 ...this.props.sliderStyle
                             }}
                             step={this.props.step}
-                            value={this.state.value}
+                            value={this.props.value || this.state.value}
                             onChange={this.onChange}
                         />
                     </InputGroupAddon>

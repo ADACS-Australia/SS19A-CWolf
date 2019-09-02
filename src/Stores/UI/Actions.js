@@ -75,10 +75,10 @@ function setProcessed(processed) {
     })
 }
 
-function setVariance(processed) {
+function setVariance(variance) {
     AppDispatcher.dispatch({
         type: UIActionTypes.SET_VARIANCE,
-        processed: processed
+        variance: variance
     })
 }
 

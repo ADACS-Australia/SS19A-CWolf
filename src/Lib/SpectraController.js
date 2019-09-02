@@ -10,6 +10,7 @@ import {
     updateNumberProcessed,
     updateRedShift
 } from "../Stores/UI/Actions";
+import {setShouldUpdateBaseData} from "../Stores/Detailed/Actions";
 
 class SpectraController {
     constructor(store, resultsManager) {
@@ -203,6 +204,8 @@ class SpectraController {
                 data.fits.shift();
             }
         }
+
+        setTimeout(() => setShouldUpdateBaseData(), 0)
     };
 
     getUI() {

@@ -1,7 +1,13 @@
 import React from "react";
-import {Accordion, AccordionItem, AccordionItemBody, AccordionItemTitle} from "react-accessible-accordion";
+import {
+    Accordion,
+    AccordionItem,
+    AccordionItemPanel,
+    AccordionItemHeading,
+    AccordionItemButton
+} from "react-accessible-accordion";
 
-import "../../Assets/css/usage-accordian.css"
+import "../../Assets/css/usage-accordion.css"
 
 class Usage extends React.Component {
     constructor(props) {
@@ -12,10 +18,12 @@ class Usage extends React.Component {
         return (
             <Accordion>
                 <AccordionItem>
-                    <AccordionItemTitle>
-                        <h5>Introduction</h5>
-                    </AccordionItemTitle>
-                    <AccordionItemBody>
+                    <AccordionItemHeading>
+                        <AccordionItemButton>
+                            Introduction
+                        </AccordionItemButton>
+                    </AccordionItemHeading>
+                    <AccordionItemPanel>
                         <h4>The program's purpose</h4>
                         <p>This program is designed to take files from the AAOmega spectrograph after data reduction and
                             allow redshifting of the spectra within.</p>
@@ -42,13 +50,15 @@ class Usage extends React.Component {
                                 </address>
                             </li>
                         </ul>
-                    </AccordionItemBody>
+                    </AccordionItemPanel>
                 </AccordionItem>
                 <AccordionItem>
-                    <AccordionItemTitle>
-                        <h5>Loading Files</h5>
-                    </AccordionItemTitle>
-                    <AccordionItemBody>
+                    <AccordionItemHeading>
+                        <AccordionItemButton>
+                            Loading Files
+                        </AccordionItemButton>
+                    </AccordionItemHeading>
+                    <AccordionItemPanel>
                         <h4>Loading Files</h4>
                         <p>Files can be loaded into the system by dragging them over the top left hand dashed box. The
                             application will accept <code>.fits</code> files from the AAOmega spectrograph containing
@@ -89,13 +99,15 @@ class Usage extends React.Component {
                             processing the spectra. The progress of the red bar (which comes after the green has
                             finished) and matches the colour of the templates, represents the progress through analysing
                             the spectra. The bar will turn blue when all spectra have been assigned a redshift.</p>
-                    </AccordionItemBody>
+                    </AccordionItemPanel>
                 </AccordionItem>
                 <AccordionItem>
-                    <AccordionItemTitle>
-                        <h5>Merging Files</h5>
-                    </AccordionItemTitle>
-                    <AccordionItemBody>
+                    <AccordionItemHeading>
+                        <AccordionItemButton>
+                            Merging Files
+                        </AccordionItemButton>
+                    </AccordionItemHeading>
+                    <AccordionItemPanel>
                         <h4>Merging Files</h4>
                         <p>If you have had two people redshift the same <code>.fits</code> file and want to merge their
                             results together, this can also be done from within Marz.</p>
@@ -114,26 +126,30 @@ class Usage extends React.Component {
                             a redshift and assign a quality flag as per normal redshifting to move onto the next
                             disagreement. The results for both original <code>.mz</code> files will be appended to the
                             spectrum's comment.</p>
-                    </AccordionItemBody>
+                    </AccordionItemPanel>
                 </AccordionItem>
                 <AccordionItem>
-                    <AccordionItemTitle>
-                        <h5>The Overview Screen</h5>
-                    </AccordionItemTitle>
-                    <AccordionItemBody>
+                    <AccordionItemHeading>
+                        <AccordionItemButton>
+                            The Overview Screen
+                        </AccordionItemButton>
+                    </AccordionItemHeading>
+                    <AccordionItemPanel>
                         <p>The overview screen allows a high level overview of all spectra to be quickly given to the
                             user. Subsets of spectra can be displayed by using the filter options on the left sidebar,
                             where options have been created for object types, templates, redshifts and quality flag
                             (QOP).</p>
                         <p>Users can also switch between a graphical overview, and a more compact table view, which
                             allows sorting of the spectra based on ID, template, redshift or QOP.</p>
-                    </AccordionItemBody>
+                    </AccordionItemPanel>
                 </AccordionItem>
                 <AccordionItem>
-                    <AccordionItemTitle>
-                        <h5>The Detailed Screen</h5>
-                    </AccordionItemTitle>
-                    <AccordionItemBody>
+                    <AccordionItemHeading>
+                        <AccordionItemButton>
+                            The Detailed Screen
+                        </AccordionItemButton>
+                    </AccordionItemHeading>
+                    <AccordionItemPanel>
                         <p>The detailed view allows users take processed spectra and manually redshift them. This can be
                             accomplished in two main ways, matching templates or finding spectral lines.</p>
                         <hr/>
@@ -221,25 +237,29 @@ class Usage extends React.Component {
                         <p>At any point during the redshifting process, you can download a file containing the spectra
                             that have already been assigned redshifts, by pressing on the download button on the bottom
                             right corner of the screen.</p>
-                    </AccordionItemBody>
+                    </AccordionItemPanel>
                 </AccordionItem>
                 <AccordionItem>
-                    <AccordionItemTitle>
-                        <h5>The Template Screen</h5>
-                    </AccordionItemTitle>
-                    <AccordionItemBody>
+                    <AccordionItemHeading>
+                        <AccordionItemButton>
+                            The Template Screen
+                        </AccordionItemButton>
+                    </AccordionItemHeading>
+                    <AccordionItemPanel>
                         <p>The templates screen for now only provides a simple graphical view of all the templates used
                             by the application to match spectra.</p>
                         <p>Unlikely templates can also be disabled by setting them to inactive. Inactive templates are
                             not available in the detailed screen, nor do they undergo automatic matching. Making a
                             template active or inactive applies instantly, but not retroactively.</p>
-                    </AccordionItemBody>
+                    </AccordionItemPanel>
                 </AccordionItem>
                 <AccordionItem>
-                    <AccordionItemTitle>
-                        <h5>The Settings Screen</h5>
-                    </AccordionItemTitle>
-                    <AccordionItemBody>
+                    <AccordionItemHeading>
+                        <AccordionItemButton>
+                            The Settings Screen
+                        </AccordionItemButton>
+                    </AccordionItemHeading>
+                    <AccordionItemPanel>
                         <p>The settings screen allows configuration of the program. All changes on the Settings screen
                             are <strong>instantly</strong> applied on change, and do not need to be saved. The settings
                             are stored as cookie values, and will persist between sessions.</p>
@@ -247,13 +267,15 @@ class Usage extends React.Component {
                             saved <code>.mz</code> output via downloading the results, these can still be loaded in
                             without hassle, this section only pertains to the automatic background saving of results.
                         </p>
-                    </AccordionItemBody>
+                    </AccordionItemPanel>
                 </AccordionItem>
                 <AccordionItem>
-                    <AccordionItemTitle>
-                        <h5>Keybindings</h5>
-                    </AccordionItemTitle>
-                    <AccordionItemBody>
+                    <AccordionItemHeading>
+                        <AccordionItemButton>
+                            Keybindings
+                        </AccordionItemButton>
+                    </AccordionItemHeading>
+                    <AccordionItemPanel>
                         <p>Many key bindings have been added to this application from the RUNZ default keymapping to
                             make usage easier. Note that the way the key bindings and browser interact, make sure you
                             don't have any input element selected when pressing the keyboard shortcuts. In most cases
@@ -262,13 +284,15 @@ class Usage extends React.Component {
                             slider. So, if a shortcut doesn't work, click away and try again!</p>
                         <p>The following commands are available:</p>
                         {/*todo Add keybindings*/}
-                    </AccordionItemBody>
+                    </AccordionItemPanel>
                 </AccordionItem>
                 <AccordionItem>
-                    <AccordionItemTitle>
-                        <h5>File Output and Loading Results with Python</h5>
-                    </AccordionItemTitle>
-                    <AccordionItemBody>
+                    <AccordionItemHeading>
+                        <AccordionItemButton>
+                            File Output and Loading Results with Python
+                        </AccordionItemButton>
+                    </AccordionItemHeading>
+                    <AccordionItemPanel>
                         <h4>Output file structure</h4>
                         <p>Marz saves <code>.mz</code> files as output. These files are formatted ot be ASCII,
                             comma-separated value files. An <a target="_blank"
@@ -292,14 +316,14 @@ class Usage extends React.Component {
                         <h4>Loading this file with Python</h4>
                         <p>Given the popularity of Python in astrophysics, example code to read in the generated Marz
                             output file has been supplied.</p>
-                        <pre className="prettyprint lang-python">import numpy
-def loadMarzResults(filepath):
-    return numpy.genfromtxt(filepath, delimiter=',', skip_header=2, autostrip=True, names=True, dtype=None)</pre>
+                        <pre className="prettyprint lang-python">import numpy <br/>
+def loadMarzResults(filepath):<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;return numpy.genfromtxt(filepath, delimiter=',', skip_header=2, autostrip=True, names=True, dtype=None)</pre>
                         <p>The result is a structured <code>numpy</code> array and can undergo normal array operations:
                         </p>
-                        <pre className="prettyprint lang-python">res = loadMarzResults(pathToResultsFile)
+                        <pre className="prettyprint lang-python">res = loadMarzResults(pathToResultsFile)<br/>
 confident = res[res['QOP'] == 4]</pre>
-                    </AccordionItemBody>
+                    </AccordionItemPanel>
                 </AccordionItem>
             </Accordion>
         )

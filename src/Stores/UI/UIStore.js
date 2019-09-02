@@ -1,7 +1,7 @@
 import {setTemplateId, UIActionTypes, updateRedShift} from "./Actions";
 import {
     setShouldUpdateBaseData,
-    setShouldUpdateSkyData,
+    setShouldUpdateSkyData, setShouldUpdateSmoothData,
     setShouldUpdateTemplateData,
     setShouldUpdateXcorData
 } from "../Detailed/Actions";
@@ -92,6 +92,7 @@ class UIStore {
                 };
 
             case UIActionTypes.UPDATE_REDSHIFT:
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
 
                 // Update the redshift
                 state.detailed.redshift = action.redshift;
@@ -101,6 +102,7 @@ class UIStore {
                 };
 
             case UIActionTypes.UPDATE_TEMPLATE_OFFSET:
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
 
                 // Update the template offset
                 state.detailed.templateOffset = action.templateOffset;
@@ -201,6 +203,8 @@ class UIStore {
                 };
 
             case UIActionTypes.SET_SMOOTH:
+                setTimeout(() => setShouldUpdateSmoothData(), 0);
+
                 // Update the smooth value
                 state.detailed.smooth = action.smoothValue;
 
@@ -209,6 +213,8 @@ class UIStore {
                 };
 
             case UIActionTypes.SET_TEMPLATE_MATCHED:
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
+
                 // Update the matched value
                 state.dataSelection.matched = action.matched;
 
@@ -217,6 +223,9 @@ class UIStore {
                 };
 
             case UIActionTypes.SET_CONTINUUM:
+                setTimeout(() => setShouldUpdateBaseData(), 0);
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
+
                 // Update the continuum value
                 state.detailed.continuum = action.continuum;
 
@@ -233,6 +242,9 @@ class UIStore {
                 };
 
             case UIActionTypes.SELECT_MATCH:
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
+                setTimeout(() => setShouldUpdateXcorData(), 0);
+
                 // Set the match redshift and template ID
                 state.detailed.redshift = action.redshift;
                 state.detailed.templateId = action.templateId;

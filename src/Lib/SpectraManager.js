@@ -1,5 +1,6 @@
 import {globalConfig} from "./config";
 import {updateNumberMatched, updateNumberProcessed} from "../Stores/UI/Actions";
+import {setShouldUpdateXcorData} from "../Stores/Detailed/Actions";
 
 class SpectraManager {
     constructor(store) {
@@ -64,7 +65,8 @@ class SpectraManager {
             }
         }
 
-        setTimeout(() => updateNumberMatched(), 0)
+        setTimeout(() => updateNumberMatched(), 0);
+        setTimeout(() => setShouldUpdateXcorData(), 0);
     };
     setSpectra(spectraList) {
         const data = this.getData();
