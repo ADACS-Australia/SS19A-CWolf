@@ -414,8 +414,9 @@ class CanvasRenderer {
         bound.yMax = -9e9;
 
         const data = this.params.data.toArray();
+        const count = data.length;
 
-        for (let i = 0; i < this.params.data.count(); i++) {
+        for (let i = 0; i < count; i++) {
             if (data[i].bound) {
                 c++;
             }
@@ -428,7 +429,7 @@ class CanvasRenderer {
         }
         let currentRangeIndex = this.detailed.rangeIndex;
 
-        for (let i = 0; i < this.params.data.count(); i++) {
+        for (let i = 0; i < count; i++) {
             if (data[i].bound) {
                 bound.yMin = data[i].yMins[currentRangeIndex];
                 bound.yMax = data[i].yMaxs[currentRangeIndex];
