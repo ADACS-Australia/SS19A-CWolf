@@ -67,13 +67,11 @@ class FitsFileLoader {
         this.thefiledata = ifiledata;
     }
     provide(q) {
-        console.log(" ========== PROVIDE ==============");
         //const q = this.$q.defer();
         this.isLoading = true;
         this.hasFitsFile = true;
         const fileData = this.thefiledata;
         this.fits = new window.astro.FITS(fileData, function () {
-            console.log("window.astro.FITS done its thing now parse "+this.filename+" "+this.originalFilename);
             this.parseFitsFile(q, this.originalFilename);
             this.processorService.setPause();
         }.bind(this));
@@ -124,7 +122,6 @@ class FitsFileLoader {
      * @param q
      */
     parseFitsFile(q, originalFilename) {
-        this.log.debug("Getting headers");
         this.header0 = this.fits.getHDU(0).header;
         this.MJD = this.header0.get('UTMJD');
         this.originalFilename = originalFilename;
@@ -174,7 +171,6 @@ class FitsFileLoader {
                     }
                 }
             }
-            this.log.debug("Have indexes to remove");
             indexesToRemove = Enumerable.from(indexesToRemove).orderBy(x => x);
             indexesToRemove = indexesToRemove.distinct().toArray();
 
@@ -212,12 +208,10 @@ class FitsFileLoader {
                 s.setCompute(int != null && vari != null);
                 spectraList.push(s);
             }
-            this.log.debug("Spectra list made");
             this.isLoading = false;
             for (let i = 0; i < this.subscribed.length; i++) {
                 this.subscribed[i](spectraList);
             }
-            this.log.debug("Returning FITs object");
             q.resolve(spectraList);
 
         }.bind(this))

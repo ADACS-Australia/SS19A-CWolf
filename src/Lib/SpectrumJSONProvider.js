@@ -5,17 +5,23 @@ class SpectrumJSONProvider {
         this.provision = [];
     }
     fromJSON(dict) {
+        try {
         this.provision.length = 0;
         if (Array.isArray(dict)) {
             for (let i=0; i < dict.length; i++) {
                 const thisSpectrum = new SpectrumX(i.toString());
                 thisSpectrum.fromDictionary(dict[i]);
+                thisSpectrum.setId(i+1);
                 this.provision.push(thisSpectrum)
             }
         } else {
             const thisSpectrum = new SpectrumX("json");
             thisSpectrum.fromDictionary(dict);
+            thisSpectrum.setId(1);
             this.provision.push(thisSpectrum)
+        }
+        } catch (err) {
+            console.log("error "+err);
         }
     }
     getDoHelio() {

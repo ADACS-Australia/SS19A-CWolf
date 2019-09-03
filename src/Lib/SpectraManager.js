@@ -10,6 +10,11 @@ class SpectraManager {
         this.log = console;
         this.autoQOPs = false;
         this.pacer = null;
+        this.clidata = null;
+    }
+
+    setCLIData(data) {
+        this.clidata = data;
     }
     
     setFinishedCallback(fn) {
@@ -21,7 +26,10 @@ class SpectraManager {
     };
 
     getData() {
+        if (this.clidata != null)
+            return this.clidata;
         return this.store.getState().s[this.store.getState().index].data;
+
     }
 
     setMatchedResultsNode(results) {

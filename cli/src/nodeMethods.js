@@ -23,14 +23,16 @@ function init(workers, log, argv) {
     };
     global = {data: data};
     p = new ProcessorManager(true);
-    s = new SpectraManager(data, log);
+    s = new SpectraManager(null);
+    s.setCLIData(data);
     t = new TemplateManager(false);
     r = new ResultsGenerator(data, t, false);
     fl = new FitsFileLoader(p, r, true);
 
     consumer = new SpectrumConsumer(p, r, true);
-    consumer.subscribeToInput(s.setSpectra, s);
-    consumer.subscribeToInput(p.addSpectraListToQueue, p);
+    consumer.subscribeToInput(spectraList => s.setSpectra(spectraList));
+    consumer.subscribeToInput(spectraList => p.addSpectraListToQueue(spectraList));
+
     p.setNode();
     p.setWorkers(workers);
     s.setAssignAutoQOPs(argv["assignAutoQOPs"]);
@@ -55,8 +57,10 @@ function runFitsFile(filename, outputFile, debug, consoleOutput) {
         total: 30
     }));
     s.setFinishedCallback(function () {
+        try {
         const values = r.getResultsCSV("cli", filename);
-        const num = s.data.spectra.length;
+        const data = s.getData();
+        const num = data.spectra.length;
         if (consoleOutput) {
             console.log(values);
         }
@@ -74,11 +78,13 @@ function runFitsFile(filename, outputFile, debug, consoleOutput) {
         const endTime = new Date();
         const elapsed = (endTime - startTime) / 1000;
         debug("File processing took " + elapsed + " seconds, " + (num / elapsed).toFixed(2) + " spectra per second");
+        } catch (err) {
+            console.log("Problem processing file "+filename+" : "+err+" stack "+err.stack);
+        }
     });
     fl.setFilename(filename, fileData);
     fl.setFiledata(filename, fileData);
     consumer.consume(fl,s).then(function(spectraList) {
-       
     });
 
     return qq.promise;
@@ -89,6 +95,7 @@ function runJSONFile(filename, outputFile, debug, consoleOutput) {
     consoleOutput = defaultFor(consoleOutput, true);
     //consoleOutput = true;
     const fileData = fs.readFileSync(filename);
+    const dict = JSON.parse(fileData);
     const qq = $q.defer();
     const startTime = new Date();
     debug("Processing file " + filename);
@@ -99,7 +106,8 @@ function runJSONFile(filename, outputFile, debug, consoleOutput) {
     }));
     s.setFinishedCallback(function () {
         const values = r.getResultsCSV("cli", filename);
-        const num = s.data.spectra.length;
+        const data = s.getData();
+        const num = data.spectra.length;
         if (consoleOutput) {
             console.log(values);
         }
@@ -119,11 +127,10 @@ function runJSONFile(filename, outputFile, debug, consoleOutput) {
         debug("File processing took " + elapsed + " seconds, " + (num / elapsed).toFixed(2) + " spectra per second");
     });
     const spectrumProvider = new SpectrumJSONProvider();
-    spectrumProvider.fromJSON(filename);
+    spectrumProvider.fromJSON(dict);
     r.setHelio(spectrumProvider.getDoHelio());
     r.setCMB(spectrumProvider.getDoCMB());
     consumer.consume(spectrumProvider,s).then(function(spectraList) {
-        //console.log("consumed");
     });
 
     return qq.promise;
