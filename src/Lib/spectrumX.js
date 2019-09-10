@@ -17,6 +17,7 @@ class SpectrumX {
         this.properties.ra = null;
         this.properties.dec = null;
         this.properties.magnitude = null;
+
         this.properties.type = "";
         this.properties.longitude = null;
         this.properties.longitude = null;
@@ -25,6 +26,16 @@ class SpectrumX {
         this.properties.juliandate = "";
         this.properties.epoch = ""
         this.properties.radecsys = "";
+
+
+        // one way to handle missing properties (good enough for the ui)
+        this.properties.ra = 0;
+        this.properties.dec = 0;
+        this.properties.magnitude = 0;
+        this.properties.longitude = 0;
+        this.properties.longitude = 0;
+        this.properties.latitude = 0;
+        this.properties.altitude = 0;
     }
     fromDictionary(dict)
     {
@@ -61,21 +72,33 @@ class SpectrumX {
             }
             if (this.properties["ra"]) {
                 this.properties.ra = this.properties["ra"];
+            } else {
+                this.properties.ra = 0;
             }
             if (this.properties["dec"]) {
                 this.properties.dec = this.properties["dec"];
+            } else {
+                this.properties.dec = 0;
             }
             if (this.properties["magnitude"]) {
                 this.properties.magnitude = this.properties["magnitude"];
+            } else {
+                this.properties.magnitude = 0;
             }
             if (this.properties["longitude"]) {
                 this.properties.longitude = this.properties["longitude"];
+            } else {
+                this.properties.longitude = 0;
             }
             if (this.properties["latitude"]) {
                 this.properties.latitude = this.properties["latitude"];
+            } else {
+                this.properties.latitude = 0;
             }
             if (this.properties["altitude"]) {
                 this.properties.altitude = this.properties["altitude"];
+            } else {
+                this.properties.altitude = 0;
             }
             if (this.properties["juliandate"]) {
                 this.properties.juliandate = this.properties["juliandate"];
