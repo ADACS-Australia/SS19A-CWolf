@@ -336,6 +336,38 @@ class UIStore {
                     ...state
                 };
 
+            case UIActionTypes.ACCEPT_AUTO_QOP:
+                console.log("ACCEPT AUTO QOP")
+                const matches = state.active.getMatches(state.detailed.bounds.maxMatches);
+                if (state.active && matches != null && matches.length > 0) {
+                    console.log("ACCEPT AUTO QOP IF 1")
+                    state.detailed.redshift = matches[0].z;
+                    state.detailed.templateId = matches[0].templateId;
+
+                    if (state.active) {
+                        console.log("ACCEPT AUTO QOP IF 2")
+                        this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setManualResults(state.active, state.templateId, state.detailed.redshift, state.active.autoQOP);
+                        setTimeout(() => this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setNextSpectra(), 0);
+                    }
+                }
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.SET_SPECTRA_FOCUS:
+                state.detailed.spectraFocus = action.focus;
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.SET_WAITING_FOR_SPECTRA:
+                state.detailed.waitingForSpectra = action.waiting;
+
+                return {
+                    ...state
+                };
+
             default:
                 return state;
         }

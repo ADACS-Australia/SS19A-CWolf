@@ -162,7 +162,7 @@ class Sidebar extends React.Component {
                                         }).toArray()
                                     }
                                 </select>
-                                <select className="input-sm form-control" required>
+                                <select className="input-sm form-control">
                                     {
                                         Enumerable.from(this.props.sidebar.qops).select(e => {
                                             return (<option value={e.value} key={e.value}>{e.label}</option>)
@@ -172,27 +172,31 @@ class Sidebar extends React.Component {
                             </div>) : null
                         }
                     </div>
-                    {/*<div ng-if="showSave()" className="top-spacing">*/}
-                    {/*<b>Save QOP:</b>*/}
-                    {/*<button className="btn btn-block btn-sm btn-success" ng-click="saveManual(4)" tooltip="Saved!"*/}
-                    {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
-                    {/*tooltip-placement="right">{{getButtonLabel(4)}}</button>*/}
-                    {/*<button className="btn btn-block btn-sm btn-info" ng-click="saveManual(3)" tooltip="Saved!"*/}
-                    {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
-                    {/*tooltip-placement="right">{{getButtonLabel(3)}}</button>*/}
-                    {/*<button className="btn btn-block btn-sm btn-warning" ng-click="saveManual(2)" tooltip="Saved!"*/}
-                    {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
-                    {/*tooltip-placement="right">{{getButtonLabel(2)}}</button>*/}
-                    {/*<button className="btn btn-block btn-sm btn-danger" ng-click="saveManual(1)" tooltip="Saved!"*/}
-                    {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
-                    {/*tooltip-placement="right">{{getButtonLabel(1)}}</button>*/}
-                    {/*<button className="btn btn-block btn-sm btn-primary" ng-click="saveManual(6)" tooltip="Saved!"*/}
-                    {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
-                    {/*tooltip-placement="right">{{getButtonLabel(6)}}</button>*/}
-                    {/*<button className="btn btn-block btn-sm btn-default" ng-click="saveManual(0)" tooltip="Saved!"*/}
-                    {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
-                    {/*tooltip-placement="right">{{getButtonLabel(0)}}</button>*/}
-                    {/*</div>*/}
+                    {
+                        !isDetailed(this.props) ? (
+                            <div className="top-spacing">
+                                <b>Save QOP:</b>
+                                {/*<button className="btn btn-block btn-sm btn-success" ng-click="saveManual(4)" tooltip="Saved!"*/}
+                                {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
+                                {/*tooltip-placement="right">{{getButtonLabel(4)}}</button>*/}
+                                {/*<button className="btn btn-block btn-sm btn-info" ng-click="saveManual(3)" tooltip="Saved!"*/}
+                                {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
+                                {/*tooltip-placement="right">{{getButtonLabel(3)}}</button>*/}
+                                {/*<button className="btn btn-block btn-sm btn-warning" ng-click="saveManual(2)" tooltip="Saved!"*/}
+                                {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
+                                {/*tooltip-placement="right">{{getButtonLabel(2)}}</button>*/}
+                                {/*<button className="btn btn-block btn-sm btn-danger" ng-click="saveManual(1)" tooltip="Saved!"*/}
+                                {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
+                                {/*tooltip-placement="right">{{getButtonLabel(1)}}</button>*/}
+                                {/*<button className="btn btn-block btn-sm btn-primary" ng-click="saveManual(6)" tooltip="Saved!"*/}
+                                {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
+                                {/*tooltip-placement="right">{{getButtonLabel(6)}}</button>*/}
+                                {/*<button className="btn btn-block btn-sm btn-default" ng-click="saveManual(0)" tooltip="Saved!"*/}
+                                {/*tooltip-append-to-body="true" tooltip-trigger="focus"*/}
+                                {/*tooltip-placement="right">{{getButtonLabel(0)}}</button>*/}
+                            </div>
+                        ) : null
+                    }
                     {!isDetailed(this.props) || !this.props.ui.sidebarSmall ? (
                         <div className="top-spacing">
                             <b>Stepping options:</b>

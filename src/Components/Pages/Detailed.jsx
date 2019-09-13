@@ -13,6 +13,7 @@ import DetailedCanvas from "../General/DetailedCanvas/DetailedCanvas";
 import {spectraLineService} from "../General/DetailedCanvas/spectralLines";
 import * as Enumerable from "linq";
 import {
+    acceptAutoQOP,
     clickSpectralLine,
     nextSpectralLine, performFit,
     previousSpectralLine,
@@ -39,15 +40,22 @@ class Detailed extends React.Component {
                         <strong>ID</strong> {this.props.ui.active ? this.props.ui.active.id : ""}
                         <strong>NAME</strong> {this.props.ui.active ? this.props.ui.active.name : ""}
                         {
-                            // todo
-                            (<strong>AutoQOP</strong>)
+                            this.displayAuto() ?
+                                (
+                                    <span>
+                                        <strong>AutoQOP</strong>
+                                        <h4 className="auto-qop" onClick={() => acceptAutoQOP()}>
+                                            <span className={this.getQOPLabel(this.props.ui.active.autoQOP)}>
+                                                {this.getAutoQOPText()}
+                                            </span>
+                                        </h4>
+                                    </span>
+                                ) : null
                         }
-                        <h4 className="auto-qop">
-                            <span className=""></span></h4>
                         <strong>QOP</strong>
                         <h4 className="qop-h4">
                             <span
-                                className={"label " + (this.props.ui.active ? this.props.ui.active.qopLabel : "")}
+                                className={"badge " + (this.props.ui.active ? this.props.ui.active.qopLabel : "")}
                             >
                                 {this.getQOPText()}
                             </span>
@@ -119,8 +127,10 @@ class Detailed extends React.Component {
                                 />
 
                                 <ButtonGroup className='margin-right-4px'>
-                                    <Button color='light' size='sm' onClick={() => resetToAutomatic()}>Reset auto</Button>
-                                    <Button color='light' size='sm' onClick={() => resetToManual()}>Reset manual</Button>
+                                    <Button color='light' size='sm' onClick={() => resetToAutomatic()}>Reset
+                                        auto</Button>
+                                    <Button color='light' size='sm' onClick={() => resetToManual()}>Reset
+                                        manual</Button>
                                 </ButtonGroup>
 
                                 <ManagedSliderInput
@@ -129,6 +139,7 @@ class Detailed extends React.Component {
                                     max={this.props.ui.detailed.bounds.maxSmooth}
                                     width={190}
                                     sliderWidth={60}
+                                    inputWidth={40}
                                     label='Smooth'
                                     onChange={(value) => setSmooth(value)}
                                 />
@@ -227,7 +238,8 @@ class Detailed extends React.Component {
                                                     });
                                                     // return data;
                                                     return Enumerable.from(data).select((e, i) => {
-                                                        return (<option key={i} value={e.id}>{e.id + ' - ' + e.name}</option>)
+                                                        return (<option key={i}
+                                                                        value={e.id}>{e.id + ' - ' + e.name}</option>)
                                                     }).toArray()
                                                 })()
                                             }
@@ -240,6 +252,7 @@ class Detailed extends React.Component {
                                     max={100}
                                     width={225}
                                     sliderWidth={90}
+                                    inputWidth={55}
                                     label='Offset'
                                     onChange={value => updateTemplateOffset(value)}
                                 />
@@ -247,8 +260,9 @@ class Detailed extends React.Component {
                                     value={this.props.ui.detailed.redshift}
                                     min={0}
                                     max={5}
-                                    width={305}
-                                    sliderWidth={145}
+                                    width={310}
+                                    sliderWidth={140}
+                                    inputWidth={75}
                                     label='Redshift'
                                     step={0.0001}
                                     inputStyle={{
@@ -261,7 +275,7 @@ class Detailed extends React.Component {
                                     color='primary'
                                     size='sm'
                                     onClick={() => {
-                                       performFit()
+                                        performFit()
                                     }}
                                 >
                                     Perform Fit
@@ -283,7 +297,7 @@ class Detailed extends React.Component {
                                             (l, i) => {
                                                 return (
                                                     <li
-                                                        className={"sline lined " + (boldItems.contains(l.id) ? "bold" : "")}
+                                                        className={"sline lined " + (boldItems.contains(l.id) ? "bold " : "") + (this.props.ui.detailed.waitingForSpectra ? "glowing" : "")}
                                                         key={l.id}
                                                         onClick={() => clickSpectralLine(l.id)}
                                                     >
@@ -311,6 +325,38 @@ class Detailed extends React.Component {
             return "";
         }
     }
+
+    displayAuto() {
+        const s = this.props.ui.active;
+        return s && s.autoQOP && s.qop === 0 && s.getMatches().length > 0;
+    }
+
+    getQOPLabel(qop) {
+        const string = "badge badge-";
+        if (qop == null) {
+            return string + "default";
+        }
+        if (qop >= 6) {
+            return string + "primary";
+        } else if (qop >= 4) {
+            return string + "success";
+        } else if (qop >= 3) {
+            return string + "info";
+        } else if (qop >= 2) {
+            return string + "warning";
+        } else if (qop >= 1) {
+            return string + "danger";
+        } else {
+            return string + "default";
+        }
+    };
+
+    getAutoQOPText() {
+        const s = this.props.ui.active;
+        if (s && s.autoQOP && s.getMatches().length > 0) {
+            return s.autoQOP + " at " + s.getMatches()[0].z
+        }
+    };
 }
 
 export default Detailed

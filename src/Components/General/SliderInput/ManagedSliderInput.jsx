@@ -25,7 +25,6 @@ class ManagedSliderInput extends React.Component {
     }
 
     render() {
-        console.log("more props:", this.props)
         return (
             <FormGroup inline>
                 <InputGroup
@@ -46,7 +45,10 @@ class ManagedSliderInput extends React.Component {
                         value={this.props.value || this.state.value}
                         onChange={this.onChange}
                         step={this.props.step}
-                        style={this.props.inputStyle}
+                        style={{
+                            width: this.props.inputWidth ? this.props.inputWidth + 'px' : null,
+                            ...this.props.inputStyle
+                        }}
                     />
                     <InputGroupAddon addonType="append" className='managed-slider-input-container'>
                         <Input

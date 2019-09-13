@@ -258,7 +258,7 @@ class Overview extends React.Component {
                                     ) : null
                                 }
                                 <h4 className="inline">
-                                    <span className={"float-right label " +  e.qopLabel}>
+                                    <span className={"float-right badge " +  e.qopLabel}>
                                         QOP: {e.qop}
                                     </span>
                                 </h4>

@@ -31,6 +31,10 @@ const UIActionTypes = {
     //
 
     SET_GRAPHICAL_LAYOUT: "UIActionTypes.SET_GRAPHICAL_LAYOUT",
+
+    ACCEPT_AUTO_QOP: "UIActionTypes.ACCEPT_AUTO_QOP",
+    SET_WAITING_FOR_SPECTRA: "UIActionTypes.SET_WAITING_FOR_SPECTRA",
+    SET_SPECTRA_FOCUS: "UIActionTypes.SET_SPECTRA_FOCUS"
 };
 
 function setMerge(merge) {
@@ -186,6 +190,26 @@ function setGraphicalLayout(graphical) {
     })
 }
 
+function acceptAutoQOP() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.ACCEPT_AUTO_QOP,
+    })
+}
+
+function setWaitingForSpectra(waiting) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_WAITING_FOR_SPECTRA,
+        waiting: waiting
+    })
+}
+
+function setSpectraFocus(focus) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_SPECTRA_FOCUS,
+        focus: focus
+    })
+}
+
 export {
     setMerge,
     updateTemplateOffset,
@@ -210,5 +234,8 @@ export {
     performFit,
     toggleSmallSidebar,
     setGraphicalLayout,
+    acceptAutoQOP,
+    setWaitingForSpectra,
+    setSpectraFocus,
     UIActionTypes,
 };

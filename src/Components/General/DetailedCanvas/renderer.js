@@ -20,6 +20,7 @@ import {
     clearShouldUpdateTemplateData, clearShouldUpdateXcorData
 } from "../../../Stores/Detailed/Actions";
 import {templateManager} from "../../../Lib/TemplateManager";
+import {setSpectraFocus, setWaitingForSpectra} from "../../../Stores/UI/Actions";
 
 class CanvasRenderer {
 
@@ -265,10 +266,9 @@ class CanvasRenderer {
             } else if (CanvasRenderer.checkCanvasInRange(loc.bound, loc.x, loc.y)) {
                 this.params.focusDataX = CanvasRenderer.convertCanvasXCoordinateToDataPoint(loc.bound, loc.x);
                 this.params.focusDataY = CanvasRenderer.convertCanvasYCoordinateToDataPoint(loc.bound, loc.y);
-                // todo
-                // this.detailed.spectraFocus = focusDataX;
-                // this.detailed.waitingForSpectra = true;
-                // this.$apply();
+
+                setSpectraFocus(this.params.focusDataX);
+                setWaitingForSpectra(true)
             }
         }
         this.params.lastXDown = null;
