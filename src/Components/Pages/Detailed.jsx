@@ -18,7 +18,7 @@ import {
     nextSpectralLine, performFit,
     previousSpectralLine,
     resetToAutomatic, resetToManual, selectMatch, setContinuum,
-    setProcessed, setRangeIndex, setSmooth, setTemplateId, setTemplateMatched,
+    setProcessed, setRangeIndex, setSmooth, setSpectraComment, setTemplateId, setTemplateMatched,
     setVariance, toggleSpectralLines,
     updateRedShift,
     updateTemplateOffset
@@ -60,11 +60,17 @@ class Detailed extends React.Component {
                                 {this.getQOPText()}
                             </span>
                         </h4>
-                        {/*todo*/}
                         <strong>COMMENT</strong>
-                        <input type="text"
-                               className="input-sm comment-input"
-                               placeholder="Enter a comment"/>
+                        {/* Update the key to force the component to remount if the active spectra changes */}
+                        <Input
+                            key={this.props.ui.active ? this.props.ui.active.id : 0}
+                            type="text"
+                            bsSize="sm"
+                            className="comment-input inline"
+                            placeholder="Enter a comment"
+                            onChange={e => setSpectraComment(e.target.value)}
+                            defaultValue={this.props.ui.active ? this.props.ui.active.getComment() : ""}
+                        />
                         <strong>RA</strong> {this.props.ui.active ? this.props.ui.active.getRA().toFixed(3) : ""}
                         <strong>DEC</strong> {this.props.ui.active ? this.props.ui.active.getDEC().toFixed(3) : ""}
                         <strong>MAG</strong> {this.props.ui.active ? this.props.ui.active.magnitude.toFixed(2) : ""}

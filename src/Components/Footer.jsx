@@ -46,6 +46,7 @@ class Footer extends React.Component {
                                                 max={1000}
                                                 value={this.getProgressBarValue()}
                                                 color={this.getProgressBarType()}
+                                                striped
                                             />
                                         </div>
                                     </div>

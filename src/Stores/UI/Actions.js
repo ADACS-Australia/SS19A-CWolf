@@ -34,7 +34,12 @@ const UIActionTypes = {
 
     ACCEPT_AUTO_QOP: "UIActionTypes.ACCEPT_AUTO_QOP",
     SET_WAITING_FOR_SPECTRA: "UIActionTypes.SET_WAITING_FOR_SPECTRA",
-    SET_SPECTRA_FOCUS: "UIActionTypes.SET_SPECTRA_FOCUS"
+    SET_SPECTRA_FOCUS: "UIActionTypes.SET_SPECTRA_FOCUS",
+
+    SAVE_MANUAL: "UIActionTypes.SAVE_MANUAL",
+    SET_ONLY_QOP_0: "UIActionTypes.SET_ONLY_QOP_0",
+
+    SET_SPECTRA_COMMENT: "UIActionTypes.SET_SPECTRA_COMMENT"
 };
 
 function setMerge(merge) {
@@ -210,6 +215,27 @@ function setSpectraFocus(focus) {
     })
 }
 
+function saveManual(qop) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SAVE_MANUAL,
+        qop: qop
+    })
+}
+
+function setOnlyQOP0(bOnlyQOP0) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_ONLY_QOP_0,
+        bOnlyQOP0: bOnlyQOP0
+    })
+}
+
+function setSpectraComment(comment) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_SPECTRA_COMMENT,
+        comment: comment
+    })
+}
+
 export {
     setMerge,
     updateTemplateOffset,
@@ -237,5 +263,8 @@ export {
     acceptAutoQOP,
     setWaitingForSpectra,
     setSpectraFocus,
+    saveManual,
+    setOnlyQOP0,
+    setSpectraComment,
     UIActionTypes,
 };

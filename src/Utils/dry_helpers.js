@@ -1,6 +1,6 @@
 function isDetailed(props) {
     // Check if the current path is the detailed page
-    return props.location.pathname === '/detailed/';
+    return props.location.pathname.startsWith('/detailed');
 }
 
 function isOverview(props) {

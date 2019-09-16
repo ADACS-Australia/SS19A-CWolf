@@ -63,6 +63,30 @@ class SidebarStore {
                     ...state
                 };
 
+            case SidebarActionTypes.SET_TYPE_FILTER:
+                state.filters.typeFilter = action.filterType;
+                return {
+                    ...state
+                };
+
+            case SidebarActionTypes.SET_TEMPLATE_FILTER:
+                state.filters.templateFilter = action.filterTemplate;
+                return {
+                    ...state
+                };
+
+            case SidebarActionTypes.SET_REDSHIFT_FILTER:
+                state.filters.redshiftFilter = action.filterRedshift;
+                return {
+                    ...state
+                };
+
+            case SidebarActionTypes.SET_QOP_FILTER:
+                state.filters.qopFilter = action.filterQOP;
+                return {
+                    ...state
+                };
+
             default:
                 return state;
         }

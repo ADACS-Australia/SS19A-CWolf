@@ -8,6 +8,7 @@ import {
 import {spectraLineService} from "../../Components/General/DetailedCanvas/spectralLines";
 import {templateManager as templatesService} from "../../Lib/TemplateManager";
 import {getFit, getQuasarFFT, getStandardFFT, matchTemplate} from "../../Utils/methods";
+import localStorageService from "../../Lib/LocalStorageManager";
 
 class UIStore {
     constructor(store) {
@@ -364,6 +365,34 @@ class UIStore {
             case UIActionTypes.SET_WAITING_FOR_SPECTRA:
                 state.detailed.waitingForSpectra = action.waiting;
 
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.SAVE_MANUAL:
+                if (state.active) {
+                    this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setManualResults(state.active, state.detailed.templateId, state.detailed.redshift, action.qop);
+                    setTimeout(() => this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setNextSpectra(), 0);
+                }
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.SET_ONLY_QOP_0:
+                state.detailed.onlyQOP0 = action.bOnlyQOP0;
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.SET_SPECTRA_COMMENT:
+                if (state.active) {
+                    state.active.setComment(action.comment);
+                    if (this.store.getState().settings.downloadAutomatically) {
+                        this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.localStorageManager.saveSpectra(state.active, this.store.getState().s[this.store.getState().index].data.resultsManager);
+                    }
+                }
                 return {
                     ...state
                 };
