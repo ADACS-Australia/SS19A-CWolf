@@ -28,12 +28,10 @@ function MarzApp(props) {
         }, 0)
     }
 
-    console.log("props: ", props)
     return (
         <Router>
             <Route render={(routeProps) => (
                 <div>
-                    {console.log(routeProps)}
                     <Header {...props}/>
                     <div id="underNavContainer">
                         <div className={"sidebar" + (isSmall({...props, ...routeProps}) ? " sidebarSmall" : "")}>

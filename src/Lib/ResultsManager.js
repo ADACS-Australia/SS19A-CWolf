@@ -47,7 +47,6 @@ class ResultsManager {
     };
 
     getResultsCSV() {
-        log.debug("Getting result CSV");
         return this.resultsGenerator.getResultsCSV(personalService.getInitials());
     };
 

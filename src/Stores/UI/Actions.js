@@ -31,6 +31,15 @@ const UIActionTypes = {
     //
 
     SET_GRAPHICAL_LAYOUT: "UIActionTypes.SET_GRAPHICAL_LAYOUT",
+
+    ACCEPT_AUTO_QOP: "UIActionTypes.ACCEPT_AUTO_QOP",
+    SET_WAITING_FOR_SPECTRA: "UIActionTypes.SET_WAITING_FOR_SPECTRA",
+    SET_SPECTRA_FOCUS: "UIActionTypes.SET_SPECTRA_FOCUS",
+
+    SAVE_MANUAL: "UIActionTypes.SAVE_MANUAL",
+    SET_ONLY_QOP_0: "UIActionTypes.SET_ONLY_QOP_0",
+
+    SET_SPECTRA_COMMENT: "UIActionTypes.SET_SPECTRA_COMMENT"
 };
 
 function setMerge(merge) {
@@ -75,10 +84,10 @@ function setProcessed(processed) {
     })
 }
 
-function setVariance(processed) {
+function setVariance(variance) {
     AppDispatcher.dispatch({
         type: UIActionTypes.SET_VARIANCE,
-        processed: processed
+        variance: variance
     })
 }
 
@@ -186,6 +195,47 @@ function setGraphicalLayout(graphical) {
     })
 }
 
+function acceptAutoQOP() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.ACCEPT_AUTO_QOP,
+    })
+}
+
+function setWaitingForSpectra(waiting) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_WAITING_FOR_SPECTRA,
+        waiting: waiting
+    })
+}
+
+function setSpectraFocus(focus) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_SPECTRA_FOCUS,
+        focus: focus
+    })
+}
+
+function saveManual(qop) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SAVE_MANUAL,
+        qop: qop
+    })
+}
+
+function setOnlyQOP0(bOnlyQOP0) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_ONLY_QOP_0,
+        bOnlyQOP0: bOnlyQOP0
+    })
+}
+
+function setSpectraComment(comment) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_SPECTRA_COMMENT,
+        comment: comment
+    })
+}
+
 export {
     setMerge,
     updateTemplateOffset,
@@ -210,5 +260,11 @@ export {
     performFit,
     toggleSmallSidebar,
     setGraphicalLayout,
+    acceptAutoQOP,
+    setWaitingForSpectra,
+    setSpectraFocus,
+    saveManual,
+    setOnlyQOP0,
+    setSpectraComment,
     UIActionTypes,
 };

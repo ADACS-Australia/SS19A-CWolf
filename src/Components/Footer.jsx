@@ -1,5 +1,6 @@
 import React from "react";
-import {Navbar} from "reactstrap";
+import {Navbar, Progress} from "reactstrap";
+import Button from "reactstrap/lib/Button";
 
 class Footer extends React.Component {
     constructor(props) {
@@ -15,29 +16,45 @@ class Footer extends React.Component {
                             this.props.data.processorService.spectraManager.hasSpectra() ?
                                 (
                                     <div>
-                                        <div className="pull-left">
+                                        <div className="float-left">
                                             <p className="fill-height">{this.getText()}</p>
                                         </div>
-                                        {/*<div className="pull-right">*/}
-                                        {/*    <button className="btn btn-small btn-info" style="width: 150px;"*/}
-                                        {/*            ng-if="displayPause()"*/}
-                                        {/*            ng-click="togglePause()">{{getPausedText()}}</button>*/}
-                                        {/*    <button className="btn btn-small btn-primary" style="width: 150px;"*/}
-                                        {/*            ng-click="downloadResults()">Download*/}
-                                        {/*    </button>*/}
-                                        {/*</div>*/}
-                                        {/*<div className="fill-rest">*/}
-                                        {/*    <progressbar animate="false" className="progress-striped"*/}
-                                        {/*                 max="1000" value="getProgressBarValue()"*/}
-                                        {/*                 type="{{getProgressBarType()}}"></progressbar>*/}
-                                        {/*</div>*/}
+                                        <div className="float-right">
+                                            {
+                                                this.displayPause() ? (
+                                                    <Button
+                                                        className="footer-button"
+                                                        size="small"
+                                                        color="info"
+                                                        onClick={() => this.props.data.processorService.togglePause()}
+                                                    >
+                                                        {this.getPausedText()}
+                                                    </Button>
+                                                ) : null
+                                            }
+                                            <Button
+                                                className="footer-button"
+                                                size="small"
+                                                color="primary"
+                                                onClick={() => this.props.data.resultsManager.resultsGenerator.downloadResults()}
+                                            >
+                                                Download
+                                            </Button>
+                                        </div>
+                                        <div className="fill-rest">
+                                            <Progress
+                                                max={1000}
+                                                value={this.getProgressBarValue()}
+                                                color={this.getProgressBarType()}
+                                                striped
+                                            />
+                                        </div>
                                     </div>
                                 ) : (
-                                    <div className="pull-left">
+                                    <div className="float-left">
                                         <p className="fill-height">Please drop in a FITS file.</p>
                                     </div>
                                 )
-                        }
                         }
                     </div>
                 </Navbar>
@@ -57,6 +74,45 @@ class Footer extends React.Component {
             return "Finished all spectra";
         }
     }
+
+    getProgressBarValue() {
+        const spectraService = this.props.data.processorService.spectraManager;
+        if (spectraService.isProcessing()) {
+            return 1000 * spectraService.getNumberProcessed() / this.getProgressBarMax();
+        } else {
+            return 1000 * spectraService.getNumberMatched() / this.getProgressBarMax();
+        }
+    };
+
+    getProgressBarType() {
+        const spectraService = this.props.data.processorService.spectraManager;
+        if (spectraService.isFinishedMatching()) {
+            return "info";
+        } else if (spectraService.isProcessing()) {
+            return "success";
+        } else {
+            return "danger";
+        }
+    };
+
+    getProgressBarMax() {
+        const spectraService = this.props.data.processorService.spectraManager;
+        return spectraService.getNumberTotal();
+    };
+
+    displayPause() {
+        const spectraService = this.props.data.processorService.spectraManager;
+        return spectraService.isProcessing() || spectraService.isMatching();
+    }
+
+    getPausedText() {
+        const processorService = this.props.data.processorService;
+        if (processorService.isPaused()) {
+            return "Resume";
+        } else {
+            return "Pause";
+        }
+    };
 }
 
 export default Footer

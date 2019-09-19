@@ -51,7 +51,12 @@ class QualityManager {
         if (typeof increment === 'undefined') increment = 1;
         if (quality.barHash["" + qop] == null) {
             if (increment > 0) {
-                const res = {qop: qop, type: this.getType(qop), value: 1.0 * this.steps / this.numSpectra, label: increment};
+                const res = {
+                    qop: qop,
+                    type: QualityManager.getType(qop),
+                    value: 1.0 * this.steps / this.numSpectra,
+                    label: increment
+                };
                 quality.barHash["" + qop] = res;
                 quality.bars.push(res);
                 quality.bars.sort((a,b) => (a.qop % 6) < (b.qop % 6));

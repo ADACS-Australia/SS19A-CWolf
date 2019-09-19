@@ -115,17 +115,17 @@ class Spectra {
 
     static getLabelForQOP(qop) {
         if (qop >= 6) {
-            return  "label-primary";
+            return  "badge-primary";
         } else if (qop >= 4) {
-            return "label-success";
+            return "badge-success";
         } else if (qop >= 3) {
-            return "label-info";
+            return "badge-info";
         } else if (qop >= 2) {
-            return "label-warning";
+            return "badge-warning";
         } else if (qop >= 1) {
-            return "label-danger";
+            return "badge-danger";
         } else {
-            return "label-default";
+            return "badge-default";
         }
     };
 

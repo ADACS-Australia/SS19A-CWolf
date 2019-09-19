@@ -16,10 +16,11 @@ import lens_image from '../../../Assets/images/lens.png';
 import {spectraLineService} from "./spectralLines";
 import {
     clearShouldUpdateBaseData,
-    clearShouldUpdateSkyData,
+    clearShouldUpdateSkyData, clearShouldUpdateSmoothData,
     clearShouldUpdateTemplateData, clearShouldUpdateXcorData
 } from "../../../Stores/Detailed/Actions";
 import {templateManager} from "../../../Lib/TemplateManager";
+import {setSpectraFocus, setWaitingForSpectra} from "../../../Stores/UI/Actions";
 
 class CanvasRenderer {
 
@@ -44,13 +45,11 @@ class CanvasRenderer {
         // Get the view information for this spectra
         this.view = this.params.view;
 
-        console.log(this.ui.active)
-        if (this.ui.active)
-            console.log(this.ui.active.getHash())
+        // if (this.ui.active)
+        //     console.log(this.ui.active.getHash())
 
         // Check if we need to update the base data
         if (this.params.shouldUpdateBaseData) {
-            console.log("Adding base data")
             // Reset the flag to update the base data
             setTimeout(() => clearShouldUpdateBaseData(), 0);
             // Add the base data
@@ -59,7 +58,6 @@ class CanvasRenderer {
 
         // Check if we need to update the sky data
         if (this.params.shouldUpdateSkyData) {
-            console.log("Adding sky data")
             // Reset the flag to update the base data
             setTimeout(() => clearShouldUpdateSkyData(), 0);
             // Add the base data
@@ -68,7 +66,6 @@ class CanvasRenderer {
 
         // Check if we need to update the base data
         if (this.params.shouldUpdateTemplateData) {
-            console.log("Adding template data")
             // Reset the flag to update the base data
             setTimeout(() => clearShouldUpdateTemplateData(), 0);
             // Add the base data
@@ -76,12 +73,19 @@ class CanvasRenderer {
         }
 
         // Check if we need to update the xcor data
-        if (this.params.shouldUpdateBaseData) {
-            console.log("Adding xcor data")
+        if (this.params.shouldUpdateXcorData) {
             // Reset the flag to update the base data
             setTimeout(() => clearShouldUpdateXcorData(), 0);
             // Add the base data
             this.addxcorData();
+        }
+
+        // Check if we need to update the xcor data
+        if (this.params.shouldUpdateSmoothData) {
+            // Reset the flag to update the smooth data
+            setTimeout(() => clearShouldUpdateSmoothData(), 0);
+            // Smooth the data and redraw
+            this.smoothData('data');
         }
 
         // Force a canvas redraw
@@ -111,22 +115,6 @@ class CanvasRenderer {
         // Update the scale
         this.setScale();
 
-        // this.$watchCollection('[ui.dataSelection.processed, detailed.continuum]', function() {
-        //     addBaseData();
-        //     redraw();
-        // });
-        // this.$watchCollection('[detailed.templateId, ui.active.templateResults]', function() {
-        //     addparams.xcorData();
-        //     redraw();
-        // });
-        // this.$watchCollection('[detailed.redshift, detailed.templateId, ui.dataSelection.matched, detailed.continuum]', function() {
-        //     addTemplateData();
-        //     redraw();
-        // });
-        // this.$watch('ui.dataSelection.variance', function() {
-        //     addBaseData();
-        //     redraw();
-        // });
         // this.$watch('ui.dataSelection.sky', function() {
         //     addSkyData();
         //     redraw();
@@ -278,10 +266,9 @@ class CanvasRenderer {
             } else if (CanvasRenderer.checkCanvasInRange(loc.bound, loc.x, loc.y)) {
                 this.params.focusDataX = CanvasRenderer.convertCanvasXCoordinateToDataPoint(loc.bound, loc.x);
                 this.params.focusDataY = CanvasRenderer.convertCanvasYCoordinateToDataPoint(loc.bound, loc.y);
-                // todo
-                // this.detailed.spectraFocus = focusDataX;
-                // this.detailed.waitingForSpectra = true;
-                // this.$apply();
+
+                setSpectraFocus(this.params.focusDataX);
+                setWaitingForSpectra(true)
             }
         }
         this.params.lastXDown = null;
@@ -365,7 +352,7 @@ class CanvasRenderer {
             res.bound.lockedBounds = true;
 
             let rawData = this.params.data.where(x => x.id === 'data').toArray();
-            rawData = rawData.length ? rawData : null;
+            rawData = rawData.length ? rawData[0] : null;
 
             res.bound.lockedBounds = true;
             if (rawData != null && rawData.x && rawData.x.length > 0) {
@@ -427,9 +414,9 @@ class CanvasRenderer {
         bound.yMax = -9e9;
 
         const data = this.params.data.toArray();
+        const count = data.length;
 
-        for (let i = 0; i < this.params.data.count(); i++) {
-            if (data[i].id === "data" && i < this.params.startRawTruncate) continue;
+        for (let i = 0; i < count; i++) {
             if (data[i].bound) {
                 c++;
             }
@@ -442,12 +429,13 @@ class CanvasRenderer {
         }
         let currentRangeIndex = this.detailed.rangeIndex;
 
-        for (let i = 0; i < this.params.data.count(); i++) {
+        for (let i = 0; i < count; i++) {
             if (data[i].bound) {
                 bound.yMin = data[i].yMins[currentRangeIndex];
                 bound.yMax = data[i].yMaxs[currentRangeIndex];
             }
         }
+
         if (c === 0) {
             if (!bound.callout) {
                 bound.xMin = 3300;
@@ -1148,6 +1136,7 @@ class CanvasRenderer {
             });
             const xMin = xs2[this.params.startRawTruncate];
             const xMax = xs2[xs2.length - 1];
+
             this.params.baseData = {
                 id: 'data', bound: true, colour: colour, x: xs, y: ys, xMin: xMin,
                 xMax: xMax

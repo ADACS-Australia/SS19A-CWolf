@@ -1,13 +1,14 @@
 import {setTemplateId, UIActionTypes, updateRedShift} from "./Actions";
 import {
     setShouldUpdateBaseData,
-    setShouldUpdateSkyData,
+    setShouldUpdateSkyData, setShouldUpdateSmoothData,
     setShouldUpdateTemplateData,
     setShouldUpdateXcorData
 } from "../Detailed/Actions";
 import {spectraLineService} from "../../Components/General/DetailedCanvas/spectralLines";
 import {templateManager as templatesService} from "../../Lib/TemplateManager";
 import {getFit, getQuasarFFT, getStandardFFT, matchTemplate} from "../../Utils/methods";
+import localStorageService from "../../Lib/LocalStorageManager";
 
 class UIStore {
     constructor(store) {
@@ -92,6 +93,7 @@ class UIStore {
                 };
 
             case UIActionTypes.UPDATE_REDSHIFT:
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
 
                 // Update the redshift
                 state.detailed.redshift = action.redshift;
@@ -101,6 +103,7 @@ class UIStore {
                 };
 
             case UIActionTypes.UPDATE_TEMPLATE_OFFSET:
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
 
                 // Update the template offset
                 state.detailed.templateOffset = action.templateOffset;
@@ -201,6 +204,8 @@ class UIStore {
                 };
 
             case UIActionTypes.SET_SMOOTH:
+                setTimeout(() => setShouldUpdateSmoothData(), 0);
+
                 // Update the smooth value
                 state.detailed.smooth = action.smoothValue;
 
@@ -209,6 +214,8 @@ class UIStore {
                 };
 
             case UIActionTypes.SET_TEMPLATE_MATCHED:
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
+
                 // Update the matched value
                 state.dataSelection.matched = action.matched;
 
@@ -217,6 +224,9 @@ class UIStore {
                 };
 
             case UIActionTypes.SET_CONTINUUM:
+                setTimeout(() => setShouldUpdateBaseData(), 0);
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
+
                 // Update the continuum value
                 state.detailed.continuum = action.continuum;
 
@@ -233,6 +243,9 @@ class UIStore {
                 };
 
             case UIActionTypes.SELECT_MATCH:
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
+                setTimeout(() => setShouldUpdateXcorData(), 0);
+
                 // Set the match redshift and template ID
                 state.detailed.redshift = action.redshift;
                 state.detailed.templateId = action.templateId;
@@ -320,6 +333,66 @@ class UIStore {
             case UIActionTypes.SET_GRAPHICAL_LAYOUT:
                 state.graphicalLayout = action.graphical;
 
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.ACCEPT_AUTO_QOP:
+                console.log("ACCEPT AUTO QOP")
+                const matches = state.active.getMatches(state.detailed.bounds.maxMatches);
+                if (state.active && matches != null && matches.length > 0) {
+                    console.log("ACCEPT AUTO QOP IF 1")
+                    state.detailed.redshift = matches[0].z;
+                    state.detailed.templateId = matches[0].templateId;
+
+                    if (state.active) {
+                        console.log("ACCEPT AUTO QOP IF 2")
+                        this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setManualResults(state.active, state.templateId, state.detailed.redshift, state.active.autoQOP);
+                        setTimeout(() => this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setNextSpectra(), 0);
+                    }
+                }
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.SET_SPECTRA_FOCUS:
+                state.detailed.spectraFocus = action.focus;
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.SET_WAITING_FOR_SPECTRA:
+                state.detailed.waitingForSpectra = action.waiting;
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.SAVE_MANUAL:
+                if (state.active) {
+                    this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setManualResults(state.active, state.detailed.templateId, state.detailed.redshift, action.qop);
+                    setTimeout(() => this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setNextSpectra(), 0);
+                }
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.SET_ONLY_QOP_0:
+                state.detailed.onlyQOP0 = action.bOnlyQOP0;
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.SET_SPECTRA_COMMENT:
+                if (state.active) {
+                    state.active.setComment(action.comment);
+                    if (this.store.getState().settings.downloadAutomatically) {
+                        this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.localStorageManager.saveSpectra(state.active, this.store.getState().s[this.store.getState().index].data.resultsManager);
+                    }
+                }
                 return {
                     ...state
                 };

@@ -10,6 +10,7 @@ import {
     updateNumberProcessed,
     updateRedShift
 } from "../Stores/UI/Actions";
+import {setShouldUpdateBaseData} from "../Stores/Detailed/Actions";
 
 class SpectraController {
     constructor(store, resultsManager) {
@@ -49,7 +50,7 @@ class SpectraController {
         return this.spectraManager.getNumberTotal();
     };
 
-    setNextSpectra(index) {
+    setNextSpectra() {
         const data = this.getData();
         const ui = this.getUI();
         if (ui.detailed.onlyQOP0) {
@@ -203,6 +204,8 @@ class SpectraController {
                 data.fits.shift();
             }
         }
+
+        setTimeout(() => setShouldUpdateBaseData(), 0)
     };
 
     getUI() {
@@ -229,12 +232,12 @@ class SpectraController {
 
         spectra.processedIntensity2 = results.results.intensity2;
 
-        if (this.saveAutomatically) {
+        if (this.store.settingsStore.saveAutomatically) {
             this.localStorageManager.saveSpectra(spectra, this.resultsManager);
         }
 
         if (this.isFinishedMatching() && !this.isProcessing() && prior == null) {
-            if (this.downloadAutomatically) {
+            if (this.store.settingsStore.downloadAutomatically) {
                 console.log("Downloading from matching");
                 this.resultsManager.downloadResults();
             }
@@ -257,8 +260,8 @@ class SpectraController {
         const oldQop = spectra.qop;
         spectra.setQOP(qop);
         this.qualityManager.changeSpectra(oldQop, qop);
-        if (saveAutomatically) {
-            localStorageManager.saveSpectra(spectra);
+        if (this.store.settingsStore.saveAutomatically) {
+            this.localStorageManager.saveSpectra(spectra);
         }
     };
 

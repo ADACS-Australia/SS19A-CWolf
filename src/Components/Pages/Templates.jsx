@@ -23,7 +23,7 @@ class Templates extends React.Component {
                                             .start_lambda_linear.toFixed(1)
                                     } &rarr; {t.end_lambda_linear.toFixed(1)}</p>
                                     <ManagedToggleButton
-                                        className="templateSwitch"
+                                        className="templateSwitch float-right"
                                         value={!t.inactive}
                                         on={"On"}
                                         off={"Off"}

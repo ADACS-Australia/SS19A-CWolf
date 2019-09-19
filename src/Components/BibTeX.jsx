@@ -40,7 +40,7 @@ class BibTeX extends React.Component {
     render() {
         return (
             <span>
-                <Button size="small" color="primary" onClick={this.toggle}>BibTeX</Button>
+                <Button size="sm" color="primary" onClick={this.toggle}>BibTeX</Button>
                 <Modal isOpen={this.state.isOpen} toggle={this.toggle} backdrop size="lg">
                     <ModalHeader toggle={this.toggle}>BibTeX Citation</ModalHeader>
                     <ModalBody>

@@ -6,7 +6,6 @@ import BootstrapTable from 'react-bootstrap-table-next';
 import marzIcon from '../../Assets/images/Marz2.png';
 import * as Enumerable from "linq";
 import {templateManager} from "../../Lib/TemplateManager";
-import {setActive} from "../../Stores/UI/Actions";
 
 class Overview extends React.Component {
     constructor(props) {
@@ -151,7 +150,8 @@ class Overview extends React.Component {
 
                 const rowEvents = {
                     onDoubleClick: (e, row, rowIndex) => {
-                        console.log("Go to detailed:", e, row, rowIndex)
+                        this.props.data.processorService.spectraManager.setActive(Enumerable.from(this.props.data.spectra).first(e => e.id === row.id));
+                        this.props.history.push('/detailed/')
                     }
                 };
 
@@ -160,7 +160,7 @@ class Overview extends React.Component {
                     clickToSelect: true,
                     bgColor: '#D3DFF5',
                     onSelect: (row, isSelect) => {
-                        setActive(Enumerable.from(this.props.data.spectra).first(e => e.id === row.id));
+                        this.props.data.processorService.spectraManager.setActive(Enumerable.from(this.props.data.spectra).first(e => e.id === row.id));
                     },
                     selected: [this.props.ui.active.id]
                 };
@@ -177,74 +177,29 @@ class Overview extends React.Component {
                         hover
                     />
                 )
-
-                    {/*<div className="table-responsive">*/}
-                    {/*    <table className="overviewTable table table-striped table-bordered table-hover table-condensed">*/}
-                    {/*        <thead>*/}
-                    {/*        <tr>*/}
-                    {/*            <th*/}
-                    {/*                className="col-md-1"*/}
-                    {/*                style={{"cursor": "pointer"}}*/}
-                    {/*                onClick={() => setSort('id')}*/}
-                    {/*            >*/}
-                    {/*                ID*/}
-                    {/*                <span*/}
-                    {/*                    ng-show="isSortBy('id')"*/}
-                    {/*                >*/}
-                    {/*                    <i className="pull-right glyphicon" ng-class="{'glyphicon-chevron-up': !sortOrder, 'glyphicon-chevron-down': sortOrder}"></i></span>*/}
-                    {/*            </th>*/}
-                    {/*            <th className="col-md-2" style="cursor: pointer;" ng-click="setSort('type')">*/}
-                    {/*                Type <span ng-show="isSortBy('type')"><i className="pull-right glyphicon"*/}
-                    {/*                                                         ng-class="{'glyphicon-chevron-up': !sortOrder, 'glyphicon-chevron-down': sortOrder}"></i></span>*/}
-                    {/*            </th>*/}
-                    {/*            <th className="col-md-2" style="cursor: pointer;"*/}
-                    {/*                ng-click="setSort('finalTemplateID');">*/}
-                    {/*                Template ID<span ng-show="isSortBy('finalTemplateID')"><i*/}
-                    {/*                className="pull-right glyphicon"*/}
-                    {/*                ng-class="{'glyphicon-chevron-up': !sortOrder, 'glyphicon-chevron-down': sortOrder}"></i></span>*/}
-                    {/*            </th>*/}
-                    {/*            <th className="col-md-4" style="cursor: pointer;"*/}
-                    {/*                ng-click="setSort('finalTemplateName');">*/}
-                    {/*                Template<span ng-show="isSortBy('finalTemplateName')"><i*/}
-                    {/*                className="pull-right glyphicon"*/}
-                    {/*                ng-class="{'glyphicon-chevron-up': !sortOrder, 'glyphicon-chevron-down': sortOrder}"></i></span>*/}
-                    {/*            </th>*/}
-                    {/*            <th className="col-md-1" style="cursor: pointer;" ng-click="setSort('finalZ');">*/}
-                    {/*                Redshift <span ng-show="isSortBy('finalZ')"><i className="pull-right glyphicon"*/}
-                    {/*                                                               ng-class="{'glyphicon-chevron-up': !sortOrder, 'glyphicon-chevron-down': sortOrder}"></i></span>*/}
-                    {/*            </th>*/}
-                    {/*            <th className="col-md-1" style="cursor: pointer;" ng-click="setSort('qop');">*/}
-                    {/*                QOP <span ng-show="isSortBy('qop')"><i className="pull-right glyphicon"*/}
-                    {/*                                                       ng-class="{'glyphicon-chevron-up': !sortOrder, 'glyphicon-chevron-down': sortOrder}"></i></span>*/}
-                    {/*            </th>*/}
-                    {/*        </tr>*/}
-                    {/*        </thead>*/}
-                    {/*        <tbody>*/}
-                    {/*        <tr ng-class="{activeSelect:isActive(i)}" ng-click="setActive(i)"*/}
-                    {/*            ng-dblclick="goToDetailed(i)"*/}
-                    {/*            ng-repeat="i in data.spectra | overviewFilter | orderBy:sortOverview:!sortOrder">*/}
-                    {/*            <td>{{i.id}}</td>*/}
-                    {/*            <td>{{i.type}}</td>*/}
-                    {/*            <td>{{i.getFinalTemplateID()}}</td>*/}
-                    {/*            <td>{{getName(i)}}</td>*/}
-                    {/*            <td>{{i.getFinalRedshift().toFixed(5)}}</td>*/}
-                    {/*            <td><span className="qopLabel label {{i.qopLabel}}">{{i.qop}}</span></td>*/}
-                    {/*        </tr>*/}
-                    {/*        </tbody>*/}
-                    {/*    </table>*/}
-                    {/*</div>*/}
-                // )
             }
         }
 
         return (
             <div className="overview2">
                 {
-                    Enumerable.from(this.props.data.spectra).select((e) => {
+                    Enumerable.from(this.props.data.spectra).where(e => {
+                        const f = this.props.sidebar.filters;
+                        const q = parseInt(f.qopFilter);
+                        const r = f.redshiftFilter.split(':');
+
+                        if (f.typeFilter !== '*' && e.type !== f.typeFilter) return false;
+                        if (f.templateFilter !== '*' && e.getFinalTemplateID() !== f.templateFilter) return false;
+                        if (f.redshiftFilter !== '*' && (e.getFinalRedshift() == null || !(e.getFinalRedshift() >= parseFloat(r[0]) && e.getFinalRedshift() <= parseFloat(r[1])))) return false;
+                        return !(f.qopFilter !== '*' && e.qop !== q);
+                    }).select(e => {
                         return (
                             <div className={"overview-item lined" + (this.props.ui.active.id === e.id ? " activeSelect" : "")}
-                            onClick={() => setActive(e)}
-                             onDoubleClick={() => console.log("go to detailed:", e)}
+                            onClick={() => this.props.data.processorService.spectraManager.setActive(e)}
+                             onDoubleClick={() => {
+                                 this.props.data.processorService.spectraManager.setActive(e);
+                                 this.props.history.push('/detailed/')
+                             }}
                                  key={e.id}
                              >
                                  {/*// ng-repeat="i in data.spectra | overviewFilter track by i.getHash()">*/}
@@ -256,7 +211,7 @@ class Overview extends React.Component {
                                     ) : null
                                 }
                                 <h4 className="inline">
-                                    <span className={"float-right label " +  e.qopLabel}>
+                                    <span className={"float-right badge " +  e.qopLabel}>
                                         QOP: {e.qop}
                                     </span>
                                 </h4>

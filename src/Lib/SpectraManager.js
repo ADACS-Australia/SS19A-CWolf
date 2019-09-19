@@ -1,5 +1,6 @@
 import {globalConfig} from "./config";
 import {updateNumberMatched, updateNumberProcessed} from "../Stores/UI/Actions";
+import {setShouldUpdateXcorData} from "../Stores/Detailed/Actions";
 
 class SpectraManager {
     constructor(store) {
@@ -9,6 +10,11 @@ class SpectraManager {
         this.log = console;
         this.autoQOPs = false;
         this.pacer = null;
+        this.clidata = null;
+    }
+
+    setCLIData(data) {
+        this.clidata = data;
     }
     
     setFinishedCallback(fn) {
@@ -20,7 +26,10 @@ class SpectraManager {
     };
 
     getData() {
+        if (this.clidata != null)
+            return this.clidata;
         return this.store.getState().s[this.store.getState().index].data;
+
     }
 
     setMatchedResultsNode(results) {
@@ -64,7 +73,8 @@ class SpectraManager {
             }
         }
 
-        setTimeout(() => updateNumberMatched(), 0)
+        setTimeout(() => updateNumberMatched(), 0);
+        setTimeout(() => setShouldUpdateXcorData(), 0);
     };
     setSpectra(spectraList) {
         const data = this.getData();

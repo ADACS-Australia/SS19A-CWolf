@@ -7,6 +7,8 @@ import marzIcon from '../Assets/images/Marz.png';
 import {faCog, faQuestionCircle, faSignal, faTasks, faTh} from "@fortawesome/free-solid-svg-icons";
 import {updateInitials} from "../Stores/Personal/Actions";
 import BibTeX from "./BibTeX";
+import Progress from "reactstrap/es/Progress";
+import * as Enumerable from "linq";
 
 class Header extends React.Component {
     constructor(props) {
@@ -52,10 +54,34 @@ class Header extends React.Component {
                             <Link className="nav-link" to="/usage/"><FontAwesomeIcon icon={faQuestionCircle}/> Usage</Link>
                         </NavItem>
                     </Nav>
+                    {
+                        this.props.ui.quality.max > 0 ? (
+                            <div className="navbar-form navbar-left file-completion">
+                                <p className="navbar-progress-text">File completion:</p>
+                                <div className="navbar-progress">
+                                <Progress multi>
+                                    {
+                                        Enumerable.from(this.props.ui.quality.bars).select((e, i) => (
+                                            <Progress
+                                                striped value={e.value}
+                                                color={e.type}
+                                                key={i}
+                                                max={this.props.ui.quality.max}
+                                                bar
+                                            >
+                                                {e.label > 3 ? (<span>{e.label}</span>) : null}
+                                            </Progress>
+                                        )).toArray()
+                                    }
+                                </Progress>
+                                </div>
+                            </div>
+                        ) : null
+                    }
                     <Form className="ml-auto" inline>
                         <FormGroup>
                             <BibTeX/>
-                            <Input defaultValue={this.props.personal.initials} type="text" placeholder="Enter initials" onChange={e => updateInitials(e.target.value)}/>
+                            <Input className="initials-input" defaultValue={this.props.personal.initials} size="sm" type="text" placeholder="Enter initials" onChange={e => updateInitials(e.target.value)}/>
                         </FormGroup>
                     </Form>
                 </Collapse>
