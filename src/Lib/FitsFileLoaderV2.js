@@ -224,12 +224,13 @@ class FitsFileLoader {
         spectrum.properties["name"] = readHeaderValue(ext, "OBJID") || readHeaderValue("OBJNAME") || ""
         spectrum.properties["ra"] = readHeaderValue(ext, "RA") || ""
         spectrum.properties["dec"] = readHeaderValue(ext, "DEC") || ""
-        spectrum.properties["jd"] = readHeaderValue(ext, "JD") || readHeaderValue(ext, "JULIAN") || readHeaderValue(ext, "MJD") || readHeaderValue(ext, "UTMJD") || ""
+        spectrum.properties["juliandate"] = readHeaderValue(ext, "JD") || readHeaderValue(ext, "JULIAN") || readHeaderValue(ext, "MJD") || readHeaderValue(ext, "UTMJD") || ""
         spectrum.properties["longitude"] = readHeaderValue(ext, "LONG_OBS") || readHeaderValue(ext, "LONGITUD") || ""
         spectrum.properties["latitude"] = readHeaderValue(ext, "LAT_OBS") || readHeaderValue(ext, "LATITUDE") || ""
         spectrum.properties["altitude"] = readHeaderValue(ext, "ALT_OBS") || readHeaderValue(ext, "ALTITUDE") || ""
         spectrum.properties["epoch"] = readHeaderValue(ext, "EPOCH") || ""
         spectrum.properties["radecsys"] = readHeaderValue(ext, "RADECSYS") || ""
+        spectrum.properties["magnitude"] = readHeaderValue(ext, "MAG") || ""
 
         // Now need to determine which flavour of information read functions
         // we need to send to
