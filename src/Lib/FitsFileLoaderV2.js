@@ -288,3 +288,5 @@ class FitsFileLoader {
     }
 
 }
+
+export default FitsFileLoader;
