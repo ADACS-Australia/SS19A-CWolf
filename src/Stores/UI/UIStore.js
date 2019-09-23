@@ -298,14 +298,12 @@ class UIStore {
                 };
 
             case UIActionTypes.PERFORM_FIT:
-                console.log("Performing fit")
                 state.fitTID = state.detailed.templateId;
                 state.fitZ = state.detailed.redshift;
                 state.waitingOnFit = true;
                 if (state.active != null) {
                     if (state.active.processedIntensity == null) {
-                        console.log("Added to priority queue")
-                        this.store.getState().s[this.store.getState().index].data.addToPriorityQueue(state.active, true);
+                        this.store.getState().s[this.store.getState().index].data.processorService.addToPriorityQueue(state.active, true);
                         return {
                             ...state
                         };
@@ -315,7 +313,6 @@ class UIStore {
                 if (tid == null || tid === "0" || state.active == null) {
                     state.waitingOnFit = false;
                 } else {
-                    console.log("dofit")
                     this.doFit(state);
                 }
 

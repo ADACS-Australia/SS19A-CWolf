@@ -1,10 +1,14 @@
 import CookieManager from "./CookieManager";
 import ResultsGenerator from "./ResultsGenerator";
+import bootbox from 'bootbox';
+import {saveAs} from 'file-saver';
+import {templateManager} from "./TemplateManager";
 
 class ResultsManager {
-    constructor(templatesService) {
-        this.resultsGenerator = new ResultsGenerator(templatesService);
+    constructor(store) {
         this.downloading = false;
+        this.store = store;
+        this.resultsGenerator = new ResultsGenerator(null, templateManager, false)
     }
     
     setHelio(val) {
@@ -19,23 +23,24 @@ class ResultsManager {
         if (this.downloading) {
             return;
         }
-        log.debug("Downloading results");
+        console.log("Downloading results");
         this.downloading = true;
-        personalService.ensureInitials().then(function() {
-            var results = this.resultsGenerator.getResultsCSV();
-            console.log(results);
-            if (results.length > 0) {
-                var blob = new window.Blob([results], {type: 'text/plain'});
-                saveAs(blob, this.getFilename());
-            }
+        if (!this.store.getState().personal.initials) {
+            bootbox.alert("Please enter your initials in the header and try again.");
             this.downloading = false;
-        }, function() {
-            this.downloading = false;
-        });
+        }
+
+        const results = this.resultsGenerator.getResultsCSV(this.store.getState().personal.initials);
+        console.log(results);
+        if (results.length > 0) {
+            const blob = new window.Blob([results], {type: 'text/plain'});
+            saveAs(blob, this.getFilename());
+        }
+        this.downloading = false;
     };
 
     getFilename() {
-        return global.data.fitsFileName + "_" + personalService.getInitials() + ".mz";
+        return this.store.data.fitsFileName + "_" + this.store.getState().personal.initials + ".mz";
     };
 
     getResultFromSpectra(spectra) {
@@ -43,11 +48,11 @@ class ResultsManager {
     };
 
     getLocalStorageResult(spectra) {
-        return ResultsGenerator.getLocalStorageResult(spectra);
+        return this.resultsGenerator.getLocalStorageResult(spectra);
     };
 
-    getResultsCSV() {
-        return this.resultsGenerator.getResultsCSV(personalService.getInitials());
+    getResultsCSV(initials) {
+        return this.resultsGenerator.getResultsCSV(initials);
     };
 
     convertResultToMimicSpectra(result) {

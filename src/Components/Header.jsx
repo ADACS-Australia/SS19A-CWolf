@@ -81,7 +81,7 @@ class Header extends React.Component {
                     <Form className="ml-auto" inline>
                         <FormGroup>
                             <BibTeX/>
-                            <Input className="initials-input" defaultValue={this.props.personal.initials} size="sm" type="text" placeholder="Enter initials" onChange={e => updateInitials(e.target.value)}/>
+                            <Input className="initials-input" defaultValue={this.props.personal.initials} bsSize="sm" type="text" placeholder="Enter initials" onChange={e => updateInitials(e.target.value)}/>
                         </FormGroup>
                     </Form>
                 </Collapse>

@@ -108,7 +108,7 @@ class Sidebar extends React.Component {
                         {/* Render the contract sidebar button if we're on the detailed page*/}
                         {isDetailed(this.props) ? (
                             <div className="top-spacing">
-                                <Button block color="light" size="small" onClick={() => toggleSmallSidebar()}>
+                                <Button block color="light" size="sm" onClick={() => toggleSmallSidebar()}>
                                     {this.getContractButtonLabel()}
                                 </Button>
                             </div>) : null

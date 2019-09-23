@@ -37,8 +37,8 @@ class Detailed extends React.Component {
             <div className="detailedView filler">
                 <div className="panel panel-default detailed-control panel-header">
                     <div className="panel-heading">
-                        <strong>ID</strong> {this.props.ui.active ? this.props.ui.active.id : ""}
-                        <strong>NAME</strong> {this.props.ui.active ? this.props.ui.active.name : ""}
+                        <strong>ID</strong> {this.props.ui.active ? this.props.ui.active.id : "None"}
+                        <strong>NAME</strong> {this.props.ui.active ? this.props.ui.active.name : "None"}
                         {
                             this.displayAuto() ?
                                 (
@@ -55,7 +55,7 @@ class Detailed extends React.Component {
                         <strong>QOP</strong>
                         <h4 className="qop-h4">
                             <span
-                                className={"badge " + (this.props.ui.active ? this.props.ui.active.qopLabel : "")}
+                                className={"badge " + (this.props.ui.active ? this.props.ui.active.qopLabel : "None")}
                             >
                                 {this.getQOPText()}
                             </span>
@@ -71,10 +71,10 @@ class Detailed extends React.Component {
                             onChange={e => setSpectraComment(e.target.value)}
                             defaultValue={this.props.ui.active ? this.props.ui.active.getComment() : ""}
                         />
-                        <strong>RA</strong> {this.props.ui.active ? this.props.ui.active.getRA().toFixed(3) : ""}
-                        <strong>DEC</strong> {this.props.ui.active ? this.props.ui.active.getDEC().toFixed(3) : ""}
-                        <strong>MAG</strong> {this.props.ui.active ? this.props.ui.active.magnitude.toFixed(2) : ""}
-                        <strong>TYPE</strong> {this.props.ui.active ? this.props.ui.active.type : ""}
+                        <strong>RA</strong> {this.props.ui.active ? this.props.ui.active.getRA().toFixed(3) : "None"}
+                        <strong>DEC</strong> {this.props.ui.active ? this.props.ui.active.getDEC().toFixed(3) : "None"}
+                        <strong>MAG</strong> {this.props.ui.active && this.props.ui.active.magnitude ? this.props.ui.active.magnitude.toFixed(2) : "None"}
+                        <strong>TYPE</strong> {this.props.ui.active && this.props.ui.active.type ? this.props.ui.active.type : "None"}
                     </div>
                     <ListGroup>
                         <ListGroupItem>
