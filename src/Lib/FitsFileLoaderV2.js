@@ -283,7 +283,7 @@ class FitsFileLoader {
         // Attempt to identify which table column the wavelength data are in
         var wavlTypeKW = [];
         var wavlColName = [];
-        console.log(this);
+
         for (var headerkw in this.getHeader(ext).cards) {
             try {
                     if ((this.getHeader(ext).cards[headerkw].value.indexOf("wave") !== -1 || this.getHeader(ext).cards[headerkw].value.indexOf("lam") !== -1) && headerkw.indexOf("TYPE") !== -1) {
