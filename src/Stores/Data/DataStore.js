@@ -33,7 +33,7 @@ class DataStore {
         };
 
         // todo: Refactor to top level store
-        state.resultsManager = new ResultsManager();
+        state.resultsManager = new ResultsManager(this.store);
         state.processorService = new Processor(this.store, state.resultsManager);
         state.fitsFileLoader = new FitsFileLoader(state.processorService, state.resultsManager);
 

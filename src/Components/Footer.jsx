@@ -24,7 +24,7 @@ class Footer extends React.Component {
                                                 this.displayPause() ? (
                                                     <Button
                                                         className="footer-button"
-                                                        size="small"
+                                                        size="sm"
                                                         color="info"
                                                         onClick={() => this.props.data.processorService.togglePause()}
                                                     >
@@ -34,9 +34,9 @@ class Footer extends React.Component {
                                             }
                                             <Button
                                                 className="footer-button"
-                                                size="small"
+                                                size="sm"
                                                 color="primary"
-                                                onClick={() => this.props.data.resultsManager.resultsGenerator.downloadResults()}
+                                                onClick={() => this.props.data.resultsManager.downloadResults()}
                                             >
                                                 Download
                                             </Button>

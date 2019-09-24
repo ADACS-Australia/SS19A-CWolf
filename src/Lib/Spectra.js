@@ -1,4 +1,4 @@
-import {defaultFor, normaliseViaShift, removeNaNs} from "../Utils/methods";
+import {defaultFor, normaliseViaShift, removeNaNs, subtractPolyFit} from "../Utils/methods";
 import {globalConfig} from "./config";
 import {updateNumberMatched, updateNumberProcessed} from "../Stores/UI/Actions";
 import DrawingService from "./DrawingService";
