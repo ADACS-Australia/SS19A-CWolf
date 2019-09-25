@@ -1,14 +1,10 @@
-import {convertVacuumFromAir, defaultFor, MJDtoYMD, normaliseViaShift, removeNaNs} from "../Utils/methods";
-import {getCMBCorrection, getHeliocentricVelocityCorrection} from "../Utils/helio";
+import {convertVacuumFromAir, defaultFor} from "../Utils/methods";
 
 import * as $q from "q";
 
-import {setFitsFilename, setTypes} from "../Stores/Data/Actions";
+import {setFitsFilename} from "../Stores/Data/Actions";
 import path from 'path';
-import * as Enumerable from "linq";
-import Spectra from "./Spectra";
 import "./fits";
-import {globalConfig} from "./config";
 
 class FitsFileLoader {
 
@@ -20,17 +16,17 @@ class FitsFileLoader {
 //            "headervalue": "LAMOST",
 //            "readfunc": parseLamostFitsFile
 //        },
-    ]
+    ];
 
     wavelengthConversionFactors = {
     // These factors convert the named wavelength unit to angstrom
         'nm': 10.0
-    }
+    };
 
     fluxConversionFactors = {
     // These factors convert the named flux unit to erg/s/cm/A
         'Wm2': 1000.0
-    }
+    };
 
     constructor(processorService, resultsManager, node) {
         this.node = defaultFor(node, false);
@@ -72,17 +68,17 @@ class FitsFileLoader {
     }
 
     setFilename(ifilename) {
-        var actualName = path.basename(ifilename);
+        const actualName = path.basename(ifilename);
         this.isLoading = true;
         this.hasFitsFile = true;
         this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
-        this.global.data.fitsFileName = this.originalFilename;
+        // this.global.data.fitsFileName = this.originalFilename;
         this.filename = this.originalFilename.replace(/_/g, " ");
         this.thefilename = ifilename;
         this.actualName = actualName;
     }
     setFiledata(ifilename,ifiledata) {
-        var actualName = path.basename(ifilename);
+        const actualName = path.basename(ifilename);
         this.isLoading = true;
         this.hasFitsFile = true;
         this.originalFilename = actualName.replace(/\.[^/.]+$/, "");
@@ -97,12 +93,12 @@ class FitsFileLoader {
         //const q = this.$q.defer();
         this.isLoading = true;
         this.hasFitsFile = true;
-        var fileData = this.thefiledata;
-        this.fits = new window.astro.FITS(fileData, function () {
+        const fileData = this.thefiledata;
+        this.fits = new window.astro.FITS(fileData, () => {
             console.log("window.astro.FITS done its thing now parse "+this.filename+" "+this.originalFilename);
             this.parseFitsFile(q, this.originalFilename);
             this.processorService.setPause();
-        }.bind(this));
+        });
         return q.promise;
     }
 
@@ -120,12 +116,12 @@ class FitsFileLoader {
         setTimeout(() => setFitsFilename(this.originalFilename), 0);
         this.filename = this.originalFilename.replace(/_/g, " ");
         this.log.debug("Loading FITs file");
-        this.fits = new astro.FITS(pass, function () {
+        this.fits = new astro.FITS(pass, () => {
             this.log.debug("Loaded FITS file "+this.filename+" "+this.originalFilename);
             console.log("Loaded FITS file "+this.filename+" "+this.originalFilename);
             this.parseFitsFile(q, this.originalFilename);
             this.processorService.setPause();
-        }.bind(this));
+        });
         return q.promise;
     };
 
@@ -134,11 +130,11 @@ class FitsFileLoader {
         // - Extenstion ext
         // - Extension 0 (if ext != 0)
         // If neither succeeds, return 'undefined'
-        var val = undefined
+        let val = undefined;
         try {
             val = this.fits.getHeader(ext).cards[kw].value
         } catch (TypeError) {}
-        if (val === undefined && ext != 0) {
+        if (val === undefined && ext !== 0) {
             try {
                 val = this.fits.header0.cards[kw].value
             } catch (TypeError) {}
@@ -148,7 +144,7 @@ class FitsFileLoader {
 
     readHeaderValueReturns(ext, kw, returns) {
         // As for readHeaderValue, but return 'returns' if the result is undef.
-        var val = this.readHeaderValue(ext, kw)
+        const val = this.readHeaderValue(ext, kw);
         if (val === undefined) {
             return returns;
         }
@@ -178,45 +174,45 @@ class FitsFileLoader {
         // functions to hand the file off to
         this.log.debug("Attempting to determine file structure");
         this.header0 = this.fits.getHDU(0).header;
-        const phu = this.header0
+        const phu = this.header0;
         this.originalFilename = originalFilename;
 
         this.spectra = [];
 
         // Count the number of extensions within the file
-        this.noExt = this.fits.hdus.length
+        this.noExt = this.fits.hdus.length;
         // Check to see if this file matches one of the special file types
         // with a custom read in
         this.customFileType = null ;
         this.customFileRead = null ;
         for (var i = 0; i < this.instrumentPackages.length; i++) {
-            pkg = this.instrumentPackages[i];
-            if (this.header0.cards[pkg["headerkw"]] == pkg["headervalue"]) {
+            const pkg = this.instrumentPackages[i];
+            if (this.header0.cards[pkg["headerkw"]] === pkg["headervalue"]) {
                 this.customFileType = pkg["instrument"];
                 this.customFileRead = pkg["readfunc"];
                 break;
             }
         }
         if (this.customFileType) {
-            spectra = (this.customFileRead)(q, originalFilename);
-        } else if (this.noExt == 1) {
+            this.spectra = (this.customFileRead)(q, originalFilename);
+        } else if (this.noExt === 1) {
             // If single-extension, pass off to the single extension reader(s)
-            spectra = this.parseSingleExtensionFitsFile(q, originalFilename, 0);
+            this.spectra = this.parseSingleExtensionFitsFile(q, originalFilename, 0);
         } else {
             // If multi-extension, pass off to the multi-extension reader
-            spectra = this.parseMultiExtensionFitsFile(q, originalFilename);
+            this.spectra = this.parseMultiExtensionFitsFile(q, originalFilename);
         }
 
-        q.resolve(spectra);
+        q.resolve(this.spectra);
 
     }
 
 
     getWavelengthAxis(ext) {
-        var wavlAxis = 1 ; // Default if CTYPE not found
-        var wavlAxisName = []
+        const wavlAxis = 1 ; // Default if CTYPE not found
+        const wavlAxisName = [];
 
-        for (var headerkw in this.getHeader(ext).cards) {
+        for (let headerkw in this.getHeader(ext).cards) {
             try {
                     if ((this.getHeader(ext).cards[headerkw].value.match(/wave/i) || this.getHeader(ext).cards[headerkw].value.match(/lam/i)) && headerkw.indexOf("TYPE") !== -1) {
                         wavlAxisName.push(headerkw);
@@ -281,10 +277,10 @@ class FitsFileLoader {
 
     getWavelengthsTable(ext) {
         // Attempt to identify which table column the wavelength data are in
-        var wavlTypeKW = [];
-        var wavlColName = [];
+        const wavlTypeKW = [];
+        const wavlColName = [];
 
-        for (var headerkw in this.getHeader(ext).cards) {
+        for (let headerkw in this.getHeader(ext).cards) {
             try {
                     if ((this.getHeader(ext).cards[headerkw].value.indexOf("wave") !== -1 || this.getHeader(ext).cards[headerkw].value.indexOf("lam") !== -1) && headerkw.indexOf("TYPE") !== -1) {
                         wavlTypeKW.push(headerkw);
@@ -305,14 +301,14 @@ class FitsFileLoader {
         const wavColumnIndex = parseInt(wavlTypeKW[0][wavlTypeKW[0].length - 1]) - 1;
 
         // Extract the column data
-        var col_data = []
+        let col_data = [];
         this.getDataUnit(ext).getColumn("wave", function (column) {
             col_data = column;
-        })
+        });
 
         // If 'log' was in the row name, we need to convert to 'actual' values
         if (wavlColName[0].indexOf("log") !== -1) {
-            for (var i = 0; i < col_data.length(); i++) {
+            for (let i = 0; i < col_data.length(); i++) {
                 col_data[i] = Math.pow(10, col_data[i]); // Just converting 'actual' values, no need to do e.g. deltas
             }
         }
@@ -328,9 +324,9 @@ class FitsFileLoader {
     getWavelengthUnitTable(ext, colIndex) {
 
         // Now need to make sure that the wavelength data are in angstroms
-        var wavlUnit = null ;
+        let wavlUnit = null ;
         // Attempt to read the straight-up header keyword types
-        var foundWavlUnit = this.readHeaderValue(ext, "CTYPE${colIndex}") || this.readHeaderValue(ext, "TUNIT${colIndex}") || null ;
+        const foundWavlUnit = this.readHeaderValue(ext, "CTYPE${colIndex}") || this.readHeaderValue(ext, "TUNIT${colIndex}") || null ;
         if (foundWavlUnit === null) {
             wavlUnit = "pixel";
         }
@@ -346,12 +342,12 @@ class FitsFileLoader {
 
 
     getWavelengthUnitSpect(ext) {
-        var wavlUnit = null ;
+        let wavlUnit = null ;
         const wavlAxisIndex = this.getWavelengthAxis(ext) ;
-        var foundWavlUnit = this.readHeaderValue(ext, "CUNIT${wavlAxisIndex}") || null ;
+        let foundWavlUnit = this.readHeaderValue(ext, "CUNIT${wavlAxisIndex}") || null ;
 
         if (foundWavlUnit == null) {
-            wavalUnit = "pixel" ;
+            wavlUnit = "pixel" ;
         }
 
         // Get the standard name for the wavl. unit
@@ -373,12 +369,12 @@ class FitsFileLoader {
             return;
         }
 
-        var intensitySpects = [];
+        const intensitySpects = [];
 
-        var spectdata;
+        let spectdata;
         this.fits.getDataUnit(ext).getFrame(0, function(data, q) {
             spectdata = Array.prototype.slice.call(data) ;
-        }, q)
+        }, q);
 
         if (dataDims === 1) {
             // Simply return the data
@@ -390,8 +386,8 @@ class FitsFileLoader {
         // Otherwise, we need to slice up the data into constituent parts
         // This needs to be based off the naxis values of the input DataUnit,
         // as well as any flags indicating what the various axes are
-        var dataAxis = 1 ;  // Default value if we can't find something explicit
-        var fluxAxes = [];
+        const dataAxis = 1 ;  // Default value if we can't find something explicit
+        const fluxAxes = [];
         for (var headerkw in this.getHeader(ext).cards) {
             try {
                     if ((this.getHeader(ext).cards[headerkw].value.match(/flux/i) || this.getHeader(ext).cards[headerkw].value.match(/inten/i)) && headerkw.indexOf("TYPE") !== -1) {
@@ -409,8 +405,8 @@ class FitsFileLoader {
         const fluxAxis = parseInt(fluxAxes[0][fluxAxes[0].length - 1]) - 1;
         // Reverse of the above
         // const fluxAxisOpp = (fluxAxis + 1) % 2 ;
-        var [rowLength, colLength] = this.fits.getDataUnit(ext).naxis;
-        var startStep, startStop, iStep ;
+        const [rowLength, colLength] = this.fits.getDataUnit(ext).naxis;
+        let startStep, startStop, iStep ;
 
         if (fluxAxis === 0) {
             startStep = rowLength;
@@ -422,8 +418,8 @@ class FitsFileLoader {
             iStep = colLength;
         }
 
-        for (var start = 0; start < startStop ; start += startStep) {
-                var spect = [];
+        for (let start = 0; start < startStop ; start += startStep) {
+                const spect = [];
                 for (var i = 0; i < rowLength; i+= iStep) {
                     spect.push(spectdata[start + i]);
                 }
@@ -437,19 +433,19 @@ class FitsFileLoader {
     parseSingleExtensionFitsFile(q, originalFilename, ext) {
 
         // Read header information into properties
-        var spectrum = {
+        const spectrum = {
             'properties': {}
-        }
-        spectrum.properties["name"] = this.readHeaderValue(ext, "OBJID") || this.readHeaderValue("OBJNAME") || ""
-        spectrum.properties["ra"] = this.readHeaderValue(ext, "RA") || ""
-        spectrum.properties["dec"] = this.readHeaderValue(ext, "DEC") || ""
-        spectrum.properties["juliandate"] = this.readHeaderValue(ext, "JD") || this.readHeaderValue(ext, "JULIAN") || this.readHeaderValue(ext, "MJD") || this.readHeaderValue(ext, "UTMJD") || ""
-        spectrum.properties["longitude"] = this.readHeaderValue(ext, "LONG_OBS") || this.readHeaderValue(ext, "LONGITUD") || ""
-        spectrum.properties["latitude"] = this.readHeaderValue(ext, "LAT_OBS") || this.readHeaderValue(ext, "LATITUDE") || ""
-        spectrum.properties["altitude"] = this.readHeaderValue(ext, "ALT_OBS") || this.readHeaderValue(ext, "ALTITUDE") || ""
-        spectrum.properties["epoch"] = this.readHeaderValue(ext, "EPOCH") || ""
-        spectrum.properties["radecsys"] = this.readHeaderValue(ext, "RADECSYS") || ""
-        spectrum.properties["magnitude"] = this.readHeaderValue(ext, "MAG") || ""
+        };
+        spectrum.properties["name"] = this.readHeaderValue(ext, "OBJID") || this.readHeaderValue("OBJNAME") || "";
+        spectrum.properties["ra"] = this.readHeaderValue(ext, "RA") || "";
+        spectrum.properties["dec"] = this.readHeaderValue(ext, "DEC") || "";
+        spectrum.properties["juliandate"] = this.readHeaderValue(ext, "JD") || this.readHeaderValue(ext, "JULIAN") || this.readHeaderValue(ext, "MJD") || this.readHeaderValue(ext, "UTMJD") || "";
+        spectrum.properties["longitude"] = this.readHeaderValue(ext, "LONG_OBS") || this.readHeaderValue(ext, "LONGITUD") || "";
+        spectrum.properties["latitude"] = this.readHeaderValue(ext, "LAT_OBS") || this.readHeaderValue(ext, "LATITUDE") || "";
+        spectrum.properties["altitude"] = this.readHeaderValue(ext, "ALT_OBS") || this.readHeaderValue(ext, "ALTITUDE") || "";
+        spectrum.properties["epoch"] = this.readHeaderValue(ext, "EPOCH") || "";
+        spectrum.properties["radecsys"] = this.readHeaderValue(ext, "RADECSYS") || "";
+        spectrum.properties["magnitude"] = this.readHeaderValue(ext, "MAG") || "";
 
         // Now need to determine which flavour of information read functions
         // we need to send to
@@ -457,26 +453,26 @@ class FitsFileLoader {
         // See if the data attribute attached to the astro FITS object has table
         // or image properties
         const isTableData = this.fits.getDataUnit(1).hasOwnProperty("rows");
-        const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value == "LAMOST" || false
-        var wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, intUnitReadFunc;
+        const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false
+        let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, intUnitReadFunc;
         if (isTableData) {
             // Assign table read functions
-            wavlReadFunc = this.getWavelengthsTable;
+            wavlReadFunc = v => this.getWavelengthsTable(v);
             instReadFunc = this.getIntensityTable;
             varReadFunc = this.getVarianceTable;
             skyReadFunc = this.getSkyTable;
             detailReadFunc = this.getDetailTable;
-            wavlUnitReadFunc = this.getWavelengthUnitTable;
+            wavlUnitReadFunc = v => this.getWavelengthUnitTable(v);
         } else if (isLamost) {
             // Assign LAMOST read functions
         } else {
             // Assign spectrum read functions
-            wavlReadFunc = this.getWavelengthsSpect;
-            instReadFunc = this.getIntensitySpect;
+            wavlReadFunc = v => this.getWavelengthsSpect(v);
+            instReadFunc = v => this.getIntensitySpect();
             varReadFunc = this.getVarianceSpect;
             skyReadFunc = this.getSkySpect;
             detailReadFunc = this.getDetailSpect;
-            wavlUnitReadFunc = this.getWavelengthUnitSpect;
+            wavlUnitReadFunc = v => this.getWavelengthUnitSpect();
         }
 
 
