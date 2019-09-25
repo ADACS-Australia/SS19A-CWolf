@@ -209,10 +209,12 @@ class FitsFileLoader {
 
 
     getWavelengthAxis(ext) {
+        this.log.debug('Looking for wavelength axis')
+
         const wavlAxis = 1 ; // Default if CTYPE not found
         const wavlAxisName = [];
 
-        for (let headerkw in this.getHeader(ext).cards) {
+        for (let headerkw in this.header0.cards) {
             try {
                     if ((this.getHeader(ext).cards[headerkw].value.match(/wave/i) || this.getHeader(ext).cards[headerkw].value.match(/lam/i)) && headerkw.indexOf("TYPE") !== -1) {
                         wavlAxisName.push(headerkw);
@@ -221,9 +223,9 @@ class FitsFileLoader {
         }
 
         if (wavlAxisName.length !== 1) {
-            console.log("Unable to determine wavelength axis");
-            q.reject("Unable to determine wavelength axis");
-            return;
+            console.log("Unable to determine wavelength axis - defauting to "+wavlAxis);
+//            q.reject("Unable to determine wavelength axis");
+            return wavlAxis;
         }
 
         // Get the column index from the header keyword, by stripping off the
@@ -240,14 +242,15 @@ class FitsFileLoader {
 
         const wavlAxisIndex = this.getWavelengthAxis(ext) ;
 
-        const crval = this.readHeaderValue(ext, "CRVAL${wavlAxisIndex}") || this.readHeaderValue(ext, "CV1_${wavlAxisIndex}");
-        const crpix = this.readHeaderValue(ext, "CRPIX${wavlAxisIndex}") || this.readHeaderValue(ext, "CP1_${wavlAxisIndex}");
-        const cdelt = this.readHeaderValue(ext, "CDELT${wavlAxisIndex}") || this.readHeaderValue(ext, "CD1_${wavlAxisIndex}");
+        const crval = this.readHeaderValue(ext, "CRVAL"+wavlAxisIndex) || this.readHeaderValue(ext, "CV1_"+wavlAxisIndex);
+        const crpix = this.readHeaderValue(ext, "CRPIX"+wavlAxisIndex) || this.readHeaderValue(ext, "CP1_"+wavlAxisIndex);
+        const cdelt = this.readHeaderValue(ext, "CDELT"+wavlAxisIndex) || this.readHeaderValue(ext, "CD1_"+wavlAxisIndex);
         const scale = this.readHeaderValue(ext, "LOGSCALE") || "F";
         const needShift = this.readHeaderValue(ext, "VACUUM") || "T";
 
         if (crval == null || crpix == null || cdelt == null) {
-            q.reject("Wavelength header values incorrect: CRVAL${wavlAxisIndex}=" + crval + ", CRPIX${wavlAxisIndex}=" + crpix + ", CDELT${wavlAxisIndex}=" + cdelt + ".");
+            console.log("Wavelength header values incorrect: CRVAL"+wavlAxisIndex+"=" + crval + ", CRPIX$"+wavlAxisIndex+"=" + crpix + ", CDELT"+wavlAxisIndex+"=" + cdelt + ".");
+            q.reject("Wavelength header values incorrect: CRVAL"+wavlAxisIndex+"=" + crval + ", CRPIX"+wavlAxisIndex+"=" + crpix + ", CDELT"+wavlAxisIndex+"=" + cdelt + ".");
         }
 
         const lambdas = [];
@@ -276,6 +279,8 @@ class FitsFileLoader {
     }
 
     getWavelengthsTable(ext) {
+        const q = $q.defer();
+
         // Attempt to identify which table column the wavelength data are in
         const wavlTypeKW = [];
         const wavlColName = [];
@@ -322,6 +327,7 @@ class FitsFileLoader {
     }
 
     getWavelengthUnitTable(ext, colIndex) {
+        const q = $q.defer();
 
         // Now need to make sure that the wavelength data are in angstroms
         let wavlUnit = null ;
@@ -332,7 +338,7 @@ class FitsFileLoader {
         }
 
         // Get the standard name for the wavl. unit
-        wavlUnit = standardizeWavlUnit(wavlUnit);
+        wavlUnit = this.standardizeWavlUnit(wavlUnit);
 
         q.resolve(wavlUnit);
 
@@ -342,6 +348,8 @@ class FitsFileLoader {
 
 
     getWavelengthUnitSpect(ext) {
+        const q = $q.defer();
+
         let wavlUnit = null ;
         const wavlAxisIndex = this.getWavelengthAxis(ext) ;
         let foundWavlUnit = this.readHeaderValue(ext, "CUNIT${wavlAxisIndex}") || null ;
@@ -351,7 +359,7 @@ class FitsFileLoader {
         }
 
         // Get the standard name for the wavl. unit
-        wavlUnit = standardizeWavlUnit(wavlUnit);
+        wavlUnit = this.standardizeWavlUnit(wavlUnit);
 
         q.resolve(wavlUnit);
 
@@ -361,6 +369,8 @@ class FitsFileLoader {
 
 
     getIntensitySpect(ext) {
+        const q = $q.defer();
+
         // Check the shape of the data - if 1-d, just return the single column
         const dataDims = this.fits.getDataUnit(ext).naxis.length ;
         if (dataDims > 2) {
@@ -373,12 +383,18 @@ class FitsFileLoader {
 
         let spectdata;
         this.fits.getDataUnit(ext).getFrame(0, function(data, q) {
+            console.log('^^^ Found data: ^^^');
+            console.log(data);
             spectdata = Array.prototype.slice.call(data) ;
+            console.log('^^^ Converted to spectdata: ^^^');
+            console.log(spectdata);
         }, q);
 
         if (dataDims === 1) {
             // Simply return the data
-            intensitySpects.append(spectdata)
+            intensitySpects.push(spectdata);
+            console.log('^^ Found intensitySpects: ^^^');
+            console.log(intensitySpects);
             q.resolve(intensitySpects);
             return q.promise ;
         }
@@ -454,42 +470,54 @@ class FitsFileLoader {
         // or image properties
         const isTableData = this.fits.getDataUnit(1).hasOwnProperty("rows");
         const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false
-        let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, intUnitReadFunc;
+        let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, instUnitReadFunc;
         if (isTableData) {
             // Assign table read functions
             wavlReadFunc = v => this.getWavelengthsTable(v);
             instReadFunc = this.getIntensityTable;
-            varReadFunc = this.getVarianceTable;
-            skyReadFunc = this.getSkyTable;
-            detailReadFunc = this.getDetailTable;
+//            varReadFunc = this.getVarianceTable;
+//            skyReadFunc = this.getSkyTable;
+//            detailReadFunc = this.getDetailTable;
             wavlUnitReadFunc = v => this.getWavelengthUnitTable(v);
+//            instUnitReadFunc = v => this.getIntensityUnitTable(v);
         } else if (isLamost) {
             // Assign LAMOST read functions
         } else {
             // Assign spectrum read functions
             wavlReadFunc = v => this.getWavelengthsSpect(v);
-            instReadFunc = v => this.getIntensitySpect();
-            varReadFunc = this.getVarianceSpect;
-            skyReadFunc = this.getSkySpect;
-            detailReadFunc = this.getDetailSpect;
-            wavlUnitReadFunc = v => this.getWavelengthUnitSpect();
+            instReadFunc = v => this.getIntensitySpect(v);
+//            varReadFunc = this.getVarianceSpect;
+//            skyReadFunc = this.getSkySpect;
+//            detailReadFunc = this.getDetailSpect;
+            wavlUnitReadFunc = v => this.getWavelengthUnitSpect(v);
+//            instUnitReadFunc = v => this.getIntensityUnitSpect(v);
         }
 
+        var spectra;
 
         $q.all([
             wavlReadFunc(0),
             instReadFunc(0),
-            varReadFunc(0),
-            skyReadFunc(0),
-            detailReadFunc(0),
+//            varReadFunc(0),
+//            skyReadFunc(0),
+//            detailReadFunc(0),
             wavlUnitReadFunc(0),
-            intUnitReadFunc(0)
+//            instUnitReadFunc(0)
         ]).then(function (data) {
             // Do any required stuff after reading all in
-        }).bind(this);
+            console.log('^^^ parseSingleExtensionFitsFile promise chain succeeded - processing data ^^^');
+            console.log('^^^ returned data is: ^^^');
+            console.log(data);
+            spectra = data[1];
 
-        // Note that the calling function resolves the promise, not this one
-        return spectra;
+            // Note that the calling function resolves the promise, not this one
+            console.log('^^^ Returned spectra are: ^^^');
+            console.log(spectra);
+            q.resolve(spectra);
+
+        }.bind(this), function (data) {
+            console.log('!!! parseSingleExtensionFitsFile promise chain failed !!!');
+        });
 
     }
 
@@ -550,7 +578,7 @@ class FitsFileLoader {
         }
 
         // Specify the read-in functions
-        var wavlReadFunc, instReadFund, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, intUnitReadFunc;
+        var wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, intUnitReadFunc;
 
 
 
