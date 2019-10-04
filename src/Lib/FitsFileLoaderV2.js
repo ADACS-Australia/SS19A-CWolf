@@ -249,8 +249,11 @@ class FitsFileLoader {
         const needShift = this.readHeaderValue(ext, "VACUUM") || "T";
 
         if (crval == null || crpix == null || cdelt == null) {
-            console.log("Wavelength header values incorrect: CRVAL"+wavlAxisIndex+"=" + crval + ", CRPIX$"+wavlAxisIndex+"=" + crpix + ", CDELT"+wavlAxisIndex+"=" + cdelt + ".");
+            console.log("&&& PROMISE REJECTED && - Wavelength header values incorrect: CRVAL"+wavlAxisIndex+"=" + crval + ", CRPIX$"+wavlAxisIndex+"=" + crpix + ", CDELT"+wavlAxisIndex+"=" + cdelt + ".");
             q.reject("Wavelength header values incorrect: CRVAL"+wavlAxisIndex+"=" + crval + ", CRPIX"+wavlAxisIndex+"=" + crpix + ", CDELT"+wavlAxisIndex+"=" + cdelt + ".");
+        } else {
+            console.log("Found wavelength values: CRVAL"+wavlAxisIndex+"=" + crval + ", CRPIX"+wavlAxisIndex+"=" + crpix + ", CDELT"+wavlAxisIndex+"=" + cdelt + ".");
+            console.log(this);
         }
 
         const lambdas = [];
@@ -273,6 +276,8 @@ class FitsFileLoader {
 
 
         lambdas.push(lambda);
+        console.log('^^^ Found lambdas: ^^^');
+        console.log(lambdas);
         q.resolve(lambdas);
 
         return q.promise;
@@ -295,7 +300,7 @@ class FitsFileLoader {
         }
 
         if (wavlTypeKW.length !== 1) {
-            console.log("Unable to determine table column for wavelength");
+            console.log("&&& PROMISE REJECTED && - Unable to determine table column for wavelength");
             q.reject("Unable to determine table column for wavelength");
             return;
         }
@@ -373,13 +378,14 @@ class FitsFileLoader {
 
         // Check the shape of the data - if 1-d, just return the single column
         const dataDims = this.fits.getDataUnit(ext).naxis.length ;
+        console.log("^^^ Found "+dataDims+" data dimensions ^^^");
         if (dataDims > 2) {
-            console.log("Marz cannot handle input images with more than two dimensions");
+            console.log("&&& PROMISE REJECTED && - Marz cannot handle input images with more than two dimensions");
             q.reject("Marz cannot handle input images with more than two dimensions");
             return;
         }
 
-        const intensitySpects = [];
+        let intensitySpects = [];
 
         let spectdata;
         this.fits.getDataUnit(ext).getFrame(0, function(data, q) {
@@ -388,62 +394,67 @@ class FitsFileLoader {
             spectdata = Array.prototype.slice.call(data) ;
             console.log('^^^ Converted to spectdata: ^^^');
             console.log(spectdata);
-        }, q);
 
-        if (dataDims === 1) {
-            // Simply return the data
-            intensitySpects.push(spectdata);
-            console.log('^^ Found intensitySpects: ^^^');
-            console.log(intensitySpects);
-            q.resolve(intensitySpects);
-            return q.promise ;
-        }
+            if (dataDims == 1) {
+                // Simply return the data
+                console.log('^^^ Spectdata to be pushed to intensitySpects: ^^^');
+                console.log(spectdata);
+                intensitySpects.push(spectdata);
+                console.log('^^^ Found intensitySpects: ^^^');
+                console.log(intensitySpects);
+                q.resolve(intensitySpects[0]);
+                return q.promise ;
+            } else {
 
-        // Otherwise, we need to slice up the data into constituent parts
-        // This needs to be based off the naxis values of the input DataUnit,
-        // as well as any flags indicating what the various axes are
-        const dataAxis = 1 ;  // Default value if we can't find something explicit
-        const fluxAxes = [];
-        for (var headerkw in this.getHeader(ext).cards) {
-            try {
-                    if ((this.getHeader(ext).cards[headerkw].value.match(/flux/i) || this.getHeader(ext).cards[headerkw].value.match(/inten/i)) && headerkw.indexOf("TYPE") !== -1) {
-                        fluxAxes.push(headerkw);
-                    }
-                } catch (TypeError) {}
-        }
-        if (fluxAxes.length > 1) {
-            console.log("Appear to be multiple intensity axes");
-            q.reject("Appear to be multiple intensity axes");
-            return;
-        }
-
-        // 0 is data is in rows (sequential), 1 otherwise
-        const fluxAxis = parseInt(fluxAxes[0][fluxAxes[0].length - 1]) - 1;
-        // Reverse of the above
-        // const fluxAxisOpp = (fluxAxis + 1) % 2 ;
-        const [rowLength, colLength] = this.fits.getDataUnit(ext).naxis;
-        let startStep, startStop, iStep ;
-
-        if (fluxAxis === 0) {
-            startStep = rowLength;
-            startStop = spectdata.length ;
-            iStep = 1;
-        } else {
-            startStep = 1;
-            startStop = spectdata.length - colLength * (rowLength - 1) ;
-            iStep = colLength;
-        }
-
-        for (let start = 0; start < startStop ; start += startStep) {
-                const spect = [];
-                for (var i = 0; i < rowLength; i+= iStep) {
-                    spect.push(spectdata[start + i]);
+                // Otherwise, we need to slice up the data into constituent parts
+                // This needs to be based off the naxis values of the input DataUnit,
+                // as well as any flags indicating what the various axes are
+                console.log("^^^ Looking to crack open multi-dimensional data ^^^");
+                const dataAxis = 1 ;  // Default value if we can't find something explicit
+                const fluxAxes = [];
+                for (var headerkw in this.getHeader(ext).cards) {
+                    try {
+                            if ((this.getHeader(ext).cards[headerkw].value.match(/flux/i) || this.getHeader(ext).cards[headerkw].value.match(/inten/i)) && headerkw.indexOf("TYPE") !== -1) {
+                                fluxAxes.push(headerkw);
+                            }
+                        } catch (TypeError) {}
                 }
-                intensitySpects.push(spect) ;
+                if (fluxAxes.length > 1) {
+                    console.log("&&& PROMISE REJECTED && - Appear to be multiple intensity axes");
+                    q.reject("Appear to be multiple intensity axes");
+                    return;
+                }
+
+                // 0 is data is in rows (sequential), 1 otherwise
+                const fluxAxis = parseInt(fluxAxes[0][fluxAxes[0].length - 1]) - 1;
+                // Reverse of the above
+                // const fluxAxisOpp = (fluxAxis + 1) % 2 ;
+                const [rowLength, colLength] = this.fits.getDataUnit(ext).naxis;
+                let startStep, startStop, iStep ;
+
+                if (fluxAxis === 0) {
+                    startStep = rowLength;
+                    startStop = spectdata.length ;
+                    iStep = 1;
+                } else {
+                    startStep = 1;
+                    startStop = spectdata.length - colLength * (rowLength - 1) ;
+                    iStep = colLength;
+                }
+
+                for (let start = 0; start < startStop ; start += startStep) {
+                        const spect = [];
+                        for (var i = 0; i < rowLength; i+= iStep) {
+                            spect.push(spectdata[start + i]);
+                        }
+                        intensitySpects.push(spect) ;
+                    }
+
+                q.resolve(intensitySpects);
+                return q.promise ;
             }
 
-        q.resolve(intensitySpects);
-        return q.promise ;
+            }, q);
     }
 
     parseSingleExtensionFitsFile(q, originalFilename, ext) {
@@ -472,8 +483,11 @@ class FitsFileLoader {
         const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false
         let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, instUnitReadFunc;
         if (isTableData) {
+            this.numPoints = this.fits.getHDU(0).data.rows;
             // Assign table read functions
             wavlReadFunc = v => this.getWavelengthsTable(v);
+            console.log('^^^ wavlReadFunc is: ^^^');
+            console.log(wavlReadFunc);
             instReadFunc = this.getIntensityTable;
 //            varReadFunc = this.getVarianceTable;
 //            skyReadFunc = this.getSkyTable;
@@ -483,9 +497,14 @@ class FitsFileLoader {
         } else if (isLamost) {
             // Assign LAMOST read functions
         } else {
+            this.numPoints = this.fits.getHDU(0).data.width;
             // Assign spectrum read functions
             wavlReadFunc = v => this.getWavelengthsSpect(v);
+//            console.log('^^^ wavlReadFunc is: ^^^');
+//            console.log(wavlReadFunc);
             instReadFunc = v => this.getIntensitySpect(v);
+//            console.log('^^^ instReadFunc is: ^^^');
+//            console.log(instReadFunc);
 //            varReadFunc = this.getVarianceSpect;
 //            skyReadFunc = this.getSkySpect;
 //            detailReadFunc = this.getDetailSpect;
@@ -572,13 +591,13 @@ class FitsFileLoader {
         // First, throw an error at this point if there is more than one intensity
         // extension - such a file is too complex for generic read-in
         if (exts_with_data.length > 1) {
-            console.log("There are multiple intensity extensions in a file with different data products in each extension");
+            console.log("&&& PROMISE REJECTED && - There are multiple intensity extensions in a file with different data products in each extension");
             q.reject("There are multiple intensity extensions in a file with different data products in each extension");
             return;
         }
 
         // Specify the read-in functions
-        var wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, intUnitReadFunc;
+        let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, intUnitReadFunc;
 
 
 
