@@ -290,11 +290,11 @@ class FitsFileLoader {
         const wavlTypeKW = [];
         const wavlColName = [];
 
-        for (let headerkw in this.getHeader(ext).cards) {
+        for (let headerkw in this.fits.getHeader(ext).cards) {
             try {
-                    if ((this.getHeader(ext).cards[headerkw].value.indexOf("wave") !== -1 || this.getHeader(ext).cards[headerkw].value.indexOf("lam") !== -1) && headerkw.indexOf("TYPE") !== -1) {
+                    if ((this.fits.getHeader(ext).cards[headerkw].value.indexOf("wave") !== -1 || this.fits.getHeader(ext).cards[headerkw].value.indexOf("lam") !== -1) && headerkw.indexOf("TYPE") !== -1) {
                         wavlTypeKW.push(headerkw);
-                        wavlColName.push(this.getHeader(ext).cards[headerkw].value);
+                        wavlColName.push(this.fits.getHeader(ext).cards[headerkw].value);
                     }
                 } catch (TypeError) {}
         }
@@ -388,7 +388,7 @@ class FitsFileLoader {
         let intensitySpects = [];
 
         let spectdata;
-        this.fits.getDataUnit(ext).getFrame(0, function(data, q) {
+        this.fits.getDataUnit(ext).getFrame(0, function(data) {
             console.log('^^^ Found data: ^^^');
             console.log(data);
             spectdata = Array.prototype.slice.call(data) ;
@@ -402,8 +402,7 @@ class FitsFileLoader {
                 intensitySpects.push(spectdata);
                 console.log('^^^ Found intensitySpects: ^^^');
                 console.log(intensitySpects);
-                q.resolve(intensitySpects[0]);
-                return q.promise ;
+
             } else {
 
                 // Otherwise, we need to slice up the data into constituent parts
@@ -450,11 +449,12 @@ class FitsFileLoader {
                         intensitySpects.push(spect) ;
                     }
 
-                q.resolve(intensitySpects);
-                return q.promise ;
-            }
 
-            }, q);
+            }
+        });
+
+        q.resolve(intensitySpects);
+        return q.promise ;
     }
 
     parseSingleExtensionFitsFile(q, originalFilename, ext) {
@@ -483,7 +483,8 @@ class FitsFileLoader {
         const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false
         let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, instUnitReadFunc;
         if (isTableData) {
-            this.numPoints = this.fits.getHDU(0).data.rows;
+            console.log(this);
+            this.numPoints = this.fits.getHDU(1).data.rows;
             // Assign table read functions
             wavlReadFunc = v => this.getWavelengthsTable(v);
             console.log('^^^ wavlReadFunc is: ^^^');
@@ -499,10 +500,11 @@ class FitsFileLoader {
         } else {
             this.numPoints = this.fits.getHDU(0).data.width;
             // Assign spectrum read functions
+            instReadFunc = v => this.getIntensitySpect(v);
             wavlReadFunc = v => this.getWavelengthsSpect(v);
 //            console.log('^^^ wavlReadFunc is: ^^^');
 //            console.log(wavlReadFunc);
-            instReadFunc = v => this.getIntensitySpect(v);
+
 //            console.log('^^^ instReadFunc is: ^^^');
 //            console.log(instReadFunc);
 //            varReadFunc = this.getVarianceSpect;
@@ -527,12 +529,13 @@ class FitsFileLoader {
             console.log('^^^ parseSingleExtensionFitsFile promise chain succeeded - processing data ^^^');
             console.log('^^^ returned data is: ^^^');
             console.log(data);
-            spectra = data[1];
+
+            const spec = new Spectra(id, llambda, int, vari, skyy, name, ra, dec, mag, type, this.originalFilename, helio, cmb, this.node);
 
             // Note that the calling function resolves the promise, not this one
             console.log('^^^ Returned spectra are: ^^^');
-            console.log(spectra);
-            q.resolve(spectra);
+            console.log(spec);
+            q.resolve(spec);
 
         }.bind(this), function (data) {
             console.log('!!! parseSingleExtensionFitsFile promise chain failed !!!');
