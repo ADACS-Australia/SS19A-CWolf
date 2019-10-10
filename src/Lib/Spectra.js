@@ -38,6 +38,7 @@ class Spectra {
         this.variancePlot = variance;
         this.comment = "";
         this.compute = true;
+        console.log('### spectra - loaded parameters from constructor pass ###');
         if (variance != null && !this.node) {
             this.variancePlot = variance.slice();
             removeNaNs(this.variancePlot);
@@ -99,6 +100,7 @@ class Spectra {
     };
 
     setCompute(compute) {
+        console.log("### Attempting to run Spectra.setCompute ###");
         this.compute = compute;
         if (!compute) {
             this.isProcessed = true;

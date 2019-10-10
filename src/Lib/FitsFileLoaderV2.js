@@ -276,8 +276,8 @@ class FitsFileLoader {
 
 
         lambdas.push(lambda);
-        console.log('^^^ Found lambdas: ^^^');
-        console.log(lambdas);
+//        console.log('^^^ Found lambdas: ^^^');
+//        console.log(lambdas);
         q.resolve(lambdas);
 
         return q.promise;
@@ -389,19 +389,19 @@ class FitsFileLoader {
 
         let spectdata;
         this.fits.getDataUnit(ext).getFrame(0, function(data) {
-            console.log('^^^ Found data: ^^^');
-            console.log(data);
+//            console.log('^^^ Found data: ^^^');
+//            console.log(data);
             spectdata = Array.prototype.slice.call(data) ;
-            console.log('^^^ Converted to spectdata: ^^^');
-            console.log(spectdata);
+//            console.log('^^^ Converted to spectdata: ^^^');
+//            console.log(spectdata);
 
             if (dataDims == 1) {
                 // Simply return the data
-                console.log('^^^ Spectdata to be pushed to intensitySpects: ^^^');
-                console.log(spectdata);
+//                console.log('^^^ Spectdata to be pushed to intensitySpects: ^^^');
+//                console.log(spectdata);
                 intensitySpects.push(spectdata);
-                console.log('^^^ Found intensitySpects: ^^^');
-                console.log(intensitySpects);
+//                console.log('^^^ Found intensitySpects: ^^^');
+//                console.log(intensitySpects);
 
             } else {
 
@@ -530,12 +530,31 @@ class FitsFileLoader {
             console.log('^^^ returned data is: ^^^');
             console.log(data);
 
-            const spec = new Spectra(id, llambda, int, vari, skyy, name, ra, dec, mag, type, this.originalFilename, helio, cmb, this.node);
+            const wavls = data[0];
+            console.log("^^^ wavls: ^^^");
+            console.log(wavls);
+            console.log("^^^ data[0]: ^^^");
+            console.log(data[0]);
+            const ints = data[1];
+            console.log("^^^ ints: ^^^");
+            console.log(ints);
+            console.log("^^^ data[1]: ^^^");
+            console.log(data[1]);
+            console.log("^^^ This apparently has a length of "+data.length+" ^^^");
+            const wavlUnit = data[2];
+
+            console.log("^^^ Forming return JSON objects ^^^");
+            var s;
+            for (s=0; s < ints.length; s++) {
+                console.log("^^^ -- Forming object "+s+" ^^^");
+                let spec = [wavls[s], ints[s], wavlUnit, ];
+                spectra.push(spec)
+            }
 
             // Note that the calling function resolves the promise, not this one
             console.log('^^^ Returned spectra are: ^^^');
-            console.log(spec);
-            q.resolve(spec);
+            console.log(spectra);
+            q.resolve(spectra);
 
         }.bind(this), function (data) {
             console.log('!!! parseSingleExtensionFitsFile promise chain failed !!!');
