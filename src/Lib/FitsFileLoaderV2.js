@@ -576,7 +576,7 @@ class FitsFileLoader {
             exts_with_data.push(i);
         }
         if (exts_with_data.length === 0) {
-            var spectra = parseSingleExtensionFitsFile(exts_with_data[0]);
+            var spectra = this.parseSingleExtensionFitsFile(exts_with_data[0]);
             return spectra;
         }
 
