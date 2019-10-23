@@ -515,7 +515,7 @@ class FitsFileLoader {
 //            instUnitReadFunc = v => this.getIntensityUnitSpect(v);
         }
 
-        var spectra;
+        var spectra = [];
 
         $q.all([
             wavlReadFunc(0),
