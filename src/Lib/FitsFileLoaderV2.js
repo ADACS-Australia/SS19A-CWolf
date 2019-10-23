@@ -451,9 +451,10 @@ class FitsFileLoader {
 
 
             }
+            q.resolve(intensitySpects);
+
         });
 
-        q.resolve(intensitySpects);
         return q.promise ;
     }
 
