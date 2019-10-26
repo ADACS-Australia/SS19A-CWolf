@@ -5,6 +5,7 @@ import * as $q from "q";
 import {setFitsFilename} from "../Stores/Data/Actions";
 import path from 'path';
 import "./fits";
+import Spectra from "./Spectra";
 
 class FitsFileLoader {
 
@@ -194,17 +195,14 @@ class FitsFileLoader {
             }
         }
         if (this.customFileType) {
-            this.spectra = (this.customFileRead)(q, originalFilename);
+            (this.customFileRead)(q, originalFilename);
         } else if (this.noExt === 1) {
             // If single-extension, pass off to the single extension reader(s)
-            this.spectra = this.parseSingleExtensionFitsFile(q, originalFilename, 0);
+            this.parseSingleExtensionFitsFile(q, originalFilename, 0)
         } else {
             // If multi-extension, pass off to the multi-extension reader
-            this.spectra = this.parseMultiExtensionFitsFile(q, originalFilename);
+            this.parseMultiExtensionFitsFile(q, originalFilename);
         }
-
-        q.resolve(this.spectra);
-
     }
 
 
@@ -459,7 +457,7 @@ class FitsFileLoader {
     }
 
     parseSingleExtensionFitsFile(q, originalFilename, ext) {
-
+        console.log("Parsing Single Extension Fits File");
         // Read header information into properties
         const spectrum = {
             'properties': {}
@@ -481,15 +479,15 @@ class FitsFileLoader {
         // See if the data attribute attached to the astro FITS object has table
         // or image properties
         const isTableData = this.fits.getDataUnit(1).hasOwnProperty("rows");
-        const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false
+        const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false;
         let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, instUnitReadFunc;
         if (isTableData) {
-            console.log(this);
+            // console.log(this);
             this.numPoints = this.fits.getHDU(1).data.rows;
             // Assign table read functions
             wavlReadFunc = v => this.getWavelengthsTable(v);
-            console.log('^^^ wavlReadFunc is: ^^^');
-            console.log(wavlReadFunc);
+            // console.log('^^^ wavlReadFunc is: ^^^');
+            // console.log(wavlReadFunc);
             instReadFunc = this.getIntensityTable;
 //            varReadFunc = this.getVarianceTable;
 //            skyReadFunc = this.getSkyTable;
@@ -555,7 +553,9 @@ class FitsFileLoader {
             // Note that the calling function resolves the promise, not this one
             console.log('^^^ Returned spectra are: ^^^');
             console.log(spectra);
-            q.resolve(spectra);
+
+            var converted_objects = this.convert_to_spectra_object(spectra);
+            q.resolve(converted_objects);
 
         }.bind(this), function (data) {
             console.log('!!! parseSingleExtensionFitsFile promise chain failed !!!');
@@ -564,6 +564,8 @@ class FitsFileLoader {
     }
 
     parseMultiExtensionFitsFile(q, originalFilename) {
+        console.log("Parsing Multi Extension Fits File");
+
         // See if we are dealing with one of the following:
         // - Different data product (flux, var, sky etc) in each extension;
         // - Different object in each extension;
@@ -575,9 +577,9 @@ class FitsFileLoader {
         for (i = 0; i < this.noExt; i++) {
             exts_with_data.push(i);
         }
+
         if (exts_with_data.length === 0) {
-            var spectra = this.parseSingleExtensionFitsFile(exts_with_data[0]);
-            return spectra;
+            this.parseSingleExtensionFitsFile(q, exts_with_data[0]);
         }
 
         // OK, so there's multiple extensions with data. Now need to see if
@@ -600,7 +602,6 @@ class FitsFileLoader {
             var spectra = [];
             for (var j = 0; j < exts_with_data.length; j++) {
                 spectra.push(this.parseSingleExtensionFitsFile(exts_with_data[j]));
-            return spectra;
             }
         }
 
@@ -631,6 +632,16 @@ class FitsFileLoader {
         }
 
         //
+    }
+
+    convert_to_spectra_object(spectralist) {
+        let speclist2 = [];
+        for (let i = 0; i < spectralist.length; i++) {
+            const s = new Spectra(i, spectralist[i][0], spectralist[i][1], null, null, "NAME", 0, 0, 23, "SOMETYPE", "UNKNOWN", 0, 0, false);
+            s.setCompute(false);
+            speclist2.push(s);
+        }
+        return speclist2;
     }
 
 }
