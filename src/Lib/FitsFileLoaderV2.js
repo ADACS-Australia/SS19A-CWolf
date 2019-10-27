@@ -5,6 +5,7 @@ import * as $q from "q";
 import {setFitsFilename} from "../Stores/Data/Actions";
 import path from 'path';
 import "./fits";
+import Spectra from "./Spectra";
 
 class FitsFileLoader {
 
@@ -34,7 +35,7 @@ class FitsFileLoader {
         this.hasFitsFile = false;
         this.originalFilename = null;
         this.filename = null;
-        this.noExt = null;
+        this.numExtensions = null;
 
         /*
         this.MJD = null;
@@ -96,7 +97,7 @@ class FitsFileLoader {
         const fileData = this.thefiledata;
         this.fits = new window.astro.FITS(fileData, () => {
             console.log("window.astro.FITS done its thing now parse "+this.filename+" "+this.originalFilename);
-            this.parseFitsFile(q, this.originalFilename);
+            this.parseFitsFile(q);
             this.processorService.setPause();
         });
         return q.promise;
@@ -125,30 +126,24 @@ class FitsFileLoader {
         return q.promise;
     };
 
-    readHeaderValue(ext, kw) {
+    readHeaderValue(extension, keyword, defaultValue) {
         // Attempt to read header keyword 'kw' from, in order:
         // - Extenstion ext
         // - Extension 0 (if ext != 0)
-        // If neither succeeds, return 'undefined'
+        // If neither succeeds, return the default value, which if it isn't specified, will be undefined.
         let val = undefined;
         try {
-            val = this.fits.getHeader(ext).cards[kw].value
+            val = this.fits.getHeader(extension).cards[keyword].value
         } catch (TypeError) {}
-        if (val === undefined && ext !== 0) {
+        if (val === undefined && extension !== 0) {
             try {
-                val = this.fits.header0.cards[kw].value
+                val = this.fits.header0.cards[keyword].value
             } catch (TypeError) {}
         }
-        return val
-    }
-
-    readHeaderValueReturns(ext, kw, returns) {
-        // As for readHeaderValue, but return 'returns' if the result is undef.
-        const val = this.readHeaderValue(ext, kw);
-        if (val === undefined) {
-            return returns;
+        if (val === undefined && defaultValue != undefined) {
+            val = defaultValue;
         }
-        return val;
+        return val
     }
 
     standardizeWavlUnit(wavlUnit) {
@@ -167,25 +162,23 @@ class FitsFileLoader {
         return wavlUnit;
     }
 
-    parseFitsFile(q, originalFilename) {
+    parseFitsFile(q) {
         // q is the promise object to resolve
 
         // Read the header to get the file structure, and define which reader
         // functions to hand the file off to
         this.log.debug("Attempting to determine file structure");
         this.header0 = this.fits.getHDU(0).header;
-        const phu = this.header0;
-        this.originalFilename = originalFilename;
 
         this.spectra = [];
 
         // Count the number of extensions within the file
-        this.noExt = this.fits.hdus.length;
-        // Check to see if this file matches one of the special file types
-        // with a custom read in
-        this.customFileType = null ;
-        this.customFileRead = null ;
-        for (var i = 0; i < this.instrumentPackages.length; i++) {
+        this.numExtensions = this.fits.hdus.length;
+
+        // Check to see if this file matches one of the special file types with a custom read in
+        this.customFileType = null;
+        this.customFileRead = null;
+        for (let i = 0; i < this.instrumentPackages.length; i++) {
             const pkg = this.instrumentPackages[i];
             if (this.header0.cards[pkg["headerkw"]] === pkg["headervalue"]) {
                 this.customFileType = pkg["instrument"];
@@ -193,38 +186,36 @@ class FitsFileLoader {
                 break;
             }
         }
+
         if (this.customFileType) {
-            this.spectra = (this.customFileRead)(q, originalFilename);
-        } else if (this.noExt === 1) {
+            (this.customFileRead)(q);
+        } else if (this.numExtensions === 1) {
             // If single-extension, pass off to the single extension reader(s)
-            this.spectra = this.parseSingleExtensionFitsFile(q, originalFilename, 0);
+            this.parseSingleExtensionFitsFile(q, 0)
         } else {
             // If multi-extension, pass off to the multi-extension reader
-            this.spectra = this.parseMultiExtensionFitsFile(q, originalFilename);
+            this.parseMultiExtensionFitsFile(q);
         }
-
-        q.resolve(this.spectra);
-
     }
 
 
     getWavelengthAxis(ext) {
-        this.log.debug('Looking for wavelength axis')
+        this.log.debug('Looking for wavelength axis');
 
         const wavlAxis = 1 ; // Default if CTYPE not found
         const wavlAxisName = [];
 
         for (let headerkw in this.header0.cards) {
             try {
-                    if ((this.getHeader(ext).cards[headerkw].value.match(/wave/i) || this.getHeader(ext).cards[headerkw].value.match(/lam/i)) && headerkw.indexOf("TYPE") !== -1) {
-                        wavlAxisName.push(headerkw);
-                    }
-                } catch (TypeError) {}
+                // TODO: Ask Marc to fill in logic here in English.
+                if ((this.fits.getHeader(ext).cards[headerkw].value.match(/wave/i) || this.fits.getHeader(ext).cards[headerkw].value.match(/lam/i)) && headerkw.indexOf("TYPE") !== -1) {
+                    wavlAxisName.push(headerkw);
+                }
+            } catch (TypeError) {}
         }
 
         if (wavlAxisName.length !== 1) {
-            console.log("Unable to determine wavelength axis - defauting to "+wavlAxis);
-//            q.reject("Unable to determine wavelength axis");
+            console.log("Unable to determine wavelength axis - defauting to " + wavlAxis);
             return wavlAxis;
         }
 
@@ -242,9 +233,9 @@ class FitsFileLoader {
 
         const wavlAxisIndex = this.getWavelengthAxis(ext) ;
 
-        const crval = this.readHeaderValue(ext, "CRVAL"+wavlAxisIndex) || this.readHeaderValue(ext, "CV1_"+wavlAxisIndex);
-        const crpix = this.readHeaderValue(ext, "CRPIX"+wavlAxisIndex) || this.readHeaderValue(ext, "CP1_"+wavlAxisIndex);
-        const cdelt = this.readHeaderValue(ext, "CDELT"+wavlAxisIndex) || this.readHeaderValue(ext, "CD1_"+wavlAxisIndex);
+        const crval = this.readHeaderValue(ext, "CRVAL" + wavlAxisIndex) || this.readHeaderValue(ext, "CV1_" + wavlAxisIndex);
+        const crpix = this.readHeaderValue(ext, "CRPIX" + wavlAxisIndex) || this.readHeaderValue(ext, "CP1_" + wavlAxisIndex);
+        const cdelt = this.readHeaderValue(ext, "CDELT" + wavlAxisIndex) || this.readHeaderValue(ext, "CD1_" + wavlAxisIndex);
         const scale = this.readHeaderValue(ext, "LOGSCALE") || "F";
         const needShift = this.readHeaderValue(ext, "VACUUM") || "T";
 
@@ -268,16 +259,13 @@ class FitsFileLoader {
             }
         }
 
-        // Do shifting, if necessary
+        // If wavelength is not already in vacuum frame, shift it into vacuum from atmosphere
         if (needShift === null || needShift === 0 || needShift === "F" || needShift === false ) {
-            // Do shift
             convertVacuumFromAir(lambda);
         }
 
-
+        // TODO: I dont understand why we have lambda and lambdas, when there is no loop her to get more than one element in lambdas.
         lambdas.push(lambda);
-//        console.log('^^^ Found lambdas: ^^^');
-//        console.log(lambdas);
         q.resolve(lambdas);
 
         return q.promise;
@@ -292,11 +280,11 @@ class FitsFileLoader {
 
         for (let headerkw in this.fits.getHeader(ext).cards) {
             try {
-                    if ((this.fits.getHeader(ext).cards[headerkw].value.indexOf("wave") !== -1 || this.fits.getHeader(ext).cards[headerkw].value.indexOf("lam") !== -1) && headerkw.indexOf("TYPE") !== -1) {
-                        wavlTypeKW.push(headerkw);
-                        wavlColName.push(this.fits.getHeader(ext).cards[headerkw].value);
-                    }
-                } catch (TypeError) {}
+                if ((this.fits.getHeader(ext).cards[headerkw].value.indexOf("wave") !== -1 || this.fits.getHeader(ext).cards[headerkw].value.indexOf("lam") !== -1) && headerkw.indexOf("TYPE") !== -1) {
+                    wavlTypeKW.push(headerkw);
+                    wavlColName.push(this.fits.getHeader(ext).cards[headerkw].value);
+                }
+            } catch (TypeError) {}
         }
 
         if (wavlTypeKW.length !== 1) {
@@ -312,19 +300,18 @@ class FitsFileLoader {
 
         // Extract the column data
         let col_data = [];
-        this.getDataUnit(ext).getColumn("wave", function (column) {
+        this.fits.getDataUnit(ext).getColumn("wave", function (column) {
             col_data = column;
         });
 
         // If 'log' was in the row name, we need to convert to 'actual' values
         if (wavlColName[0].indexOf("log") !== -1) {
-            for (let i = 0; i < col_data.length(); i++) {
+            for (let i = 0; i < col_data.length; i++) {
                 col_data[i] = Math.pow(10, col_data[i]); // Just converting 'actual' values, no need to do e.g. deltas
             }
         }
 
         // Wavelength unit detection is done elsewhere
-
         q.resolve(col_data);
 
         return q.promise;
@@ -335,18 +322,16 @@ class FitsFileLoader {
         const q = $q.defer();
 
         // Now need to make sure that the wavelength data are in angstroms
-        let wavlUnit = null ;
+        let wavlUnit = null;
         // Attempt to read the straight-up header keyword types
-        const foundWavlUnit = this.readHeaderValue(ext, "CTYPE${colIndex}") || this.readHeaderValue(ext, "TUNIT${colIndex}") || null ;
+        const foundWavlUnit = this.readHeaderValue(ext, "CTYPE " + colIndex) || this.readHeaderValue(ext, "TUNIT" + colIndex) || null ;
         if (foundWavlUnit === null) {
             wavlUnit = "pixel";
         }
 
         // Get the standard name for the wavl. unit
         wavlUnit = this.standardizeWavlUnit(wavlUnit);
-
         q.resolve(wavlUnit);
-
         return q.promise;
 
     }
@@ -357,7 +342,7 @@ class FitsFileLoader {
 
         let wavlUnit = null ;
         const wavlAxisIndex = this.getWavelengthAxis(ext) ;
-        let foundWavlUnit = this.readHeaderValue(ext, "CUNIT${wavlAxisIndex}") || null ;
+        let foundWavlUnit = this.readHeaderValue(ext, "CUNIT" + wavlAxisIndex) || null ;
 
         if (foundWavlUnit == null) {
             wavlUnit = "pixel" ;
@@ -365,9 +350,7 @@ class FitsFileLoader {
 
         // Get the standard name for the wavl. unit
         wavlUnit = this.standardizeWavlUnit(wavlUnit);
-
         q.resolve(wavlUnit);
-
         return q.promise;
 
     }
@@ -389,20 +372,10 @@ class FitsFileLoader {
 
         let spectdata;
         this.fits.getDataUnit(ext).getFrame(0, function(data) {
-//            console.log('^^^ Found data: ^^^');
-//            console.log(data);
             spectdata = Array.prototype.slice.call(data) ;
-//            console.log('^^^ Converted to spectdata: ^^^');
-//            console.log(spectdata);
-
             if (dataDims == 1) {
-                // Simply return the data
-//                console.log('^^^ Spectdata to be pushed to intensitySpects: ^^^');
-//                console.log(spectdata);
+                // Simply return the data if its already 1D, easy as
                 intensitySpects.push(spectdata);
-//                console.log('^^^ Found intensitySpects: ^^^');
-//                console.log(intensitySpects);
-
             } else {
 
                 // Otherwise, we need to slice up the data into constituent parts
@@ -411,12 +384,12 @@ class FitsFileLoader {
                 console.log("^^^ Looking to crack open multi-dimensional data ^^^");
                 const dataAxis = 1 ;  // Default value if we can't find something explicit
                 const fluxAxes = [];
-                for (var headerkw in this.getHeader(ext).cards) {
+                for (var headerkw in this.fits.getHeader(ext).cards) {
                     try {
-                            if ((this.getHeader(ext).cards[headerkw].value.match(/flux/i) || this.getHeader(ext).cards[headerkw].value.match(/inten/i)) && headerkw.indexOf("TYPE") !== -1) {
-                                fluxAxes.push(headerkw);
-                            }
-                        } catch (TypeError) {}
+                        if ((this.fits.getHeader(ext).cards[headerkw].value.match(/flux/i) || this.fits.getHeader(ext).cards[headerkw].value.match(/inten/i)) && headerkw.indexOf("TYPE") !== -1) {
+                            fluxAxes.push(headerkw);
+                        }
+                    } catch (TypeError) {}
                 }
                 if (fluxAxes.length > 1) {
                     console.log("&&& PROMISE REJECTED && - Appear to be multiple intensity axes");
@@ -458,8 +431,18 @@ class FitsFileLoader {
         return q.promise ;
     }
 
-    parseSingleExtensionFitsFile(q, originalFilename, ext) {
+    convertToSpectraObject(spectralist) {
+        let speclist2 = [];
+        for (let i = 0; i < spectralist.length; i++) {
+            const s = new Spectra(i, spectralist[i][0], spectralist[i][1], null, null, "NAME", 0, 0, 23, "SOMETYPE", "UNKNOWN", 0, 0, false);
+            s.setCompute(false);
+            speclist2.push(s);
+        }
+        return speclist2;
+    }
 
+    parseSingleExtensionFitsFile(q, ext) {
+        console.log("Parsing Single Extension Fits File");
         // Read header information into properties
         const spectrum = {
             'properties': {}
@@ -481,15 +464,15 @@ class FitsFileLoader {
         // See if the data attribute attached to the astro FITS object has table
         // or image properties
         const isTableData = this.fits.getDataUnit(1).hasOwnProperty("rows");
-        const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false
+        const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false;
         let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, instUnitReadFunc;
         if (isTableData) {
-            console.log(this);
+            // console.log(this);
             this.numPoints = this.fits.getHDU(1).data.rows;
             // Assign table read functions
             wavlReadFunc = v => this.getWavelengthsTable(v);
-            console.log('^^^ wavlReadFunc is: ^^^');
-            console.log(wavlReadFunc);
+            // console.log('^^^ wavlReadFunc is: ^^^');
+            // console.log(wavlReadFunc);
             instReadFunc = this.getIntensityTable;
 //            varReadFunc = this.getVarianceTable;
 //            skyReadFunc = this.getSkyTable;
@@ -555,15 +538,20 @@ class FitsFileLoader {
             // Note that the calling function resolves the promise, not this one
             console.log('^^^ Returned spectra are: ^^^');
             console.log(spectra);
-            q.resolve(spectra);
+
+            var converted_objects = this.convertToSpectraObject(spectra);
+            q.resolve(converted_objects);
 
         }.bind(this), function (data) {
-            console.log('!!! parseSingleExtensionFitsFile promise chain failed !!!');
+            console.error('!!! parseSingleExtensionFitsFile promise chain failed !!!');
+            console.error(data);
         });
 
     }
 
-    parseMultiExtensionFitsFile(q, originalFilename) {
+    parseMultiExtensionFitsFile(q) {
+        console.log("Parsing Multi Extension Fits File");
+
         // See if we are dealing with one of the following:
         // - Different data product (flux, var, sky etc) in each extension;
         // - Different object in each extension;
@@ -572,12 +560,12 @@ class FitsFileLoader {
 
         // Let's see how many of the data extensions have data...
         var exts_with_data = [];
-        for (i = 0; i < this.noExt; i++) {
+        for (i = 0; i < this.numExtensions; i++) {
             exts_with_data.push(i);
         }
+
         if (exts_with_data.length === 0) {
-            var spectra = this.parseSingleExtensionFitsFile(exts_with_data[0]);
-            return spectra;
+            this.parseSingleExtensionFitsFile(q, exts_with_data[0]);
         }
 
         // OK, so there's multiple extensions with data. Now need to see if
@@ -587,8 +575,8 @@ class FitsFileLoader {
         // extensions, and seeing if we can find a variance extension
         var var_ext_found = false;
         var var_ext;
-        for (var i = 0; i < this.noExt; i++) {
-            if (this.readHeaderValueReturns(i, "EXTNAME", "").match(/var/i)) {
+        for (var i = 0; i < this.numExtensions; i++) {
+            if (this.readHeaderValue(i, "EXTNAME", "").match(/var/i)) {
                 var_ext_found = true;
                 var_ext = i;
                 break;
@@ -600,7 +588,6 @@ class FitsFileLoader {
             var spectra = [];
             for (var j = 0; j < exts_with_data.length; j++) {
                 spectra.push(this.parseSingleExtensionFitsFile(exts_with_data[j]));
-            return spectra;
             }
         }
 
@@ -632,6 +619,8 @@ class FitsFileLoader {
 
         //
     }
+
+
 
 }
 
