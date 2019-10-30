@@ -207,7 +207,7 @@ class FitsFileLoader {
 
         for (let headerkw in this.header0.cards) {
             try {
-                // TODO: Ask Marc to fill in logic here in English.
+                // Search through all the header keywords in the extension to see if one of them identifies itself as the wavelength axis identifier
                 if ((this.fits.getHeader(ext).cards[headerkw].value.match(/wave/i) || this.fits.getHeader(ext).cards[headerkw].value.match(/lam/i)) && headerkw.indexOf("TYPE") !== -1) {
                     wavlAxisName.push(headerkw);
                 }
@@ -222,7 +222,7 @@ class FitsFileLoader {
         // Get the column index from the header keyword, by stripping off the
         // number at the end of the keyword
         // Need to subtract one because arrays in JavaScript are zero-indexed
-        const wavColumnIndex = parseInt(wavlTypeKW[0][wavlTypeKW[0].length - 1]) - 1;
+        const wavColumnIndex = parseInt(wavlAxisName[0][wavlAxisName[0].length - 1]) - 1;
         return wavColumnIndex ;
 
     }
@@ -383,22 +383,26 @@ class FitsFileLoader {
                 // as well as any flags indicating what the various axes are
                 console.log("^^^ Looking to crack open multi-dimensional data ^^^");
                 const dataAxis = 1 ;  // Default value if we can't find something explicit
-                const fluxAxes = [];
+                // We need to find the wavelength axis, as this is the axis to
+                // 'slice' along to extract spectra
+                var wavlAxes = [];
                 for (var headerkw in this.fits.getHeader(ext).cards) {
                     try {
-                        if ((this.fits.getHeader(ext).cards[headerkw].value.match(/flux/i) || this.fits.getHeader(ext).cards[headerkw].value.match(/inten/i)) && headerkw.indexOf("TYPE") !== -1) {
-                            fluxAxes.push(headerkw);
+                        if ((this.fits.getHeader(ext).cards[headerkw].value.match(/wave/i) || this.fits.getHeader(ext).cards[headerkw].value.match(/wavl/i)) && headerkw.indexOf("TYPE") !== -1) {
+                            wavlAxes.push(headerkw);
                         }
                     } catch (TypeError) {}
                 }
-                if (fluxAxes.length > 1) {
-                    console.log("&&& PROMISE REJECTED && - Appear to be multiple intensity axes");
-                    q.reject("Appear to be multiple intensity axes");
+                console.log("wavlAxes:");
+                console.log(wavlAxes);
+                if (wavlAxes.length !== 1) {
+                    console.log("&&& PROMISE REJECTED && - Appear to be no or multiple wavelength axes");
+                    q.reject("Appear to be no or multiple wavelength axes");
                     return;
                 }
 
                 // 0 is data is in rows (sequential), 1 otherwise
-                const fluxAxis = parseInt(fluxAxes[0][fluxAxes[0].length - 1]) - 1;
+                const fluxAxis = parseInt(wavlAxes[0][wavlAxes[0].length - 1]) - 1;
                 // Reverse of the above
                 // const fluxAxisOpp = (fluxAxis + 1) % 2 ;
                 const [rowLength, colLength] = this.fits.getDataUnit(ext).naxis;
@@ -426,7 +430,7 @@ class FitsFileLoader {
             }
             q.resolve(intensitySpects);
 
-        });
+        }.bind(this));
 
         return q.promise ;
     }
@@ -464,7 +468,11 @@ class FitsFileLoader {
         // See if the data attribute attached to the astro FITS object has table
         // or image properties
         const isTableData = this.fits.getDataUnit(1).hasOwnProperty("rows");
-        const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false;
+        try {
+            const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false;
+        } catch {
+            const isLamost = false;
+        }
         let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, instUnitReadFunc;
         if (isTableData) {
             // console.log(this);
@@ -559,12 +567,17 @@ class FitsFileLoader {
         // In the last two cases, we can re-use parseSingleExtensionFits
 
         // Let's see how many of the data extensions have data...
+
+        console.log(this.fits);
+
         var exts_with_data = [];
         for (i = 0; i < this.numExtensions; i++) {
-            exts_with_data.push(i);
+            if (this.fits.getHDU(i).data !== undefined) {
+                exts_with_data.push(i);
+            }
         }
 
-        if (exts_with_data.length === 0) {
+        if (exts_with_data.length === 1) {
             this.parseSingleExtensionFitsFile(q, exts_with_data[0]);
         }
 
@@ -573,6 +586,7 @@ class FitsFileLoader {
         // object
         // We do this by checking for an EXTNAME attribute on the data
         // extensions, and seeing if we can find a variance extension
+        // (That is, does EXTNAME contain the string 'var'?)
         var var_ext_found = false;
         var var_ext;
         for (var i = 0; i < this.numExtensions; i++) {
@@ -588,6 +602,7 @@ class FitsFileLoader {
             var spectra = [];
             for (var j = 0; j < exts_with_data.length; j++) {
                 spectra.push(this.parseSingleExtensionFitsFile(exts_with_data[j]));
+
             }
         }
 
@@ -598,24 +613,66 @@ class FitsFileLoader {
         // matched up
         // Also need to find any non-science spectra (calibrators?)
 
+        // Look to identify which data extension(s) have intensity data in them
+        // We assume anything with an 'OBJECT' keyword is describing real data
+        let exts_with_int = [];
+        exts_with_data.forEach(function (item, index) {
+            if (this.readHeaderValue(item, "OBJECT", undefined) !== undefined) {
+                exts_with_int.push(item);
+            }
+        }.bind(this));
+
         // First, throw an error at this point if there is more than one intensity
         // extension - such a file is too complex for generic read-in
-        if (exts_with_data.length > 1) {
+        if (exts_with_int.length > 1) {
             console.log("&&& PROMISE REJECTED && - There are multiple intensity extensions in a file with different data products in each extension");
             q.reject("There are multiple intensity extensions in a file with different data products in each extension");
+            return;
+        } else if (exts_with_int.length == 0) {
+            console.log("&&& PROMISE REJECTED && - Unable to find the data extension containing the intensities");
+            q.reject("Unable to find the data extension containing the intensities");
             return;
         }
 
         // Specify the read-in functions
         let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, intUnitReadFunc;
 
+        instReadFunc = v => this.getIntensitySpect(v);
+        wavlReadFunc = v => this.getWavelengthsSpect(v);
+        wavlUnitReadFunc = v => this.getWavelengthUnitSpect(v);
+
+        $q.all([
+            wavlReadFunc(exts_with_int[0]),
+            instReadFunc(exts_with_int[0]),
+            wavlUnitReadFunc(exts_with_int[0])
+        ]).then(function (data) {
+            console.log("^^^ Forming return JSON objects ^^^");
+            var s;
+            for (s=0; s < ints.length; s++) {
+                console.log("^^^ -- Forming object "+s+" ^^^");
+                let spec = [wavls[s], ints[s], wavlUnit, ];
+                spectra.push(spec)
+            }
+
+            // Note that the calling function resolves the promise, not this one
+            console.log('^^^ Returned spectra are: ^^^');
+            console.log(spectra);
+
+            var converted_objects = this.convertToSpectraObject(spectra);
+            q.resolve(converted_objects);
+
+        }.bind(this), function () {
+            console.error('!!! parseMultiExtensionFitsFile promise chain failed !!!');
+            console.error(data);
+        });
+
 
 
         // Re-check the 'properties' information in case more relevant information
         // is contained in the data extension header
-        var spectrum = {
-            "properties": {}
-        }
+//        var spectrum = {
+//            "properties": {}
+//        }
 
         //
     }
