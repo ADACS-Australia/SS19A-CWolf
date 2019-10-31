@@ -202,7 +202,7 @@ class FitsFileLoader {
     getWavelengthAxis(ext) {
         this.log.debug('Looking for wavelength axis');
 
-        const wavlAxis = 1 ; // Default if CTYPE not found
+        const wavlAxis = 0 ; // Default if CTYPE not found
         const wavlAxisName = [];
 
         for (let headerkw in this.header0.cards) {
@@ -223,6 +223,7 @@ class FitsFileLoader {
         // number at the end of the keyword
         // Need to subtract one because arrays in JavaScript are zero-indexed
         const wavColumnIndex = parseInt(wavlAxisName[0][wavlAxisName[0].length - 1]) - 1;
+        console.log("Found wavelength axis = " + wavColumnIndex);
         return wavColumnIndex ;
 
     }
@@ -231,13 +232,15 @@ class FitsFileLoader {
         this.log.debug('Getting spectra wavelengths');
         const q = $q.defer();
 
-        const wavlAxisIndex = this.getWavelengthAxis(ext) ;
+        const wavlAxisIndex = this.getWavelengthAxis(ext) + 1 ;  // Need to add one to come back to FITS indexing
+        console.log("wavlAxis being used in getWavelengthSpect = " + wavlAxisIndex);
 
         const crval = this.readHeaderValue(ext, "CRVAL" + wavlAxisIndex) || this.readHeaderValue(ext, "CV1_" + wavlAxisIndex);
         const crpix = this.readHeaderValue(ext, "CRPIX" + wavlAxisIndex) || this.readHeaderValue(ext, "CP1_" + wavlAxisIndex);
         const cdelt = this.readHeaderValue(ext, "CDELT" + wavlAxisIndex) || this.readHeaderValue(ext, "CD1_" + wavlAxisIndex);
         const scale = this.readHeaderValue(ext, "LOGSCALE") || "F";
         const needShift = this.readHeaderValue(ext, "VACUUM") || "T";
+        console.log("crval = " + crval + ", crpix = " + crpix + ", cdelt = " + cdelt);
 
         if (crval == null || crpix == null || cdelt == null) {
             console.log("&&& PROMISE REJECTED && - Wavelength header values incorrect: CRVAL"+wavlAxisIndex+"=" + crval + ", CRPIX$"+wavlAxisIndex+"=" + crpix + ", CDELT"+wavlAxisIndex+"=" + cdelt + ".");
@@ -385,24 +388,13 @@ class FitsFileLoader {
                 const dataAxis = 1 ;  // Default value if we can't find something explicit
                 // We need to find the wavelength axis, as this is the axis to
                 // 'slice' along to extract spectra
-                var wavlAxes = [];
-                for (var headerkw in this.fits.getHeader(ext).cards) {
-                    try {
-                        if ((this.fits.getHeader(ext).cards[headerkw].value.match(/wave/i) || this.fits.getHeader(ext).cards[headerkw].value.match(/wavl/i)) && headerkw.indexOf("TYPE") !== -1) {
-                            wavlAxes.push(headerkw);
-                        }
-                    } catch (TypeError) {}
-                }
-                console.log("wavlAxes:");
-                console.log(wavlAxes);
-                if (wavlAxes.length !== 1) {
-                    console.log("&&& PROMISE REJECTED && - Appear to be no or multiple wavelength axes");
-                    q.reject("Appear to be no or multiple wavelength axes");
-                    return;
-                }
+                var wavlAxis = this.getWavelengthAxis(ext);
+                console.log("wavlAxis:");
+                console.log(wavlAxis);
 
                 // 0 is data is in rows (sequential), 1 otherwise
-                const fluxAxis = parseInt(wavlAxes[0][wavlAxes[0].length - 1]) - 1;
+                const fluxAxis = wavlAxis;
+                console.log("fluxAxis = " + fluxAxis);
                 // Reverse of the above
                 // const fluxAxisOpp = (fluxAxis + 1) % 2 ;
                 const [rowLength, colLength] = this.fits.getDataUnit(ext).naxis;
@@ -417,9 +409,10 @@ class FitsFileLoader {
                     startStop = spectdata.length - colLength * (rowLength - 1) ;
                     iStep = colLength;
                 }
+                console.log("startStep = " + startStep + ", startStop = " + startStop + ", iStep = " + iStep);
 
                 for (let start = 0; start < startStop ; start += startStep) {
-                        const spect = [];
+                        let spect = [];
                         for (var i = 0; i < rowLength; i+= iStep) {
                             spect.push(spectdata[start + i]);
                         }
@@ -428,11 +421,13 @@ class FitsFileLoader {
 
 
             }
+            console.log("intensitySpects:");
+            console.log(intensitySpects);
             q.resolve(intensitySpects);
+            return q.promise ;
 
         }.bind(this));
 
-        return q.promise ;
     }
 
     convertToSpectraObject(spectralist) {
@@ -468,11 +463,13 @@ class FitsFileLoader {
         // See if the data attribute attached to the astro FITS object has table
         // or image properties
         const isTableData = this.fits.getDataUnit(1).hasOwnProperty("rows");
+        var isLamost;
         try {
-            const isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false;
+            isLamost = this.fits.getHDU(0).header.cards["TELESCOP"].value === "LAMOST" || false;
         } catch {
-            const isLamost = false;
+            isLamost = false;
         }
+        console.log("isLamost = " + isLamost);
         let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, instUnitReadFunc;
         if (isTableData) {
             // console.log(this);
