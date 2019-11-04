@@ -424,9 +424,10 @@ class FitsFileLoader {
             console.log("intensitySpects:");
             console.log(intensitySpects);
             q.resolve(intensitySpects);
-            return q.promise ;
 
         }.bind(this));
+
+        return q.promise ;
 
     }
 
@@ -634,6 +635,9 @@ class FitsFileLoader {
         // Specify the read-in functions
         let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, intUnitReadFunc;
 
+        // Need the number of points in case wavelength isnt an array but defined in the headers
+        this.numPoints = this.fits.getHDU(exts_with_int[0]).data.width;
+
         instReadFunc = v => this.getIntensitySpect(v);
         wavlReadFunc = v => this.getWavelengthsSpect(v);
         wavlUnitReadFunc = v => this.getWavelengthUnitSpect(v);
@@ -643,11 +647,22 @@ class FitsFileLoader {
             instReadFunc(exts_with_int[0]),
             wavlUnitReadFunc(exts_with_int[0])
         ]).then(function (data) {
+            const wavelengths = data[0];
+            const intensity = data[1];
+            const wavelength_unit = data[2];
+
+            let spectra = [];
             console.log("^^^ Forming return JSON objects ^^^");
-            var s;
-            for (s=0; s < ints.length; s++) {
+            for (let s=0; s < intensity.length; s++) {
                 console.log("^^^ -- Forming object "+s+" ^^^");
-                let spec = [wavls[s], ints[s], wavlUnit, ];
+                let spec;
+                if (wavelengths.length === 1) {
+                    spec = [wavelengths[0], intensity[s], wavelength_unit,];
+                } else if (wavelengths.length === intensity.length) {
+                    spec = [wavelengths[s], intensity[s], wavelength_unit,];
+                } else {
+                    q.reject("Wavelength and spectrum have different lengths - don't know how to match them up")
+                }
                 spectra.push(spec)
             }
 
