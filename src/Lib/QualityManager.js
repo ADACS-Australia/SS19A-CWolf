@@ -7,7 +7,7 @@ class QualityManager {
     }
 
     getQuality() {
-        return this.store.getState().s[this.store.getState().index].ui.quality;
+        return this.store.getState().getUi().quality;
     }
     
     static getType(qop) {

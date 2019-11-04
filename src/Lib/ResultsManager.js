@@ -1,6 +1,5 @@
 import CookieManager from "./CookieManager";
 import ResultsGenerator from "./ResultsGenerator";
-import bootbox from 'bootbox';
 import {saveAs} from 'file-saver';
 import {templateManager} from "./TemplateManager";
 
@@ -10,7 +9,7 @@ class ResultsManager {
         this.store = store;
         this.resultsGenerator = new ResultsGenerator(null, templateManager, false)
     }
-    
+
     setHelio(val) {
         this.resultsGenerator.setHelio(val);
     };
@@ -26,10 +25,12 @@ class ResultsManager {
         console.log("Downloading results");
         this.downloading = true;
         if (!this.store.getState().personal.initials) {
-            bootbox.alert("Please enter your initials in the header and try again.");
+            alert("Please enter your initials in the header and try again.");
             this.downloading = false;
+            return;
         }
 
+        this.resultsGenerator.data = this.store.getState().getData();
         const results = this.resultsGenerator.getResultsCSV(this.store.getState().personal.initials);
         console.log(results);
         if (results.length > 0) {
@@ -40,7 +41,7 @@ class ResultsManager {
     };
 
     getFilename() {
-        return this.store.data.fitsFileName + "_" + this.store.getState().personal.initials + ".mz";
+        return this.store.getState().getData().fitsFileName + "_" + this.store.getState().personal.initials + ".mz";
     };
 
     getResultFromSpectra(spectra) {

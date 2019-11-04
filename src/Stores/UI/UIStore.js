@@ -303,7 +303,7 @@ class UIStore {
                 state.waitingOnFit = true;
                 if (state.active != null) {
                     if (state.active.processedIntensity == null) {
-                        this.store.getState().s[this.store.getState().index].data.processorService.addToPriorityQueue(state.active, true);
+                        this.store.getState().getData().processorService.addToPriorityQueue(state.active, true);
                         return {
                             ...state
                         };
@@ -344,8 +344,8 @@ class UIStore {
 
                     if (state.active) {
                         console.log("ACCEPT AUTO QOP IF 2")
-                        this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setManualResults(state.active, state.templateId, state.detailed.redshift, state.active.autoQOP);
-                        setTimeout(() => this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setNextSpectra(), 0);
+                        this.store.getState().getData().processorService.spectraManager.setManualResults(state.active, state.templateId, state.detailed.redshift, state.active.autoQOP);
+                        setTimeout(() => this.store.getState().getData().processorService.spectraManager.setNextSpectra(), 0);
                     }
                 }
                 return {
@@ -368,8 +368,8 @@ class UIStore {
 
             case UIActionTypes.SAVE_MANUAL:
                 if (state.active) {
-                    this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setManualResults(state.active, state.detailed.templateId, state.detailed.redshift, action.qop);
-                    setTimeout(() => this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.setNextSpectra(), 0);
+                    this.store.getState().getData().processorService.spectraManager.setManualResults(state.active, state.detailed.templateId, state.detailed.redshift, action.qop);
+                    setTimeout(() => this.store.getState().getData().processorService.spectraManager.setNextSpectra(), 0);
                 }
 
                 return {
@@ -387,7 +387,7 @@ class UIStore {
                 if (state.active) {
                     state.active.setComment(action.comment);
                     if (this.store.getState().settings.downloadAutomatically) {
-                        this.store.getState().s[this.store.getState().index].data.processorService.spectraManager.localStorageManager.saveSpectra(state.active, this.store.getState().s[this.store.getState().index].data.resultsManager);
+                        this.store.getState().getData().processorService.spectraManager.localStorageManager.saveSpectra(state.active, this.store.getState().getData().resultsManager);
                     }
                 }
                 return {

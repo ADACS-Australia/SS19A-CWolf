@@ -79,8 +79,6 @@ class ProcessorManager {
         this.priorityJobs = [];
 
         this.node = false;
-
-        // todo
     }
     
     setNode() {

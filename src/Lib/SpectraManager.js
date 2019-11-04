@@ -28,7 +28,7 @@ class SpectraManager {
     getData() {
         if (this.clidata != null)
             return this.clidata;
-        return this.store.getState().s[this.store.getState().index].data;
+        return this.store.getState().getData();
 
     }
 

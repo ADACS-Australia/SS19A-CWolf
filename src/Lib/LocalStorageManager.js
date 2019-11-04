@@ -13,7 +13,7 @@ class LocalStorageManager {
     }
 
     getData() {
-        return this.store.getState().s[this.store.getState().index].data;
+        return this.store.getState().getData();
     }
 
     static purgeOldStorage() {

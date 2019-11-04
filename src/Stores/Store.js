@@ -16,15 +16,14 @@ class Store extends ReduceStore {
 
     getProps() {
         const state = this.getState();
-        const index = state.index;
         return {
             personal: state.personal,
             settings: state.settings,
             template: state.template,
-            detailed: state.s[index].detailed,
+            detailed: state.getDetailed(),
             sidebar: state.sidebar,
-            data: state.s[index].data,
-            ui: state.s[index].ui,
+            data: state.getData(),
+            ui: state.getUi(),
         }
     }
 
@@ -55,7 +54,7 @@ class Store extends ReduceStore {
             result.s[0][s.key()] = s.getInitialState();
 
             // Create accessor
-            result.s[0]['get' + s.key().toUpperCase() + s.key().substring(1)] = i => this.getState().s[i][s.key()];
+            result['get' + s.key().toUpperCase()[0] + s.key().substring(1)] = () => this.getState().s[this.getState().index][s.key()];
         });
 
         return result;

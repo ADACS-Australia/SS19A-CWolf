@@ -54,6 +54,7 @@ class FitsFileLoader {
         this.thefilename = ifilename;
         this.actualName = actualName;
     }
+
     setFiledata(ifilename,ifiledata) {
         const actualName = path.basename(ifilename);
         this.isLoading = true;
@@ -66,6 +67,7 @@ class FitsFileLoader {
         this.actualName = actualName;
         this.thefiledata = ifiledata;
     }
+
     provide(q) {
         //const q = this.$q.defer();
         this.isLoading = true;

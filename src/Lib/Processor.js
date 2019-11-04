@@ -6,7 +6,6 @@ import {templateManager} from "./TemplateManager";
 class Processor {
     constructor(store, resultsManager) {
         this.processorManager = new ProcessorManager();
-        // todo: Maybe process should be false
         this.templateManager = templateManager;
 
         // todo: refactor to top

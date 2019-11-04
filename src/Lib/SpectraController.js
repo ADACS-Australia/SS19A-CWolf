@@ -91,8 +91,6 @@ class SpectraController {
             data.history.pop();
         }
 
-        console.log("Setting active", spectra)
-
         // Set the active spectra
         setActive(spectra);
 
@@ -209,11 +207,11 @@ class SpectraController {
     };
 
     getUI() {
-        return this.store.getState().s[this.store.getState().index].ui;
+        return this.store.getState().getUi();
     }
 
     getData() {
-        return this.store.getState().s[this.store.getState().index].data;
+        return this.store.getState().getData();
     }
 
     setMatchedResults(results) {

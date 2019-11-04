@@ -19,7 +19,6 @@ class PersonalStore {
     reduce(state, action) {
         switch (action.type) {
             case PersonalActionTypes.UPDATE_INITIALS:
-                console.log(action)
                 CookieManager.setCookie("initials", action.initials);
                 return {
                     ...state,
