@@ -431,16 +431,6 @@ class FitsFileLoader {
 
     }
 
-    convertToSpectraObject(spectralist) {
-        let speclist2 = [];
-        for (let i = 0; i < spectralist.length; i++) {
-            const s = new Spectra(i, spectralist[i][0], spectralist[i][1], null, null, "NAME", 0, 0, 23, "SOMETYPE", "UNKNOWN", 0, 0, false);
-            s.setCompute(false);
-            speclist2.push(s);
-        }
-        return speclist2;
-    }
-
     parseSingleExtensionFitsFile(q, ext) {
         console.log("Parsing Single Extension Fits File");
         // Read header information into properties
@@ -534,10 +524,9 @@ class FitsFileLoader {
             const wavlUnit = data[2];
 
             console.log("^^^ Forming return JSON objects ^^^");
-            var s;
-            for (s=0; s < ints.length; s++) {
+            for (let s=0; s < ints.length; s++) {
                 console.log("^^^ -- Forming object "+s+" ^^^");
-                let spec = [wavls[s], ints[s], wavlUnit, ];
+                let spec = new Spectra({id: s, wavelength: wavls[s], intensity: ints[s], wavelength_unit: wavlUnit});
                 spectra.push(spec)
             }
 
@@ -545,8 +534,7 @@ class FitsFileLoader {
             console.log('^^^ Returned spectra are: ^^^');
             console.log(spectra);
 
-            var converted_objects = this.convertToSpectraObject(spectra);
-            q.resolve(converted_objects);
+            q.resolve(spectra);
 
         }.bind(this), function (data) {
             console.error('!!! parseSingleExtensionFitsFile promise chain failed !!!');
@@ -626,7 +614,7 @@ class FitsFileLoader {
             console.log("&&& PROMISE REJECTED && - There are multiple intensity extensions in a file with different data products in each extension");
             q.reject("There are multiple intensity extensions in a file with different data products in each extension");
             return;
-        } else if (exts_with_int.length == 0) {
+        } else if (exts_with_int.length === 0) {
             console.log("&&& PROMISE REJECTED && - Unable to find the data extension containing the intensities");
             q.reject("Unable to find the data extension containing the intensities");
             return;
@@ -657,9 +645,9 @@ class FitsFileLoader {
                 console.log("^^^ -- Forming object "+s+" ^^^");
                 let spec;
                 if (wavelengths.length === 1) {
-                    spec = [wavelengths[0], intensity[s], wavelength_unit,];
+                    spec = new Spectra({id: s, wavelength: wavelengths[0], intensity: intensity[s], wavelength_unit: wavelength_unit});
                 } else if (wavelengths.length === intensity.length) {
-                    spec = [wavelengths[s], intensity[s], wavelength_unit,];
+                    spec = new Spectra({id: s, wavelength: wavelengths[s], intensity: intensity[s], wavelength_unit: wavelength_unit});
                 } else {
                     q.reject("Wavelength and spectrum have different lengths - don't know how to match them up")
                 }
@@ -669,9 +657,7 @@ class FitsFileLoader {
             // Note that the calling function resolves the promise, not this one
             console.log('^^^ Returned spectra are: ^^^');
             console.log(spectra);
-
-            var converted_objects = this.convertToSpectraObject(spectra);
-            q.resolve(converted_objects);
+            q.resolve(spectra);
 
         }.bind(this), function () {
             console.error('!!! parseMultiExtensionFitsFile promise chain failed !!!');
