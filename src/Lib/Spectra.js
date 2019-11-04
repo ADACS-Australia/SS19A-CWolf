@@ -53,10 +53,7 @@ class Spectra {
         this.variance = variance;
         this.variancePlot = variance;
         this.comment = "";
-        this.compute = self.variance != null;
-        if (this.variance == null) {
-            this.variance = new Array(this.intensity.length).fill(1)
-        }
+
         console.log('### spectra - loaded parameters from constructor pass ###');
         if (variance != null && !this.node) {
             this.variancePlot = variance.slice();
@@ -96,6 +93,12 @@ class Spectra {
         this.imageZ = null;
         this.imageTID = null;
         this.image = null;
+
+
+        if (this.variance == null) {
+            this.setCompute(false);
+        }
+
     }
 
     getHash() {
