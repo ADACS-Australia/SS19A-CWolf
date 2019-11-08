@@ -268,6 +268,8 @@ class FitsFileLoader {
         }
 
         // TODO: I dont understand why we have lambda and lambdas, when there is no loop her to get more than one element in lambdas.
+        // MCW: From memory, I think this was so the output format for this function matched those of the table or
+        // multi-extension wavelength read functions, where multiple wavelength scales might be returned
         lambdas.push(lambda);
         q.resolve(lambdas);
 
@@ -627,17 +629,20 @@ class FitsFileLoader {
         this.numPoints = this.fits.getHDU(exts_with_int[0]).data.width;
 
         instReadFunc = v => this.getIntensitySpect(v);
+        varReadFunc = v => this.getIntensitySpect(v);
         wavlReadFunc = v => this.getWavelengthsSpect(v);
         wavlUnitReadFunc = v => this.getWavelengthUnitSpect(v);
 
         $q.all([
             wavlReadFunc(exts_with_int[0]),
             instReadFunc(exts_with_int[0]),
-            wavlUnitReadFunc(exts_with_int[0])
+            wavlUnitReadFunc(exts_with_int[0]),
+            varReadFunc(var_ext)
         ]).then(function (data) {
             const wavelengths = data[0];
             const intensity = data[1];
             const wavelength_unit = data[2];
+            const variances = data[3];
 
             let spectra = [];
             console.log("^^^ Forming return JSON objects ^^^");
@@ -645,9 +650,9 @@ class FitsFileLoader {
                 console.log("^^^ -- Forming object "+s+" ^^^");
                 let spec;
                 if (wavelengths.length === 1) {
-                    spec = new Spectra({id: s, wavelength: wavelengths[0], intensity: intensity[s], wavelength_unit: wavelength_unit});
+                    spec = new Spectra({id: s, wavelength: wavelengths[0], intensity: intensity[s], wavelength_unit: wavelength_unit, variance: variances[s]});
                 } else if (wavelengths.length === intensity.length) {
-                    spec = new Spectra({id: s, wavelength: wavelengths[s], intensity: intensity[s], wavelength_unit: wavelength_unit});
+                    spec = new Spectra({id: s, wavelength: wavelengths[s], intensity: intensity[s], wavelength_unit: wavelength_unit, variance: variances[s]});
                 } else {
                     q.reject("Wavelength and spectrum have different lengths - don't know how to match them up")
                 }
