@@ -590,8 +590,11 @@ class FitsFileLoader {
             var spectra = [];
             for (var j = 0; j < exts_with_data.length; j++) {
                 spectra.push(this.parseSingleExtensionFitsFile(exts_with_data[j]));
-
             }
+            console.log('^^^ Returned spectra are: ^^^');
+            console.log(spectra);
+            q.resolve(spectra);
+            return;
         }
 
         // If we've hit this point, we have a true multi-extenstion spectra,
@@ -622,27 +625,44 @@ class FitsFileLoader {
             return;
         }
 
+        // Find the remaining extensions of interest
+        var sky_ext_found = false;
+        var sky_ext;
+        for (var i = 0; i < this.numExtensions; i++) {
+            if (this.readHeaderValue(i, "EXTNAME", "").match(/sky/i)) {
+                sky_ext_found = true;
+                sky_ext = i;
+                break;
+            }
+        }
+
         // Specify the read-in functions
         let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, intUnitReadFunc;
 
         // Need the number of points in case wavelength isnt an array but defined in the headers
         this.numPoints = this.fits.getHDU(exts_with_int[0]).data.width;
 
+        // Specify the read functions
+        // Note that the getIntensitySpect function can be re-used where information is structured similarly
+        // to the intensity data
         instReadFunc = v => this.getIntensitySpect(v);
         varReadFunc = v => this.getIntensitySpect(v);
         wavlReadFunc = v => this.getWavelengthsSpect(v);
         wavlUnitReadFunc = v => this.getWavelengthUnitSpect(v);
+        skyReadFunc = v => this.getIntensitySpect(v);
 
         $q.all([
             wavlReadFunc(exts_with_int[0]),
             instReadFunc(exts_with_int[0]),
             wavlUnitReadFunc(exts_with_int[0]),
-            varReadFunc(var_ext)
+            varReadFunc(var_ext),
+            skyReadFunc(sky_ext)
         ]).then(function (data) {
             const wavelengths = data[0];
             const intensity = data[1];
             const wavelength_unit = data[2];
             const variances = data[3];
+            const sky = data[4];
 
             let spectra = [];
             console.log("^^^ Forming return JSON objects ^^^");
@@ -650,9 +670,9 @@ class FitsFileLoader {
                 console.log("^^^ -- Forming object "+s+" ^^^");
                 let spec;
                 if (wavelengths.length === 1) {
-                    spec = new Spectra({id: s, wavelength: wavelengths[0], intensity: intensity[s], wavelength_unit: wavelength_unit, variance: variances[s]});
+                    spec = new Spectra({id: s, wavelength: wavelengths[0], intensity: intensity[s], wavelength_unit: wavelength_unit, variance: variances[s], sky: sky[s]});
                 } else if (wavelengths.length === intensity.length) {
-                    spec = new Spectra({id: s, wavelength: wavelengths[s], intensity: intensity[s], wavelength_unit: wavelength_unit, variance: variances[s]});
+                    spec = new Spectra({id: s, wavelength: wavelengths[s], intensity: intensity[s], wavelength_unit: wavelength_unit, variance: variances[s], sky: sky[s]});
                 } else {
                     q.reject("Wavelength and spectrum have different lengths - don't know how to match them up")
                 }
