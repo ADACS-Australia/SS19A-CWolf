@@ -17,6 +17,12 @@ class FitsFileLoader {
 //            "headervalue": "LAMOST",
 //            "readfunc": parseLamostFitsFile
 //        },
+               {
+           "instrument": "HERMES-2dF",
+           "headerkw": "INSTRUME",
+           "headervalue": "HERMES-2dF",
+           "readfunc": this.parseHERMESFitsFile
+       },
     ];
 
     wavelengthConversionFactors = {
@@ -147,9 +153,13 @@ class FitsFileLoader {
     }
 
     standardizeWavlUnit(wavlUnit) {
+        if (wavlUnit === null) {
+            return wavlUnit;
+        }
+
         // Convert the wavelength into one of the standard values, based on
         // what kind of variations there normally are
-        if (wavlUnit.match(/ang/i) || wavlUnit.match(/aa/i)) {
+        if (wavlUnit.match(/ang/i) || wavlUnit.match(/Ang/i) || wavlUnit.match(/aa/i)) {
             wavlUnit = "angstrom";
         } else if (wavlUnit.match(/nm/i) || wavlUnit.match(/nano/i)) {
             wavlUnit = "nm";
@@ -180,7 +190,7 @@ class FitsFileLoader {
         this.customFileRead = null;
         for (let i = 0; i < this.instrumentPackages.length; i++) {
             const pkg = this.instrumentPackages[i];
-            if (this.header0.cards[pkg["headerkw"]] === pkg["headervalue"]) {
+            if (this.header0.cards[pkg["headerkw"]].value === pkg["headervalue"]) {
                 this.customFileType = pkg["instrument"];
                 this.customFileRead = pkg["readfunc"];
                 break;
@@ -348,8 +358,9 @@ class FitsFileLoader {
         let wavlUnit = null ;
         const wavlAxisIndex = this.getWavelengthAxis(ext) ;
         let foundWavlUnit = this.readHeaderValue(ext, "CUNIT" + wavlAxisIndex) || null ;
+        console.log("Found wavelength unit " + foundWavlUnit);
 
-        if (foundWavlUnit == null) {
+        if (foundWavlUnit === null) {
             wavlUnit = "pixel" ;
         }
 
@@ -528,7 +539,12 @@ class FitsFileLoader {
             console.log("^^^ Forming return JSON objects ^^^");
             for (let s=0; s < ints.length; s++) {
                 console.log("^^^ -- Forming object "+s+" ^^^");
-                let spec = new Spectra({id: s, wavelength: wavls[s], intensity: ints[s], wavelength_unit: wavlUnit});
+                let spec = new Spectra({
+                    id: s,
+                    wavelength: wavls[s],
+                    intensity: ints[s],
+                    wavelength_unit: wavlUnit
+                });
                 spectra.push(spec)
             }
 
@@ -575,16 +591,15 @@ class FitsFileLoader {
         // We do this by checking for an EXTNAME attribute on the data
         // extensions, and seeing if we can find a variance extension
         // (That is, does EXTNAME contain the string 'var'?)
-        var var_ext_found = false;
-        var var_ext;
+        // UPDATE: Also look for sigma, works for GALAH data
+        var other_ext_found = false;
         for (var i = 0; i < this.numExtensions; i++) {
-            if (this.readHeaderValue(i, "EXTNAME", "").match(/var/i)) {
-                var_ext_found = true;
-                var_ext = i;
+            if (this.readHeaderValue(i, "EXTNAME", "").match(/var/i) || this.readHeaderValue(i, "EXTNAME", "").match(/sigma/i)) {
+                other_ext_found = true;
                 break;
             }
         }
-        if (!var_ext_found) {
+        if (!other_ext_found) {
             // Need to loop over the separate extensions in sequence, as we
             // assume each one is a separate object
             var spectra = [];
@@ -626,6 +641,16 @@ class FitsFileLoader {
         }
 
         // Find the remaining extensions of interest
+        var var_ext_found = false;
+        var var_ext;
+        for (var i = 0; i < this.numExtensions; i++) {
+            if (this.readHeaderValue(i, "EXTNAME", "").match(/var/i)) {
+                var_ext_found = true;
+                var_ext = i;
+                break;
+            }
+        }
+
         var sky_ext_found = false;
         var sky_ext;
         for (var i = 0; i < this.numExtensions; i++) {
@@ -670,9 +695,21 @@ class FitsFileLoader {
                 console.log("^^^ -- Forming object "+s+" ^^^");
                 let spec;
                 if (wavelengths.length === 1) {
-                    spec = new Spectra({id: s, wavelength: wavelengths[0], intensity: intensity[s], wavelength_unit: wavelength_unit, variance: variances[s], sky: sky[s]});
+                    spec = new Spectra(
+                        {id: s,
+                            wavelength: wavelengths[0],
+                            intensity: intensity[s],
+                            wavelength_unit: wavelength_unit,
+                            variance: variances[s],
+                            sky: sky[s]});
                 } else if (wavelengths.length === intensity.length) {
-                    spec = new Spectra({id: s, wavelength: wavelengths[s], intensity: intensity[s], wavelength_unit: wavelength_unit, variance: variances[s], sky: sky[s]});
+                    spec = new Spectra(
+                        {id: s,
+                            wavelength: wavelengths[s],
+                            intensity: intensity[s],
+                            wavelength_unit: wavelength_unit,
+                            variance: variances[s],
+                            sky: sky[s]});
                 } else {
                     q.reject("Wavelength and spectrum have different lengths - don't know how to match them up")
                 }
@@ -698,6 +735,18 @@ class FitsFileLoader {
 //        }
 
         //
+    }
+
+    parseHERMESFitsFile(q) {
+        console.log("Parsing a file from the GALAH survey");
+
+        // HERMES-2dF files have extra data extensions containing notionally uninteresting information
+        // (sigma, spectrum w/out sky subtraction etc), BUT all those extensions use the OBJECT keyword,
+        // so the file can't read by the standard multi-extension reader (which uses OBJECT to determine
+        // which extension is the intensity plane
+
+        return this.parseSingleExtensionFitsFile(q, 0);
+
     }
 
 
