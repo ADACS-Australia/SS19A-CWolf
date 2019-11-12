@@ -758,8 +758,8 @@ class FitsFileLoader {
             let spec;
             spec = new Spectra({
                 id: 1001,
-                intensity: ints,
-                wavelength: wavelengths,
+                intensity: ints[0],
+                wavelength: wavelengths[0],
                 wavelength_unit: wavelength_unit
             });
             console.log('Wavelengths:');
