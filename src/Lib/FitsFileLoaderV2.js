@@ -238,19 +238,19 @@ class FitsFileLoader {
 
     }
 
-    getWavelengthsSpect(ext) {
+    getWavelengthsSpect(ext, wavlAxisIndex) {
         this.log.debug('Getting spectra wavelengths');
         const q = $q.defer();
 
-        const wavlAxisIndex = this.getWavelengthAxis(ext) + 1 ;  // Need to add one to come back to FITS indexing
+        wavlAxisIndex = wavlAxisIndex || this.getWavelengthAxis(ext) + 1 ;  // Need to add one to come back to FITS indexing
         console.log("wavlAxis being used in getWavelengthSpect = " + wavlAxisIndex);
+        this.numPoints = this.fits.getHDU(ext).data.naxis[ext] ;
 
         const crval = this.readHeaderValue(ext, "CRVAL" + wavlAxisIndex) || this.readHeaderValue(ext, "CV1_" + wavlAxisIndex);
         const crpix = this.readHeaderValue(ext, "CRPIX" + wavlAxisIndex) || this.readHeaderValue(ext, "CP1_" + wavlAxisIndex);
         const cdelt = this.readHeaderValue(ext, "CDELT" + wavlAxisIndex) || this.readHeaderValue(ext, "CD1_" + wavlAxisIndex);
         const scale = this.readHeaderValue(ext, "LOGSCALE") || "F";
         const needShift = this.readHeaderValue(ext, "VACUUM") || "T";
-        console.log("crval = " + crval + ", crpix = " + crpix + ", cdelt = " + cdelt);
 
         if (crval == null || crpix == null || cdelt == null) {
             console.log("&&& PROMISE REJECTED && - Wavelength header values incorrect: CRVAL"+wavlAxisIndex+"=" + crval + ", CRPIX$"+wavlAxisIndex+"=" + crpix + ", CDELT"+wavlAxisIndex+"=" + cdelt + ".");
@@ -282,6 +282,9 @@ class FitsFileLoader {
         // multi-extension wavelength read functions, where multiple wavelength scales might be returned
         lambdas.push(lambda);
         q.resolve(lambdas);
+        console.log('Returning lambdas:');
+        console.log(lambdas);
+        console.log('This was from a noPoints value of ' + this.numPoints);
 
         return q.promise;
     }
@@ -352,11 +355,11 @@ class FitsFileLoader {
     }
 
 
-    getWavelengthUnitSpect(ext) {
+    getWavelengthUnitSpect(ext, wavlAxisIndex) {
         const q = $q.defer();
 
         let wavlUnit = null ;
-        const wavlAxisIndex = this.getWavelengthAxis(ext) ;
+        wavlAxisIndex = wavlAxisIndex || this.getWavelengthAxis(ext) ;
         let foundWavlUnit = this.readHeaderValue(ext, "CUNIT" + wavlAxisIndex) || null ;
         console.log("Found wavelength unit " + foundWavlUnit);
 
@@ -372,7 +375,7 @@ class FitsFileLoader {
     }
 
 
-    getIntensitySpect(ext) {
+    getIntensitySpect(ext, wavlAxis) {
         const q = $q.defer();
 
         // Check the shape of the data - if 1-d, just return the single column
@@ -401,7 +404,7 @@ class FitsFileLoader {
                 const dataAxis = 1 ;  // Default value if we can't find something explicit
                 // We need to find the wavelength axis, as this is the axis to
                 // 'slice' along to extract spectra
-                var wavlAxis = this.getWavelengthAxis(ext);
+                wavlAxis = wavlAxis || this.getWavelengthAxis(ext);
                 console.log("wavlAxis:");
                 console.log(wavlAxis);
 
@@ -436,6 +439,7 @@ class FitsFileLoader {
             }
             console.log("intensitySpects:");
             console.log(intensitySpects);
+            this.numPoints = intensitySpects[0].length ;
             q.resolve(intensitySpects);
 
         }.bind(this));
@@ -477,7 +481,6 @@ class FitsFileLoader {
         let wavlReadFunc, instReadFunc, varReadFunc, skyReadFunc, detailReadFunc, wavlUnitReadFunc, instUnitReadFunc;
         if (isTableData) {
             // console.log(this);
-            this.numPoints = this.fits.getHDU(1).data.rows;
             // Assign table read functions
             wavlReadFunc = v => this.getWavelengthsTable(v);
             // console.log('^^^ wavlReadFunc is: ^^^');
@@ -491,7 +494,6 @@ class FitsFileLoader {
         } else if (isLamost) {
             // Assign LAMOST read functions
         } else {
-            this.numPoints = this.fits.getHDU(0).data.width;
             // Assign spectrum read functions
             instReadFunc = v => this.getIntensitySpect(v);
             wavlReadFunc = v => this.getWavelengthsSpect(v);
@@ -745,7 +747,35 @@ class FitsFileLoader {
         // so the file can't read by the standard multi-extension reader (which uses OBJECT to determine
         // which extension is the intensity plane
 
-        return this.parseSingleExtensionFitsFile(q, 0);
+        $q.all([
+            this.getWavelengthsSpect(0, 1),
+            this.getIntensitySpect(0),
+            this.getWavelengthUnitSpect(0, 1)
+        ]).then(function (data) {
+            const wavelengths = data[0];
+            const ints = data[1];
+            const wavelength_unit = data[2];
+            let spec;
+            spec = new Spectra({
+                id: 1001,
+                intensity: ints,
+                wavelength: wavelengths,
+                wavelength_unit: wavelength_unit
+            });
+            console.log('Wavelengths:');
+            console.log(wavelengths);
+
+            let spectra = [];
+            spectra.push(spec);
+
+            console.log('^^^ Returned spectra are: ^^^');
+            console.log(spectra);
+            q.resolve(spectra);
+
+        }.bind(this), function () {
+            console.error('!!! parseHERMESFitsFile promise chain failed !!!');
+            console.error(data);
+        });
 
     }
 
