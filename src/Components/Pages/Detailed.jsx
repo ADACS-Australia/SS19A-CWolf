@@ -121,16 +121,22 @@ class Detailed extends React.Component {
                                     onToggle={(toggled) => setContinuum(toggled)}
                                 />
 
-                                <ManagedToggleButton
-                                    default={this.props.ui.dataSelection.variance}
-                                    handle={"Variance"}
-                                    size="xs"
-                                    offstyle="secondary"
-                                    onstyle="warning"
-                                    onToggle={(toggled) => {
-                                        setVariance(toggled)
-                                    }}
-                                />
+                                {
+                                    this.displayAuto() ?
+                                        (
+                                            <ManagedToggleButton
+                                                default={this.props.ui.dataSelection.variance}
+                                                handle={"Variance"}
+                                                size="xs"
+                                                offstyle="secondary"
+                                                onstyle="warning"
+                                                onToggle={(toggled) => {
+                                                    setVariance(toggled)
+                                                }}
+                                            />
+                                   ) : null 
+                                }
+                                
 
                                 <ButtonGroup className='margin-right-4px'>
                                     <Button color='light' size='sm' onClick={() => resetToAutomatic()}>Reset

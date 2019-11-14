@@ -29,18 +29,36 @@ export function handleEvent(data) {
     node = data.node;
     let result = null;
     // Whether the data gets processed or matched depends on if a processing property is set
+    
+    if (data.variance == null || data.variance.length==0) {
+        data.matching = false;
+    }
+
     if (data.processing) {
-        process(data);
+        if (data.variance != null && data.variance.length>1) {
+            process(data);
+        }
         result = data;
     }
     if (result == null) {
         result = {}
     }
+    
     if (data.matching) {
         result['matching'] = true;
         result['id'] = data.id;
         result['name'] = data.name;
         result['results'] = matchTemplates(data.lambda, data.intensity, data.variance, data.type, data.helio, data.cmb);
+    } else {
+        if (node) {
+            result['matching'] = true;
+            result['id'] = data.id;
+            result['name'] = data.name;
+            result['results'] = justIntensity(data.lambda, data.intensity, data.variance, data.type, data.helio, data.cmb);
+            console.warn("No variance data.  Skipping auto redshift");
+        } else {
+            result = null;
+        }
     }
     return result;
 }
@@ -128,7 +146,6 @@ function getTemplatesToMatch() {
  * ordered list of best results.
  */
 function matchTemplates(lambda, intensity, variance, type, helio, cmb) {
-
     let quasarFFT = null;
     if (templateManager.isQuasarActive()) {
         quasarFFT = getQuasarFFT(lambda, intensity, variance);
@@ -153,6 +170,15 @@ function matchTemplates(lambda, intensity, variance, type, helio, cmb) {
         }
     });
     return coalesceResults(templateResults, type, subtracted, helio, cmb);
+}
+
+function justIntensity(lambda, intensity, variance, type, helio, cmb) {
+    return {
+        coalesced: null,
+        templates: null,
+        intensity2: intensity,
+        autoQOP: 0
+    };
 }
 
 
