@@ -18,7 +18,7 @@ import './Assets/css/non-responsive.scss';
 import './Assets/css/structure.scss';
 
 // Get the container to mount the react application in
-const container = document.getElementById(window.marz_container_class || 'marz_conainer');
+const container = document.getElementById(window.marz_configuration.container_class || 'marz_conainer');
 
 // Check that the container was actually found
 if (container) {
@@ -26,5 +26,5 @@ if (container) {
     ReactDOM.render(<FluxContainer/>, container);
 } else {
     // Alert the user that the dom element was not found
-    alert("Marz: Container DOM element with ID '" + (window.marz_container_class || 'marz_conainer') + "' was not found.")
+    alert("Marz: Container DOM element with ID '" + (window.marz_configuration.container_class || 'marz_conainer') + "' was not found.")
 }

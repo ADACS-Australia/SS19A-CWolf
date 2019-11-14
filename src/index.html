@@ -7,9 +7,15 @@
 
 <body>
     <script>
-        // Set the name of the container to mount the Marz application
-        // If not defined, Marz will attempt to mount in to the class 'marz_conainer'
-        window.marz_container_class = "container";
+        // The Marz configuration dictionary
+        window.marz_configuration = {
+            // The HTML container class to mount the Marz react application. If this is null, it will use the class
+            // "marz_conainer"
+            container_class: "container",
+
+            // The remote file address to load. If this is null, it will revert to the default drag/drop file importer
+            remote_file: null
+        };
     </script>
 
     <div id="container">
