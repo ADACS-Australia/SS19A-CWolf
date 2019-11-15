@@ -17,12 +17,18 @@ class FitsFileLoader {
 //            "headervalue": "LAMOST",
 //            "readfunc": parseLamostFitsFile
 //        },
-               {
+       {
            "instrument": "HERMES-2dF",
            "headerkw": "INSTRUME",
            "headervalue": "HERMES-2dF",
            "readfunc": this.parseHERMESFitsFile
        },
+        {
+            "instrument": "6dF",
+            "headerkw": "INSTRUME",
+            "headervalue": "SuperCOSMOS I",
+            "readfunc": this.parse6dFGSFitsFile
+        },
     ];
 
     wavelengthConversionFactors = {
@@ -577,7 +583,7 @@ class FitsFileLoader {
         console.log(this.fits);
 
         var exts_with_data = [];
-        for (i = 0; i < this.numExtensions; i++) {
+        for (var i = 0; i < this.numExtensions; i++) {
             if (this.fits.getHDU(i).data !== undefined) {
                 exts_with_data.push(i);
             }
@@ -779,7 +785,77 @@ class FitsFileLoader {
 
     }
 
+    parse6dFGSFitsFile(q) {
+        console.log("Parsing a file from the 6dF Galaxy Survey");
 
+        // These files have an interesting structure, being:
+        // - There are three spectra - V, R and VR-combined
+        // - Each of those spectra has an intensity, variance, sky, wavelength (VR only)
+        // For repeat observations, the V/R/VR-combined sequence may be repeated
+
+        // Unfortunately, the headers do no describe the above structure adequately to allow
+        // the normal parsing functions to work, so we'll have to do the whole thing manually.
+
+        let spectrum_exts = [];
+        // Identify the extensions with the data we want
+        for (var i = 0; i < this.numExtensions; i++) {
+            if (this.readHeaderValue(i, 'EXTNAME', "").match(/spectrum/i)){
+                spectrum_exts.push(i);
+            }
+        }
+        console.log("Found spectrum extensions " + spectrum_exts);
+
+        let spectra = [];
+        let promise_list = spectrum_exts.map(
+            j => $q.all([
+                this.getIntensitySpect(j, 0),
+                this.getWavelengthUnitSpect(j, 0),
+                this.getWavelengthsSpect(j, 0)
+            ]).then(function (data) {
+                console.log(">>> I've made it inside the 'then' function for ext " + j);
+
+                let specs = data[0];
+                let wavls = data[1];
+                let wavlUnit = data[2];
+
+                let intensity = specs[0];
+                let variance = specs[1];
+                let sky = specs[2];
+                if (specs.length == 4) {
+                    wavls = specs[3];
+                }
+                console.log(">>> Unpacked the data");
+                let spec = new Spectra({
+                    id: j,
+                    intensity: intensity,
+                    variance: variance,
+                    wavelength: wavls,
+                    wavelength_unit: wavlUnit,
+                });
+                console.log(">>> Created the Spectra object");
+                spectra.push(spec);
+                // q.resolve(spectra);
+                console.log(">>> Completed read for extension " + j + "; spectra are:");
+                console.log(spectra);
+            }.bind(this), function () {
+                console.error('!!! parse6dFGSFitsFile promise chain failed, on extension ' + j + ' !!!');
+                console.error(data);
+            })
+        );
+
+        $q.all(promise_list).then(
+            function (data) {
+                console.log('%%% This is the then function for the master promise all');
+                q.resolve(data);
+            }
+        ).catch(e => console.error(e));
+
+        console.log("6dfGS spectra are:");
+        console.log(spectra);
+
+        q.resolve(spectra);
+
+    }
 
 }
 
