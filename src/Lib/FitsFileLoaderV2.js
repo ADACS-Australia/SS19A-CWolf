@@ -196,7 +196,7 @@ class FitsFileLoader {
         this.customFileRead = null;
         for (let i = 0; i < this.instrumentPackages.length; i++) {
             const pkg = this.instrumentPackages[i];
-            if (this.header0.cards[pkg["headerkw"]].value || null === pkg["headervalue"]) {
+            if (this.readHeaderValue(0, pkg["headerkw"]) === pkg["headervalue"]) {
                 this.customFileType = pkg["instrument"];
                 this.customFileRead = pkg["readfunc"];
                 break;
