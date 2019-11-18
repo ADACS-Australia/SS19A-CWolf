@@ -250,7 +250,7 @@ class FitsFileLoader {
 
         wavlAxisIndex = wavlAxisIndex || this.getWavelengthAxis(ext) + 1 ;  // Need to add one to come back to FITS indexing
         console.log("wavlAxis being used in getWavelengthSpect = " + wavlAxisIndex);
-        this.numPoints = this.fits.getHDU(ext).data.naxis[ext] ;
+        this.numPoints = this.fits.getHDU(ext).data.naxis[wavlAxisIndex - 1] ;
 
         const crval = this.readHeaderValue(ext, "CRVAL" + wavlAxisIndex) || this.readHeaderValue(ext, "CV1_" + wavlAxisIndex);
         const crpix = this.readHeaderValue(ext, "CRPIX" + wavlAxisIndex) || this.readHeaderValue(ext, "CP1_" + wavlAxisIndex);
@@ -398,7 +398,7 @@ class FitsFileLoader {
         let spectdata;
         this.fits.getDataUnit(ext).getFrame(0, function(data) {
             spectdata = Array.prototype.slice.call(data) ;
-            if (dataDims == 1) {
+            if (dataDims === 1) {
                 // Simply return the data if its already 1D, easy as
                 intensitySpects.push(spectdata);
             } else {
@@ -816,13 +816,13 @@ class FitsFileLoader {
                     console.log(">>> I've made it inside the 'then' function for ext " + j);
 
                     let specs = data[0];
-                    let wavls = data[2];
                     let wavlUnit = data[1];
+                    let wavls = data[2][0];
 
                     let intensity = specs[0];
                     let variance = specs[1];
                     let sky = specs[2];
-                    if (specs.length == 4) {
+                    if (specs.length === 4) {
                         wavls = specs[3];
                     }
                     console.log(">>> Unpacked the data");
