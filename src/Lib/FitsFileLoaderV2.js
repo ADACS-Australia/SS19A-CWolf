@@ -805,42 +805,45 @@ class FitsFileLoader {
         }
         console.log("Found spectrum extensions " + spectrum_exts);
 
-        let spectra = [];
         let promise_list = spectrum_exts.map(
-            j => $q.all([
-                this.getIntensitySpect(j, 0),
-                this.getWavelengthUnitSpect(j, 0),
-                this.getWavelengthsSpect(j, 0)
-            ]).then(function (data) {
-                console.log(">>> I've made it inside the 'then' function for ext " + j);
+            function(j) {
+                const q2 = $q.defer();
+                $q.all([
+                    this.getIntensitySpect(j, 0),
+                    this.getWavelengthUnitSpect(j, 0),
+                    this.getWavelengthsSpect(j, 0)
+                ]).then(function (data) {
+                    console.log(">>> I've made it inside the 'then' function for ext " + j);
 
-                let specs = data[0];
-                let wavls = data[1];
-                let wavlUnit = data[2];
+                    let specs = data[0];
+                    let wavls = data[1];
+                    let wavlUnit = data[2];
 
-                let intensity = specs[0];
-                let variance = specs[1];
-                let sky = specs[2];
-                if (specs.length == 4) {
-                    wavls = specs[3];
-                }
-                console.log(">>> Unpacked the data");
-                let spec = new Spectra({
-                    id: j,
-                    intensity: intensity,
-                    variance: variance,
-                    wavelength: wavls,
-                    wavelength_unit: wavlUnit,
+                    let intensity = specs[0];
+                    let variance = specs[1];
+                    let sky = specs[2];
+                    if (specs.length == 4) {
+                        wavls = specs[3];
+                    }
+                    console.log(">>> Unpacked the data");
+                    let spec = new Spectra({
+                        id: j,
+                        intensity: intensity,
+                        variance: variance,
+                        wavelength: wavls,
+                        wavelength_unit: wavlUnit,
+                        sky: sky,
+                    });
+                    console.log(">>> Created the Spectra object");
+                    console.log(">>> Completed read for extension " + j + "; spectra are:");
+                    console.log(spec);
+                    q2.resolve(spec);
+                }.bind(this), function () {
+                    console.error('!!! parse6dFGSFitsFile promise chain failed, on extension ' + j + ' !!!');
+                    console.error(data);
                 });
-                console.log(">>> Created the Spectra object");
-                spectra.push(spec);
-                // q.resolve(spectra);
-                console.log(">>> Completed read for extension " + j + "; spectra are:");
-                console.log(spectra);
-            }.bind(this), function () {
-                console.error('!!! parse6dFGSFitsFile promise chain failed, on extension ' + j + ' !!!');
-                console.error(data);
-            })
+                return q2.promise;
+            }.bind(this)
         );
 
         $q.all(promise_list).then(
@@ -849,12 +852,6 @@ class FitsFileLoader {
                 q.resolve(data);
             }
         ).catch(e => console.error(e));
-
-        console.log("6dfGS spectra are:");
-        console.log(spectra);
-
-        q.resolve(spectra);
-
     }
 
 }
