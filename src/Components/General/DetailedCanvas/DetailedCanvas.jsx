@@ -1,4 +1,5 @@
 import React from "react";
+
 import {
     binarySearch,
     defaultFor,
@@ -67,7 +68,9 @@ class DetailedCanvas extends React.Component {
             // Yes it has, so render the canvas
             this.update();
 
-        return (
+        return window.marz_configuration.layout == 'MarzSpectrumView' ?
+        (
+
             <div ref='parent' id="detailedCanvasParent" className="canvas-container">
                 <canvas
                     ref='canvas'
@@ -81,6 +84,31 @@ class DetailedCanvas extends React.Component {
                     onWheel={e => this.handleEvent(e)}
                 />
             </div>
+        ) : (
+            window.marz_configuration.layout == 'ReadOnlySpectrumView' ?
+            (
+                <div ref='parent' id="detailedCanvasParent" className="canvas-container-only">
+                    <canvas
+                        ref='canvas'
+                        id="detailedCanvas"
+                    />
+                </div>
+            ) :
+            (
+                <div ref='parent' id="detailedCanvasParent" className="canvas-container">
+                    <canvas
+                        ref='canvas'
+                        id="detailedCanvas"
+                        onMouseDown={e => this.handleEvent(e)}
+                        onMouseUp={e => this.handleEvent(e)}
+                        onMouseMove={e => this.handleEvent(e)}
+                        onTouchStart={e => this.handleEvent(e)}
+                        onTouchEnd={e => this.handleEvent(e)}
+                        onTouchMove={e => this.handleEvent(e)}
+                        onWheel={e => this.handleEvent(e)}
+                    />
+                </div>
+            )
         )
     }
 
@@ -381,6 +409,8 @@ class DetailedCanvas extends React.Component {
     };
 
     refreshSettings() {
+        console.log("refreshSettings");
+        console.log("refreshSettings="+this.params.canvasWidth+" "+this.params.canvasHeight);
         this.params.canvasHeight = this.refs.parent.clientHeight;
         this.params.canvasWidth = this.refs.parent.clientWidth;
         this.refs.canvas.width = this.params.canvasWidth * this.params.scale;
@@ -388,7 +418,7 @@ class DetailedCanvas extends React.Component {
         this.refs.canvas.style.width = this.params.canvasWidth + "px";
         this.refs.canvas.style.height = this.params.canvasHeight + "px";
         this.c.scale(this.params.scale, this.params.scale);
-        this.params.callout = this.params.canvasHeight > 450;
+        this.params.callout = (window.marz_configuration.layout == 'ReadOnlySpectrumView') ? false: this.params.canvasHeight > 450;
         this.params.xcor = this.params.xcorData && (this.params.canvasHeight > 300);
         this.params.xcorBound.width = this.params.canvasWidth - this.params.xcorBound.left - this.params.xcorBound.right;
         this.params.xcorBound.height = this.params.xcorHeight - this.params.xcorBound.top - this.params.xcorBound.bottom;
@@ -431,15 +461,29 @@ class DetailedCanvas extends React.Component {
             }
         }
 
+        let hasYrange = false
+        if ("ymin" in window.marz_configuration) {
+            bound.yMin = parseFloat(window.marz_configuration.ymin, bound.yMin)
+            hasYrange = true
+        }
+        if ("ymax" in window.marz_configuration) {
+            bound.yMax = parseFloat(window.marz_configuration.ymax, bound.yMax)
+            hasYrange = true
+        }
+
         if (c === 0) {
             if (!bound.callout) {
                 bound.xMin = 3300;
                 bound.xMax = 7200;
             }
-            bound.yMin = -500;
-            bound.yMax = 1000;
+            if (!hasYrange) {
+                bound.yMin = -500;
+                bound.yMax = 1000;
+            }
         } else {
-            bound.yMin = bound.yMax - (bound.callout ? this.params.calloutSpacingFactor : this.params.spacingFactor) * (bound.yMax - bound.yMin);
+            if (!hasYrange) {
+                bound.yMin = bound.yMax - (bound.callout ? this.params.calloutSpacingFactor : this.params.spacingFactor) * (bound.yMax - bound.yMin);
+            }
         }
     };
 
@@ -449,6 +493,7 @@ class DetailedCanvas extends React.Component {
         c.setTransform(1, 0, 0, 1, 0, 0);
         c.clearRect(0, 0, canvas.width, canvas.height);
         c.restore();*/
+        console.log("clearPlot="+this.refs.canvas.width, this.refs.canvas.height);
         this.c.rect(0, 0, this.refs.canvas.width, this.refs.canvas.height);
         if (download) {
             this.c.fillStyle = "#ffffff";
@@ -981,6 +1026,7 @@ class DetailedCanvas extends React.Component {
             return zmean >= start && zmean <= end;
         }).toArray();
 
+        console.log("desiredNumberOfCallouts="+desiredNumberOfCallouts);
         const numCallouts = Math.min(desiredNumberOfCallouts, availableCallouts.length);
         this.view.bounds = [this.view.mainBound];
 
@@ -1030,9 +1076,13 @@ class DetailedCanvas extends React.Component {
         this.selectCalloutWindows();
         this.clearPlot();
         this.plotxcorData();
-        for (let i = 0; i < this.view.bounds.length; i++) {
-            this.plotWindow(this.view.bounds[i], false);
+        this.plotWindow(this.view.bounds[0], window.marz_configuration.layout != 'MarzSpectrumView');
+        if (window.marz_configuration.layout == 'MarzSpectrumView') {
+            for (let i = 1; i < this.view.bounds.length; i++) {
+                this.plotWindow(this.view.bounds[i], false);
+            }
         }
+        
         this.params.requested = false;
     };
 

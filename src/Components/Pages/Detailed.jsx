@@ -33,14 +33,16 @@ class Detailed extends React.Component {
     }
 
     render() {
-        return (
+        return (this.displayMarz() || this.displaySimple() || this.displayTemplateOverlay()) ?
+        (
             <div className="detailedView filler">
                 <div className="panel panel-default detailed-control panel-header">
+                    {this.displayMarz() ? (
                     <div className="panel-heading">
                         <strong>ID</strong> {this.props.ui.active ? this.props.ui.active.id : "None"}
                         <strong>NAME</strong> {this.props.ui.active ? this.props.ui.active.name : "None"}
                         {
-                            this.displayAuto() ?
+                            this.displayMarz() ?
                                 (
                                     <span>
                                         <strong>AutoQOP</strong>
@@ -76,6 +78,9 @@ class Detailed extends React.Component {
                         <strong>MAG</strong> {this.props.ui.active && this.props.ui.active.magnitude ? this.props.ui.active.magnitude.toFixed(2) : "None"}
                         <strong>TYPE</strong> {this.props.ui.active && this.props.ui.active.type ? this.props.ui.active.type : "None"}
                     </div>
+                    ) : (
+                        null
+                    )}
                     <ListGroup>
                         <ListGroupItem>
                             <Form inline>
@@ -91,7 +96,9 @@ class Detailed extends React.Component {
                                 {/*</div>*/}
                                 {/*</div>*/}
                                 {/*</div>*/}
-
+                                {
+                                    this.displayMarz() ?
+                                    (
                                 <ManagedToggleButton
                                     default={this.props.ui.dataSelection.processed}
                                     on={"Processed"}
@@ -103,6 +110,11 @@ class Detailed extends React.Component {
                                         setProcessed(toggled)
                                     }}
                                 />
+                                    ) : null
+                                }
+                                {
+                                    this.displayMarz() ?
+                                    (
                                 <ManagedToggleButton
                                     default={this.props.ui.dataSelection.matched}
                                     handle={"Template"}
@@ -111,7 +123,11 @@ class Detailed extends React.Component {
                                     onstyle="danger"
                                     onToggle={(toggled) => setTemplateMatched(toggled)}
                                 />
-
+                                    ) : null
+                                }
+                                {
+                                    this.displayMarz() ?
+                                    (
                                 <ManagedToggleButton
                                     default={this.props.ui.detailed.continuum}
                                     handle={"Continuum"}
@@ -120,6 +136,8 @@ class Detailed extends React.Component {
                                     onstyle="primary"
                                     onToggle={(toggled) => setContinuum(toggled)}
                                 />
+                                    ) : null
+                                }
 
                                 {
                                     this.displayAuto() ?
@@ -137,13 +155,20 @@ class Detailed extends React.Component {
                                    ) : null 
                                 }
                                 
-
+                                {
+                                    this.displayMarz() ?
+                                        (
                                 <ButtonGroup className='margin-right-4px'>
                                     <Button color='light' size='sm' onClick={() => resetToAutomatic()}>Reset
                                         auto</Button>
                                     <Button color='light' size='sm' onClick={() => resetToManual()}>Reset
                                         manual</Button>
                                 </ButtonGroup>
+                                        ) : null
+                                }
+                                {
+                                        (this.displayMarz() || this.displaySimple()) ?
+                                        (
 
                                 <ManagedSliderInput
                                     defaultValue={this.props.ui.detailed.smooth}
@@ -155,6 +180,11 @@ class Detailed extends React.Component {
                                     label='Smooth'
                                     onChange={(value) => setSmooth(value)}
                                 />
+                                    ) : null
+                                }
+                                {
+                                    this.displayMarz() ?
+                                        (
                                 <InputGroup className='force-inline-layout' size='sm'>
                                     <InputGroupAddon addonType="prepend">
                                         Range
@@ -177,8 +207,14 @@ class Detailed extends React.Component {
                                         }
                                     </ButtonGroup>
                                 </InputGroup>
+                                        ) : null
+
+                                }
                             </Form>
                         </ListGroupItem>
+                        {
+                        this.displayMarz() ?
+                        (
                         <ListGroupItem>
                             <Form inline>
                                 <FormGroup inline>
@@ -294,6 +330,11 @@ class Detailed extends React.Component {
                                 </Button>
                             </Form>
                         </ListGroupItem>
+                        ) : null 
+                                }
+                                {
+                                    this.displayMarz() ?
+                                    (
                         <ListGroupItem>
                             <Form inline>
                                 <Button color='primary' size='sm' onClick={() => toggleSpectralLines()}>
@@ -322,10 +363,15 @@ class Detailed extends React.Component {
                                 </ul>
                             </Form>
                         </ListGroupItem>
+                                    ) : null
+                        }
                     </ListGroup>
                 </div>
                 <DetailedCanvas {...this.props}/>
             </div>
+        ) :
+        (
+            <DetailedCanvas {...this.props}/>
         )
     }
 
@@ -341,6 +387,19 @@ class Detailed extends React.Component {
     displayAuto() {
         const s = this.props.ui.active;
         return s && s.autoQOP && s.qop === 0 && s.getMatches().length > 0;
+    }
+
+    displayReadOnly() {
+        return window.marz_configuration.layout == 'ReadOnlySpectrumView';
+    }
+    displaySimple() {
+        return window.marz_configuration.layout == 'SimpleSpectrumView';
+    }
+    displayTemplateOverlay() {
+        return window.marz_configuration.layout == 'TemplateOverlaySpectrumView';
+    }
+    displayMarz() {
+        return window.marz_configuration.layout == 'MarzSpectrumView';
     }
 
     getQOPLabel(qop) {

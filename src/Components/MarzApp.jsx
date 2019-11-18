@@ -32,25 +32,54 @@ function MarzApp(props) {
         <Router>
             <Route render={(routeProps) => (
                 <div>
-                    <Header {...props}/>
+                    {
+                        window.marz_configuration.layout == 'MarzSpectrumView' ?
+                        (
+                            <Header {...props}/>
+                        ) : null
+                    }
                     <div id="underNavContainer">
-                        <div className={"sidebar" + (isSmall({...props, ...routeProps}) ? " sidebarSmall" : "")}>
-                            <Sidebar {...props} {...routeProps}/>
-                        </div>
-                        <div className={"afterSideBarContainer" + (isSmall({...props, ...routeProps}) ? " sidebarSmall" : "")}>
-                            <div className="spacing relative">
-                                <Route exact path="/" render={(routeProps) => <Overview {...props} {...routeProps}/>}/>
-                                <Route path="/usage/" render={(routeProps) => <Usage {...props} {...routeProps}/>}/>
-                                <Route path="/detailed/"
-                                       render={(routeProps) => <Detailed {...props} {...routeProps}/>}/>
-                                <Route path="/settings/"
-                                       render={(routeProps) => <Settings {...props} {...routeProps}/>}/>
-                                <Route path="/templates/"
-                                       render={(routeProps) => <Templates {...props} {...routeProps}/>}/>
+                        {
+                            window.marz_configuration.layout == 'MarzSpectrumView' ?
+                            (
+                                <div className={"sidebar" + (isSmall({...props, ...routeProps}) ? " sidebarSmall" : "")}>
+                                    <Sidebar {...props} {...routeProps}/>
+                                </div>
+                            ) : null
+                        }
+                        {
+                        window.marz_configuration.layout == 'MarzSpectrumView' ?
+                        (
+                            <div className={"afterSideBarContainer" + (isSmall({...props, ...routeProps}) ? " sidebarSmall" : "")}>
+                                <div className="spacing relative">
+                                    <Route exact path="/" render={(routeProps) => <Overview {...props} {...routeProps}/>}/>
+                                    <Route path="/usage/" render={(routeProps) => <Usage {...props} {...routeProps}/>}/>
+                                    <Route path="/detailed/"
+                                        render={(routeProps) => <Detailed {...props} {...routeProps}/>}/>
+                                    <Route path="/settings/"
+                                        render={(routeProps) => <Settings {...props} {...routeProps}/>}/>
+                                    <Route path="/templates/"
+                                        render={(routeProps) => <Templates {...props} {...routeProps}/>}/>
+                                </div>
                             </div>
-                        </div>
+                        ) : 
+                        (
+                            <div className="afterSideBarContainer sidebarSmall">
+                                <div className="spacing relative">
+                                    <Route path="/"
+                                        render={(routeProps) => <Detailed {...props} {...routeProps}/>}/>
+                                </div>
+                            </div>
+                        ) 
+                    }
                     </div>
-                    <Footer {...props}/>
+                    {
+                        window.marz_configuration.layout == 'MarzSpectrumView' ?
+                        (
+                            <Footer {...props}/>
+                        ) : null
+                    }
+                    
                 </div>
             )}/>
         </Router>
