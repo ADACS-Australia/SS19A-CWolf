@@ -196,7 +196,7 @@ class FitsFileLoader {
         this.customFileRead = null;
         for (let i = 0; i < this.instrumentPackages.length; i++) {
             const pkg = this.instrumentPackages[i];
-            if (this.header0.cards[pkg["headerkw"]].value === pkg["headervalue"]) {
+            if (this.header0.cards[pkg["headerkw"]].value || null === pkg["headervalue"]) {
                 this.customFileType = pkg["instrument"];
                 this.customFileRead = pkg["readfunc"];
                 break;
@@ -816,8 +816,8 @@ class FitsFileLoader {
                     console.log(">>> I've made it inside the 'then' function for ext " + j);
 
                     let specs = data[0];
-                    let wavls = data[1];
-                    let wavlUnit = data[2];
+                    let wavls = data[2];
+                    let wavlUnit = data[1];
 
                     let intensity = specs[0];
                     let variance = specs[1];
