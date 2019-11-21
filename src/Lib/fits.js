@@ -1029,6 +1029,17 @@
       return true;
     };
 
+    Tabular.prototype.typedArray = {
+      B: Uint8Array,
+      I: Uint16Array,
+      J: Uint32Array,
+      E: Float32Array,
+      D: Float64Array,
+      1: Uint8Array,
+      2: Uint16Array,
+      4: Uint32Array
+    };
+
     Tabular.prototype.getColumns = function(header) {
       var columns, i, key, _i, _ref;
       columns = [];
@@ -1049,6 +1060,10 @@
         index = this.columns.indexOf(name);
         descriptor = this.descriptors[index];
         accessor = this.accessors[index];
+        // console.log("Accessors list is:");
+        // console.log(this.accessors);
+        // console.log("Chosen accessor is (for index " + index + ":");
+        // console.log(accessor);
         elementByteLength = this.elementByteLengths[index];
         elementByteOffset = this.elementByteLengths.slice(0, index);
         if (elementByteOffset.length === 0) {
@@ -1071,9 +1086,11 @@
           view = new DataView(buffer);
           offset = elementByteOffset;
           while (nRows--) {
-            column[i] = accessor(view, offset)[0];
-            i += 1;
-            offset += _this.rowByteSize;
+            // console.log('Accessor is (for index ' + index + '):');
+            // console.log(accessor);
+              column[i] = accessor(view, offset)[0];
+              i += 1;
+              offset += _this.rowByteSize;
           }
           iterations -= 1;
           index += 1;
@@ -1204,6 +1221,7 @@
         descriptor = match[1];
         _results.push((function(descriptor) {
           var accessor;
+          _this.descriptors.push(descriptor);
           accessor = function(value) {
             return _this.dataAccessors[descriptor](value);
           };

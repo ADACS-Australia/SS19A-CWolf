@@ -297,6 +297,7 @@ class FitsFileLoader {
 
     getWavelengthsTable(ext) {
         const q = $q.defer();
+        console.log("Reading table wavelengths from extension " + ext);
 
         // Attempt to identify which table column the wavelength data are in
         const wavlTypeKW = [];
@@ -304,7 +305,7 @@ class FitsFileLoader {
 
         for (let headerkw in this.fits.getHeader(ext).cards) {
             try {
-                if ((this.fits.getHeader(ext).cards[headerkw].value.indexOf("wave") !== -1 || this.fits.getHeader(ext).cards[headerkw].value.indexOf("lam") !== -1) && headerkw.indexOf("TYPE") !== -1) {
+                if ((this.fits.getHeader(ext).cards[headerkw].value.match(/wave/i) || this.fits.getHeader(ext).cards[headerkw].value.match(/lam/i) ) && headerkw.indexOf("TYPE") !== -1) {
                     wavlTypeKW.push(headerkw);
                     wavlColName.push(this.fits.getHeader(ext).cards[headerkw].value);
                 }
@@ -312,7 +313,8 @@ class FitsFileLoader {
         }
 
         if (wavlTypeKW.length !== 1) {
-            console.log("&&& PROMISE REJECTED && - Unable to determine table column for wavelength");
+            console.log("&&& PROMISE REJECTED && - Unable to determine table column for wavelength ");
+            console.log(wavlTypeKW);
             q.reject("Unable to determine table column for wavelength");
             return;
         }
@@ -323,20 +325,26 @@ class FitsFileLoader {
         const wavColumnIndex = parseInt(wavlTypeKW[0][wavlTypeKW[0].length - 1]) - 1;
 
         // Extract the column data
-        let col_data = [];
-        this.fits.getDataUnit(ext).getColumn("wave", function (column) {
+        var col_data = [];
+        console.log("Getting data from extension " + ext + ", column " + wavlColName[0]);
+        console.log(this.fits.getDataUnit(ext));
+        this.fits.getDataUnit(ext).getColumn(wavlColName[0], function (column) {
+            console.log(">>> Inside wavelength read callback");
             col_data = column;
-        });
 
-        // If 'log' was in the row name, we need to convert to 'actual' values
-        if (wavlColName[0].indexOf("log") !== -1) {
-            for (let i = 0; i < col_data.length; i++) {
-                col_data[i] = Math.pow(10, col_data[i]); // Just converting 'actual' values, no need to do e.g. deltas
+            // If 'log' was in the row name, we need to convert to 'actual' values
+            if (wavlColName[0].match(/log/i)) {
+                for (let i = 0; i < col_data.length; i++) {
+                    col_data[i] = Math.pow(10, col_data[i]); // Just converting 'actual' values, no need to do e.g. deltas
+                }
             }
-        }
 
-        // Wavelength unit detection is done elsewhere
-        q.resolve(col_data);
+            console.log(">>> Found wavelength data from table:");
+            console.log(col_data);
+
+            // Wavelength unit detection is done elsewhere
+            q.resolve(col_data);
+        });
 
         return q.promise;
 
@@ -454,8 +462,55 @@ class FitsFileLoader {
 
     }
 
+    getIntensityTable(ext) {
+        const q = $q.defer();
+        console.log("Reading table intensities from extension " + ext);
+
+        // Attempt to identify which table column the wavelength data are in
+        const intsTypeKW = [];
+        const intsColName = [];
+
+        for (let headerkw in this.fits.getHeader(ext).cards) {
+            try {
+                if ((this.fits.getHeader(ext).cards[headerkw].value.match(/flux/i) || this.fits.getHeader(ext).cards[headerkw].value.match(/inten/i) ) && headerkw.indexOf("TYPE") !== -1) {
+                    intsTypeKW.push(headerkw);
+                    intsColName.push(this.fits.getHeader(ext).cards[headerkw].value);
+                }
+            } catch (TypeError) {}
+        }
+
+        if (intsTypeKW.length !== 1) {
+            console.log("&&& PROMISE REJECTED && - Unable to determine table column for intensity/flux ");
+            console.log(intsTypeKW);
+            q.reject("Unable to determine table column for intensity/flux");
+            return;
+        }
+
+        // Get the column index from the header keyword, by stripping off the
+        // number at the end of the keyword
+        // Need to subtract one because arrays in JavaScript are zero-indexed
+        const intColumnIndex = parseInt(intsTypeKW[0][intsTypeKW[0].length - 1]) - 1;
+
+        // Extract the column data
+        let col_data = [];
+        console.log("Getting data from extension " + ext + ", column " + intsColName[0]);
+        this.fits.getDataUnit(ext).getColumn(intsColName[0], function (column) {
+            col_data = column;
+
+            console.log(">>> Found intensity data from table:");
+            console.log(col_data);
+
+            // Wavelength unit detection is done elsewhere
+            q.resolve(col_data);
+        });
+
+        return q.promise;
+    }
+
     parseSingleExtensionFitsFile(q, ext) {
-        console.log("Parsing Single Extension Fits File");
+        console.log("Parsing Single Extension Fits File - extension " + ext);
+        ext = ext || 0 ;
+
         // Read header information into properties
         const spectrum = {
             'properties': {}
@@ -491,7 +546,7 @@ class FitsFileLoader {
             wavlReadFunc = v => this.getWavelengthsTable(v);
             // console.log('^^^ wavlReadFunc is: ^^^');
             // console.log(wavlReadFunc);
-            instReadFunc = this.getIntensityTable;
+            instReadFunc = v => this.getIntensityTable(v);
 //            varReadFunc = this.getVarianceTable;
 //            skyReadFunc = this.getSkyTable;
 //            detailReadFunc = this.getDetailTable;
@@ -518,12 +573,12 @@ class FitsFileLoader {
         var spectra = [];
 
         $q.all([
-            wavlReadFunc(0),
-            instReadFunc(0),
+            wavlReadFunc(ext),
+            instReadFunc(ext),
 //            varReadFunc(0),
 //            skyReadFunc(0),
 //            detailReadFunc(0),
-            wavlUnitReadFunc(0),
+            wavlUnitReadFunc(ext),
 //            instUnitReadFunc(0)
         ]).then(function (data) {
             // Do any required stuff after reading all in
@@ -590,7 +645,8 @@ class FitsFileLoader {
         }
 
         if (exts_with_data.length === 1) {
-            this.parseSingleExtensionFitsFile(q, exts_with_data[0]);
+            console.log("Passing over to a single-ext read of extension " + exts_with_data[0]);
+            return this.parseSingleExtensionFitsFile(q, exts_with_data[0]);
         }
 
         // OK, so there's multiple extensions with data. Now need to see if
@@ -818,6 +874,8 @@ class FitsFileLoader {
                     let specs = data[0];
                     let wavlUnit = data[1];
                     let wavls = data[2][0];
+                    console.log(">>> Read in data");
+                    console.log(data);
 
                     let intensity = specs[0];
                     let variance = specs[1];
