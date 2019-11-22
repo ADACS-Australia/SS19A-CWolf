@@ -343,7 +343,7 @@ class FitsFileLoader {
             console.log(col_data);
 
             // Wavelength unit detection is done elsewhere
-            q.resolve(col_data);
+            q.resolve([col_data]);
         });
 
         return q.promise;
@@ -501,7 +501,7 @@ class FitsFileLoader {
             console.log(col_data);
 
             // Wavelength unit detection is done elsewhere
-            q.resolve(col_data);
+            q.resolve([col_data, ]);
         });
 
         return q.promise;
@@ -509,6 +509,7 @@ class FitsFileLoader {
 
     parseSingleExtensionFitsFile(q, ext) {
         console.log("Parsing Single Extension Fits File - extension " + ext);
+        console.log(this.fits);
         ext = ext || 0 ;
 
         // Read header information into properties
