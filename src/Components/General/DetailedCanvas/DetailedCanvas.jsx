@@ -48,7 +48,6 @@ class DetailedCanvas extends React.Component {
 
         let rect = this.refs.canvas.getBoundingClientRect();
         let ysize=rect.bottom - rect.top;
-        console.log("rect="+rect.top+" "+rect.bottom+" "+rect.top+" ="+ysize);
 
         // Force another redraw to fix the canvas
         this.update();
@@ -454,8 +453,6 @@ class DetailedCanvas extends React.Component {
     };
 
     refreshSettings() {
-        console.log("refreshSettings");
-        console.log("refreshSettings="+this.params.canvasWidth+" "+this.params.canvasHeight);
         this.params.canvasHeight = this.refs.parent.clientHeight;
         this.params.canvasWidth = this.refs.parent.clientWidth;
         this.refs.canvas.width = this.params.canvasWidth * this.params.scale;
@@ -538,7 +535,6 @@ class DetailedCanvas extends React.Component {
         c.setTransform(1, 0, 0, 1, 0, 0);
         c.clearRect(0, 0, canvas.width, canvas.height);
         c.restore();*/
-        console.log("clearPlot="+this.refs.canvas.width, this.refs.canvas.height);
         this.c.rect(0, 0, this.refs.canvas.width, this.refs.canvas.height);
         if (download) {
             this.c.fillStyle = "#ffffff";
@@ -1045,7 +1041,6 @@ class DetailedCanvas extends React.Component {
     };
 
     plotWindow(bound, download) {
-        console.log("plot window")
         this.getBounds(bound);
         this.plotAxesLabels(false, bound);
         this.plotZeroLine(bound);

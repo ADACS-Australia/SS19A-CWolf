@@ -11,7 +11,6 @@ import Input from "reactstrap/es/Input";
 import ManagedSliderInput from "../General/SliderInput/ManagedSliderInput";
 import ManagedButtonGroup from "../General/ManagedButtonGroup/ManagedButtonGroup";
 import DetailedCanvas from "../General/DetailedCanvas/DetailedCanvas";
-import DetailedCanvasWithDragAndDrop from "../General/DetailedCanvas/DetailedCanvasWithDragAndDrop"
 import {spectraLineService} from "../General/DetailedCanvas/spectralLines";
 import * as Enumerable from "linq";
 import {
