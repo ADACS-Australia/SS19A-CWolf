@@ -4,7 +4,7 @@ import Dropzone from "react-dropzone";
 import styled from 'styled-components';
 import {addFiles} from "../Stores/Data/Actions";
 import {Button, ButtonGroup} from "reactstrap";
-import {saveManual, setActive, setGraphicalLayout, setOnlyQOP0, toggleSmallSidebar} from "../Stores/UI/Actions";
+import {saveManual, setActive, setGraphicalLayout, setOnlyQOP0, selectReadOnlyView, selectSimpleView, selectOverlayView} from "../Stores/UI/Actions";
 import {isDetailed, isOverview, isSmall} from "../Utils/dry_helpers";
 import ManagedButtonGroup from "./General/ManagedButtonGroup/ManagedButtonGroup";
 import * as Enumerable from "linq";
@@ -111,7 +111,7 @@ class Sidebar extends React.Component {
                                 <Button block color="light" size="sm" onClick={() => toggleSmallSidebar()}>
                                     {this.getContractButtonLabel()}
                                 </Button>
-                            </div>) : null
+                        </div>) : null
                         }
 
                         {/* Render the default redshift selection */}
@@ -133,6 +133,17 @@ class Sidebar extends React.Component {
                             </div>
                         ) : null}
 
+                            <div className="top-spacing">
+                                <Button block color="light" size="sm" onClick={() => selectReadOnlyView()}>
+                                    {"ReadOnlySpectrumView"}
+                                </Button>
+                                <Button block color="light" size="sm" onClick={() => selectSimpleView()}>
+                                    {"SimpleSpectrumView"}
+                                </Button>
+                                <Button block color="light" size="sm" onClick={() => selectOverlayView()}>
+                                    {"TemplateOverlayView"}
+                                </Button>
+                            </div>
                         {/* Render the Graph/Table buttons if we're on the overview page */}
                         {isOverview(this.props) ? (
                             <div className="top-spacing">

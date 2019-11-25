@@ -327,6 +327,27 @@ class UIStore {
                     ...state
                 };
 
+            case UIActionTypes.READONLYVIEW:
+                window.marz_configuration.layout = "ReadOnlySpectrumView";
+    
+                    return {
+                        ...state
+                    };
+
+            case UIActionTypes.SIMPLEVIEW:
+                window.marz_configuration.layout = "SimpleSpectrumView";
+    
+                    return {
+                        ...state
+                    };
+
+            case UIActionTypes.OVERLAYVIEW:
+                window.marz_configuration.layout = "TemplateOverlaySpectrumView";
+            
+                    return {
+                        ...state
+                    };
+
             case UIActionTypes.SET_GRAPHICAL_LAYOUT:
                 state.graphicalLayout = action.graphical;
 

@@ -46,12 +46,13 @@ class DataStore {
 
         return state;
     }
-
-    addFiles(oldState, files) {
+    addURLs(oldState, urls) {
         // Copy the state
         const state = {
             ...oldState
         };
+        files = []
+        files.push({name: urls})
 
         if (files.length === 3) {
             console.log("SPECIAL CASE FILES.LENGTH===3");
@@ -166,6 +167,164 @@ class DataStore {
                     console.log("ok...JSON");
                 });
                 */
+
+            }
+        }
+
+
+        return state;
+    }
+
+    addFiles(oldState, files) {
+        // Copy the state
+        const state = {
+            ...oldState
+        };
+        if (files.length === 3) {
+            console.log("SPECIAL CASE FILES.LENGTH===3");
+            let numRes = 0;
+            const res = [];
+            let numFits = 0;
+            let fits = null;
+            for (let i = 0; i < files.length; i++) {
+                const f = files[i];
+                if (f.name.endsWith('.mz')) {
+                    numRes++;
+                    res.push(f);
+                } else if (f.name.endsWith('.fits')) {
+                    numFits++;
+                    fits = f;
+                }
+            }
+            if (numRes === 2 && numFits === 1) {
+                mergeService.loadMerge(fits, res);
+                return;
+            }
+        }
+
+        setTimeout(() => setMerge(false), 0);
+
+        const lastNumDrag = state.numDrag;
+        const lastFitsLength = state.fits.length;
+        const lastJSONLength = state.json.length;
+
+        for (let i = 0; i < files.length; i++) {
+            if (!files[i].name.endsWith('fits') && !files[i].name.endsWith('fit') && !files[i].name.endsWith('json')) {
+                resultsLoaderService.loadResults(files[i]);
+            }
+        }
+        let firstfits = true;
+        let firstjson = true;
+        for (let i = 0; i < files.length; i++) {
+            if (files[i].name.endsWith('fits') || files[i].name.endsWith('fit')) {
+                state.numDrag++;
+                if (firstfits) {
+                    firstfits = false;
+                    state.fits.length = 0;
+                }
+                state.fits.push(files[i]);
+            } else if (files[i].name.endsWith('json')) {
+                state.numDrag++;
+                if (firstjson) {
+                    firstjson = false;
+                    state.json.length = 0;
+                }
+                state.json.push(files[i]);
+            }
+        }
+
+        if (lastNumDrag !== state.numDrag || lastFitsLength !== state.fits.length) {
+            if (state.fits.length > 0) {
+                console.log("RS: DataStore drop FITS");
+
+                // Get the fits file to load (We don't handle multiple files)
+                const fitsFile = state.fits[0];
+
+                // Handle setting the filename correctly
+                let originalFilename = null;
+                if (fitsFile.actualName != null) {
+                    originalFilename = fitsFile.actualName.replace(/\.[^/.]+$/, "");
+                } else {
+                    originalFilename = fitsFile.name.replace(/\.[^/.]+$/, "");
+                }
+                setTimeout(() => setFitsFilename(originalFilename.replace(/_/g, " ")), 0);
+
+                describe(fitsFile);
+
+                state.fitsFileLoader.setFiledata(fitsFile.name, fitsFile);
+                //state.fitsFileLoader.loadInFitsFile(state.fits[0]).then(function() { console.log('Fits file loaded');});
+                state.consumer.consume(state.fitsFileLoader, state.processorService.spectraManager).then(function (spectraList) {
+                    console.log("ok...FITS");
+                });
+            }
+        }
+        if (lastNumDrag !== state.numDrag || lastJSONLength !== state.json.length) {
+            if (state.json.length > 0) {
+                if ("isurl" in state.json[0]) {
+                    console.log("RS: DataStore drop JSON URL" + state.json[0].name);
+
+                    //-------------------
+                    fetch(state.json[0].name)
+                    .then(res => res.blob()) // Gets the response and returns it as a blob
+                    .then(blob => {
+                    // Here's where you get access to the blob
+                    // And you can use it for whatever you want
+                    // Like calling ref().put(blob)
+
+                    // Here, I use it to make an image appear on the page
+                    //let objectURL = URL.createObjectURL(blob);
+                        let reader = new FileReader();
+                        reader.onload = function() {
+                            const spectrumprovider = new SpectrumJSONProvider();
+                        spectrumprovider.fromJSON(JSON.parse(this.result));
+                        state.resultsManager.setHelio(spectrumprovider.getDoHelio());
+                        state.resultsManager.setCMB(spectrumprovider.getDoCMB());
+                        state.consumer.consume(spectrumprovider, state.processorService.spectraManager).then(function (spectraList) {
+                            console.log("ok...JSON");
+                        });
+                        }
+                        // Closure to capture the file information.
+                reader.onload = (function (theFile) {
+                    return function (e) {
+                        const spectrumprovider = new SpectrumJSONProvider();
+                        spectrumprovider.fromJSON(JSON.parse(e.target.result));
+                        state.resultsManager.setHelio(spectrumprovider.getDoHelio());
+                        state.resultsManager.setCMB(spectrumprovider.getDoCMB());
+                        state.consumer.consume(spectrumprovider, state.processorService.spectraManager).then(function (spectraList) {
+                            console.log("ok...JSON");
+                        });
+                    };
+                })(state.json[0]);
+
+                reader.readAsText(blob);
+
+  });
+                    //-------------------
+                }
+                else {
+                console.log("RS: DataStore drop JSON FILE" + state.json[0]);
+
+                // FIXME: Filename for json files. Should this come from the real file name, or should it be an attribute
+                // FIXME: of the json object?
+
+                describe(state.json[0]);
+                let reader = new FileReader();
+
+                // Closure to capture the file information.
+                reader.onload = (function (theFile) {
+                    return function (e) {
+                        const spectrumprovider = new SpectrumJSONProvider();
+                        spectrumprovider.fromJSON(JSON.parse(e.target.result));
+                        state.resultsManager.setHelio(spectrumprovider.getDoHelio());
+                        state.resultsManager.setCMB(spectrumprovider.getDoCMB());
+                        state.consumer.consume(spectrumprovider, state.processorService.spectraManager).then(function (spectraList) {
+                            console.log("ok...JSON");
+                        });
+                    };
+                })(state.json[0]);
+
+                reader.readAsText(state.json[0]);
+                }
 
             }
         }

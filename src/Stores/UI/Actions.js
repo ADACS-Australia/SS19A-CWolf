@@ -28,6 +28,9 @@ const UIActionTypes = {
 
     // TODO: refactor to Overview store?
     TOGGLE_SMALL_SIDEBAR: "UIActionTypes.TOGGLE_SMALL_SIDEBAR",
+    READONLYVIEW: "UIActionTypes.READONLYVIEW",
+    SIMPLEVIEW: "UIActionTypes.SIMPLEVIEW",
+    OVERLAYVIEW: "UIActionTypes.OVERLAYVIEW",
     //
 
     SET_GRAPHICAL_LAYOUT: "UIActionTypes.SET_GRAPHICAL_LAYOUT",
@@ -188,6 +191,24 @@ function toggleSmallSidebar() {
     })
 }
 
+function selectReadOnlyView() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.READONLYVIEW,
+    })
+}
+
+function selectSimpleView() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SIMPLEVIEW,
+    })
+}
+
+function selectOverlayView() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.OVERLAYVIEW,
+    })
+}
+
 function setGraphicalLayout(graphical) {
     AppDispatcher.dispatch({
         type: UIActionTypes.SET_GRAPHICAL_LAYOUT,
@@ -259,6 +280,9 @@ export {
     clickSpectralLine,
     performFit,
     toggleSmallSidebar,
+    selectReadOnlyView,
+    selectSimpleView,
+    selectOverlayView,
     setGraphicalLayout,
     acceptAutoQOP,
     setWaitingForSpectra,

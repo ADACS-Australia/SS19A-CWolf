@@ -40,7 +40,7 @@ function MarzApp(props) {
                     }
                     <div id="underNavContainer">
                         {
-                            window.marz_configuration.layout == 'MarzSpectrumView' ?
+                            (window.marz_configuration.layout == 'MarzSpectrumView') ?
                             (
                                 <div className={"sidebar" + (isSmall({...props, ...routeProps}) ? " sidebarSmall" : "")}>
                                     <Sidebar {...props} {...routeProps}/>
