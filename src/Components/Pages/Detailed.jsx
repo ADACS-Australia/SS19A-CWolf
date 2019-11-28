@@ -445,7 +445,7 @@ class Detailed extends React.Component {
     */
     getTestURLLoad() {
         console.log("TEST URL LOAD");
-        let myacceptedFiles = "https://tao.asvo.org.au/taostaging/static/emlLinearVacuumNoHelio.json";
+        let myacceptedFiles = "https://tao.asvo.org.au/taostaging/static/emlLinearVacuumNoHelio1.json";
         console.log("ADD IT NOW");
         let files=[];
         files.push({name:myacceptedFiles, isurl: true});
@@ -510,12 +510,12 @@ class Detailed extends React.Component {
     //
     onDrop(acceptedFiles, rejectedFiles) {
         // Do something with files
-        let myacceptedFiles = "https://tao.asvo.org.au/taostaging/static/emlLinearVacuumNoHelio.json";
-        console.log("ADD IT NOW");
-        let files=[];
-        files.push({name:myacceptedFiles, isurl: true});
-        addFiles(files);
-        console.log("ADD DONE");
+        //let myacceptedFiles = "https://tao.asvo.org.au/taostaging/static/emlLinearVacuumNoHelio1.json";/
+        //let files=[];
+        //files.push({name:myacceptedFiles, isurl: true});
+        //addFiles(files);
+        //console.log("ADD DONE");
+        addFiles(acceptedFiles);
     }
 
     getContractButtonLabel() {

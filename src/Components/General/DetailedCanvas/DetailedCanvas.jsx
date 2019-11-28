@@ -47,7 +47,6 @@ class DetailedCanvas extends React.Component {
         this.setScale();
 
         let rect = this.refs.canvas.getBoundingClientRect();
-        let ysize=rect.bottom - rect.top;
 
         // Force another redraw to fix the canvas
         this.update();
@@ -88,6 +87,10 @@ class DetailedCanvas extends React.Component {
     }
     showDownloadControl() {
         return (window.marz_configuration.layout == 'MarzSpectrumView');
+    }
+    showMultipleSpectra() {
+        if (this.params.data.count()<=1) return false;
+        return (window.marz_configuration.layout == 'ReadOnlySpectrumView' || window.marz_configuration.layout == 'SimpleSpectrumView');
     }
 
     render() {
@@ -174,15 +177,16 @@ class DetailedCanvas extends React.Component {
         // Get the view information for this spectra
         this.view = this.params.view;
 
-        // if (this.ui.active)
-        //     console.log(this.ui.active.getHash())
-
         // Check if we need to update the base data
         if (this.params.shouldUpdateBaseData) {
             // Reset the flag to update the base data
             setTimeout(() => clearShouldUpdateBaseData(), 0);
             // Add the base data
-            this.addBaseData();
+            if (this.showMultipleSpectra()) {
+                this.addBaseDataAll();
+            } else {
+                this.addBaseData();
+            }
         }
 
         // Check if we need to update the sky data
@@ -208,7 +212,7 @@ class DetailedCanvas extends React.Component {
             // Add the base data
             this.addxcorData();
         }
-
+        
         // Check if we need to update the xcor data
         if (this.params.shouldUpdateSmoothData) {
             // Reset the flag to update the smooth data
@@ -498,8 +502,8 @@ class DetailedCanvas extends React.Component {
 
         for (let i = 0; i < count; i++) {
             if (data[i].bound) {
-                bound.yMin = data[i].yMins[currentRangeIndex];
-                bound.yMax = data[i].yMaxs[currentRangeIndex];
+                bound.yMin = Math.min(bound.yMin,data[i].yMins[currentRangeIndex]);
+                bound.yMax = Math.max(bound.yMax,data[i].yMaxs[currentRangeIndex]);
             }
         }
 
@@ -766,7 +770,6 @@ class DetailedCanvas extends React.Component {
     };
 
     renderPlots(bound) {
-        console.log("Render plots");
         this.c.lineWidth = 0.6;
 
         const data = this.params.data.toArray();
@@ -1085,7 +1088,6 @@ class DetailedCanvas extends React.Component {
             return zmean >= start && zmean <= end;
         }).toArray();
 
-        console.log("desiredNumberOfCallouts="+desiredNumberOfCallouts);
         const numCallouts = Math.min(desiredNumberOfCallouts, availableCallouts.length);
         this.view.bounds = [this.view.mainBound];
 
@@ -1260,6 +1262,70 @@ class DetailedCanvas extends React.Component {
             }
             this.smoothData('data');
         }
+        this.params.data.orderBy(a => a.id);
+    };
+    addBaseDataAll() {
+        // Remove any existing data or variance from the data array
+        this.params.data = this.params.data.where(x => x.id !== 'data' && x.id !== 'variance');
+
+        let colors = [];
+        colors.push("#a6cee3");
+        colors.push("#1f78b4");
+        colors.push("#b2df8a");
+        colors.push("#33a02c");
+        colors.push("#fb9a99");
+        colors.push("#e31a1c");
+        colors.push("#fdbf6f");
+        colors.push("#ff7f00");
+        colors.push("#cab2d6");
+        colors.push("#6a3d9a");
+        colors.push("#ffff99");
+        colors.push("#b15928");
+        let count=0;
+        for (let index in this.props.data.spectra)
+        {
+            count++;
+            let spectra = this.props.data.spectra[index];
+            let ys = null;
+            let xs = null;
+            let colour = "#000";
+            if (this.ui.dataSelection.processed && spectra.processedLambdaPlot != null) {
+                xs = spectra.processedLambdaPlot;
+                ys = this.detailed.continuum ? spectra.processedContinuum : spectra.processedIntensity2;
+                colour = this.ui.colours.processed;
+            } else {
+                ys = this.detailed.continuum ? spectra.intensityPlot : spectra.getIntensitySubtracted();
+                xs = spectra.lambda;
+                colour = this.ui.colours.raw;
+            }
+            colour = colors[count%colors.length];
+            const xs2 = xs.slice();
+            xs2.sort(function (a, b) {
+                return a - b;
+            });
+            const xMin = xs2[this.params.startRawTruncate];
+            const xMax = xs2[xs2.length - 1];
+
+            this.params.baseData = {
+                id: 'data', bound: true, colour: colour, x: xs, y: ys, xMin: xMin,
+                xMax: xMax
+            };
+            this.params.data = this.params.data.concat([this.params.baseData]);
+            if (this.ui.dataSelection.variance) {
+                if (this.ui.dataSelection.processed && spectra.processedVariancePlot != null) {
+                    ys = spectra.processedVariancePlot;
+                } else {
+                    ys = spectra.variancePlot;
+                }
+                this.params.data = this.params.data.concat(
+                    [
+                        {id: 'variance', bound: false, colour: this.ui.colours.variance, x: xs, y: ys}
+                    ]
+                );
+            }
+        }
+        this.smoothData('data');
+        this.params.setup = true;
         this.params.data.orderBy(a => a.id);
     };
 
