@@ -1071,6 +1071,7 @@
         // console.log(accessor);
         elementByteLength = this.elementByteLengths[index];
         elementByteOffset = this.elementByteLengths.slice(0, index);
+        console.log("}}} elementByteLength = " + elementByteLength + ", elementByteOffset = " + elementByteOffset);
         if (elementByteOffset.length === 0) {
           elementByteOffset = 0;
         } else {
@@ -1085,6 +1086,7 @@
         console.log(this.rows);
         rowsPerIteration = ~~(this.maxMemory / this.rowByteSize);
         rowsPerIteration = Math.min(rowsPerIteration, this.rows);
+        console.log("}}} Set rowsPerIteration to be " + rowsPerIteration);
         factor = this.rows / rowsPerIteration;
         iterations = Math.floor(factor) === factor ? factor : Math.floor(factor) + 1;
         i = 0;
@@ -1208,23 +1210,101 @@
       return _ref;
     }
 
-    Table.prototype.dataAccessors = {
-      A: function(value) {
-        return value.trim();
+    Table.prototype.dataAccessors =
+        {
+      L: function(view, offset) {
+        var val, x;
+        x = view.getInt8(offset);
+        offset += 1;
+        val = x === 84 ? true : false;
+        return [val, offset];
       },
-      I: function(value) {
-        return parseInt(value);
+      B: function(view, offset) {
+        var val;
+        val = view.getUint8(offset);
+        offset += 1;
+        return [val, offset];
       },
-      F: function(value) {
-        return parseFloat(value);
+      I: function(view, offset) {
+        var val;
+        val = view.getInt16(offset);
+        offset += 2;
+        return [val, offset];
       },
-      E: function(value) {
-        return parseFloat(value);
+      J: function(view, offset) {
+        var val;
+        val = view.getInt32(offset);
+        offset += 4;
+        return [val, offset];
       },
-      D: function(value) {
-        return parseFloat(value);
+      K: function(view, offset) {
+        var factor, highByte, lowByte, mod, val;
+        highByte = Math.abs(view.getInt32(offset));
+        offset += 4;
+        lowByte = Math.abs(view.getInt32(offset));
+        offset += 4;
+        mod = highByte % 10;
+        factor = mod ? -1 : 1;
+        highByte -= mod;
+        val = factor * ((highByte << 32) | lowByte);
+        return [val, offset];
+      },
+      A: function(view, offset) {
+        var val;
+        val = view.getUint8(offset);
+        val = String.fromCharCode(val);
+        offset += 1;
+        return [val, offset];
+      },
+      E: function(view, offset) {
+        var val;
+        val = view.getFloat32(offset);
+        console.log("Retrieved value" + val + "from DataView, offset " + offset);
+        offset += 4;
+        return [val, offset];
+      },
+      D: function(view, offset) {
+        var val;
+        val = view.getFloat64(offset);
+        offset += 8;
+        return [val, offset];
+      },
+      C: function(view, offset) {
+        var val, val1, val2;
+        val1 = view.getFloat32(offset);
+        offset += 4;
+        val2 = view.getFloat32(offset);
+        offset += 4;
+        val = [val1, val2];
+        return [val, offset];
+      },
+      M: function(view, offset) {
+        var val, val1, val2;
+        val1 = view.getFloat64(offset);
+        offset += 8;
+        val2 = view.getFloat64(offset);
+        offset += 8;
+        val = [val1, val2];
+        return [val, offset];
       }
     };
+    //     {
+    //   A: function(value) {
+    //     return value.trim();
+    //   },
+    //   I: function(value) {
+    //     return parseInt(value);
+    //   },
+    //   F: function(value) {
+    //     return parseFloat(value);
+    //   },
+    //   E: function(value) {
+    //     return parseFloat(value);
+    //   },
+    //   D: function(value) {
+    //     return parseFloat(value);
+    //   }
+    // };
 
     Table.prototype.setAccessors = function(header) {
       console.log("}}} Running Table.setAccessors");
@@ -1274,20 +1354,23 @@
             return a + b;
           });
         }
+        console.log("}}} elementByteLength = " + elementByteLength + ", elementByteOffset = " + elementByteOffset);
+        console.log(elementByteOffset);
         column = this.typedArray[descriptor] != null ? new this.typedArray[descriptor](this.rows) : [];
         console.log("}}} 'column' variable set as:");
         console.log(column);
-        console.log("}}} At this point, the 'rows' its developed from are:");
-        console.log(this.rows);
         rowsPerIteration = ~~(this.maxMemory / this.rowByteSize);
         rowsPerIteration = Math.min(rowsPerIteration, this.rows);
+        console.log('}}} rowsPerIteration set as ' + rowsPerIteration);
         factor = this.rows / rowsPerIteration;
         iterations = Math.floor(factor) === factor ? factor : Math.floor(factor) + 1;
+        console.log("}}} Iterations to run through are " + iterations);
         i = 0;
         index = 0;
         cb = function(buffer, opts) {
           var nRows, offset, startRow, view;
           nRows = buffer.byteLength / _this.rowByteSize;
+          console.log("}}} function 'cb' has set nRows = " + nRows);
           view = new DataView(buffer);
           offset = elementByteOffset;
           while (nRows--) {
@@ -1314,7 +1397,10 @@
             _this.invoke(callback, opts, column);
           }
         };
-        return this.getTableBuffer(0, rowsPerIteration, cb, opts);
+        let return_values = this.getTableBuffer(0, rowsPerIteration, cb, opts);
+        console.log("}}} getColumns is about to return:");
+        console.log(return_values);
+        return return_values
       } else {
         cb = function(rows, opts) {
           column = rows.map(function(d) {
