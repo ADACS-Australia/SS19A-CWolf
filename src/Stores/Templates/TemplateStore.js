@@ -12,6 +12,9 @@ class TemplateStore {
 
     getInitialState() {
         // Todo: Refactor the template manager here?
+        console.log("=======GET INITIAL STATE");
+        // RS: is there a better place for this.
+        templateManager.initialise();
         return {
         }
     }

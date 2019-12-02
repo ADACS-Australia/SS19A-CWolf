@@ -157,17 +157,6 @@ class DataStore {
 
                 reader.readAsText(state.json[0]);
 
-                //
-                /*
-                var spectrumx = new SpectrumX(state.json[0].name);
-                spectrumx.fromDictionary(JSON.parse(state.json[0]));
-                state.resultsManager.setHelio(spectrumx.getDoHelio());
-                state.resultsManager.setCMB(spectrumx.getDoCMB());
-                state.consumer.consume(spectrumx,state.processorService.spectraManager).then(function(spectraList) {
-                    console.log("ok...JSON");
-                });
-                */
-
             }
         }
 
@@ -264,51 +253,36 @@ class DataStore {
                     console.log("RS: DataStore drop JSON URL" + state.json[0].name);
 
                     //-------------------
+                    let reader = new FileReader();
                     fetch(state.json[0].name)
                     .then(res => res.blob()) // Gets the response and returns it as a blob
                     .then(blob => {
-                    // Here's where you get access to the blob
-                    // And you can use it for whatever you want
-                    // Like calling ref().put(blob)
-
-                    // Here, I use it to make an image appear on the page
-                    //let objectURL = URL.createObjectURL(blob);
-                        let reader = new FileReader();
-                        reader.onload = function() {
-                            const spectrumprovider = new SpectrumJSONProvider();
-                        spectrumprovider.fromJSON(JSON.parse(this.result));
-                        state.resultsManager.setHelio(spectrumprovider.getDoHelio());
-                        state.resultsManager.setCMB(spectrumprovider.getDoCMB());
-                        state.consumer.consume(spectrumprovider, state.processorService.spectraManager).then(function (spectraList) {
-                            console.log("ok...JSON");
-                        });
-                        }
                         // Closure to capture the file information.
-                reader.onload = (function (theFile) {
-                    return function (e) {
-                        const spectrumprovider = new SpectrumJSONProvider();
-                        spectrumprovider.fromJSON(JSON.parse(e.target.result));
-                        state.resultsManager.setHelio(spectrumprovider.getDoHelio());
-                        state.resultsManager.setCMB(spectrumprovider.getDoCMB());
-                        state.consumer.consume(spectrumprovider, state.processorService.spectraManager).then(function (spectraList) {
-                            console.log("ok...JSON");
-                        });
-                    };
-                })(state.json[0]);
+                        reader.onload = (function (theFile) {
+                            return function (e) {
+                                const spectrumprovider = new SpectrumJSONProvider();
+                                spectrumprovider.fromJSON(JSON.parse(e.target.result));
+                                state.resultsManager.setHelio(spectrumprovider.getDoHelio());
+                                state.resultsManager.setCMB(spectrumprovider.getDoCMB());
+                                state.consumer.consume(spectrumprovider, state.processorService.spectraManager).then(function (spectraList) {
+                                    console.log("ok...JSON1");
+                                });
+                            };
+                        })(state.json[0]);
 
-                reader.readAsText(blob);
+                        reader.readAsText(blob);
 
-  });
+                    });
                     //-------------------
                 }
                 else {
-                console.log("RS: DataStore drop JSON FILE" + state.json[0]);
+                    console.log("RS: DataStore drop JSON FILE" + state.json[0]);
 
-                // FIXME: Filename for json files. Should this come from the real file name, or should it be an attribute
-                // FIXME: of the json object?
+                    // FIXME: Filename for json files. Should this come from the real file name, or should it be an attribute
+                    // FIXME: of the json object?
 
-                describe(state.json[0]);
-                let reader = new FileReader();
+                    describe(state.json[0]);
+                    let reader = new FileReader();
 
                 // Closure to capture the file information.
                 reader.onload = (function (theFile) {

@@ -67,6 +67,7 @@ class ProcessorManager {
         this.processing = true;
         this.node = defaultFor(node, false);
         this.getInactiveTemplates = null;
+        this.getTemplateManager = null;
         this.processedCallback = null;
         this.processedCallbackContext = null;
         this.matchedCallback = null;
@@ -92,6 +93,14 @@ class ProcessorManager {
     setInactiveTemplateCallback(fn) {
         this.getInactiveTemplates = fn;
     };
+
+    setOriginalTemplateCallback(fn) {
+        this.getOriginalTemplates = fn;
+    };
+
+    setTemplateManagerCallback(fn) {
+        this.getTemplateManager = fn;
+    }
 
     toggleProcessing() {
         this.processing = !this.processing;
@@ -131,7 +140,8 @@ class ProcessorManager {
     };
 
     processSpectra(spectra) {
-        spectra.inactiveTemplates = this.getInactiveTemplates();
+        spectra.inactiveTemplates = this.getInactiveTemplates();    // TODO: Do we need this when we have spectra.templateManager?
+        spectra.templateManager = this.getTemplateManager();
         spectra.node = this.node;
         const processor = this.getIdleProcessor();
         processor.workOnSpectra(spectra, this.node).then(function(result) {

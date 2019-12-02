@@ -15,7 +15,7 @@ import {globalConfig} from "../config";
 import {TemplateManager} from "../TemplateManager";
 
 let node = false;
-const templateManager = new TemplateManager(true, true);
+let templateManager = new TemplateManager(true, true);
 
 /**
  * Handles all worker related events, including data processing and spectra matching.
@@ -25,7 +25,7 @@ const templateManager = new TemplateManager(true, true);
  *
  */
 export function handleEvent(data) {
-    templateManager.setInactiveTemplates(data.inactiveTemplates);
+    templateManager.copyFrom(data.templateManager); // deferred initialisation of workers templateManager
     node = data.node;
     let result = null;
     // Whether the data gets processed or matched depends on if a processing property is set
