@@ -23,16 +23,6 @@ class TemplateManager {
 
         this.process = process;
         this.initialised = false;
-        console.log("CONSTRUCT A TEMPLATE MANAGER ", process, shiftToMatch);
-        /*
-        if ("remote_templates" in window.marz_configuration) {
-            this.originalTemplates = [];
-            this.setOriginalTemplatesFromURL(window.marz_configuration.remote_templates, process, this);
-        } else {
-            this.setOriginalTemplates(originalTemplates);
-        }
-        */
-
     }
     inbuiltTemplates() {
 /**
@@ -471,8 +461,6 @@ class TemplateManager {
         }
         this.templateEnabledCookieKey = 'tenabled';
         this.inactiveArray = this.getInactiveTemplatesCookie();
-        console.log("INACTIVE ARRAY0",this.inactiveArray);
-        console.log("doPROC", doProc, this.process, this.shiftToMatch);
         if (doProc) {
             if (this.process) {
                 this.processTemplates();
@@ -625,15 +613,26 @@ class TemplateManager {
         this.logLambdaQ = other.logLambdaQ;
         this.originalTemplates = other.originalTemplates;
         this.templateEnabledCookieKey = other.templateEnabledCookieKey;
-        this.templates = other.templates;
-        this.templatesHash = other.templatesHash;
+        
+        this.templatesHash = {};
+        for (let i = 0; i < this.originalTemplates.length; i++) {
+            this.templatesHash[this.originalTemplates[i].id] = this.originalTemplates[i];
+        }
+
+        // Recreate this array to ensure the elements are references to this.originalTemplates elements
+        // This is essential because workers are generally passed DEEP COPIES of objects rather than references
+        this.templates = [];
+        for (let i = 0; i < other.templates.length; i++) {
+            this.templates.push(this.getTemplateFromId(other.templates[i].id));
+        }
 
         if (this.process) {
             if (!other.process)
             {
-                this.shiftToMprocessTemplatesatchSpectra();
+                this.processTemplates();
             }
-        } 
+        }
+
         if (this.shiftToMatch) {
             if (!other.shiftToMatch)
             {

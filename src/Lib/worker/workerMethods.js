@@ -169,6 +169,7 @@ function matchTemplates(lambda, intensity, variance, type, helio, cmb) {
             return matchTemplate(templates, fft);
         }
     });
+    
     return coalesceResults(templateResults, type, subtracted, helio, cmb);
 }
 
@@ -196,7 +197,7 @@ function justIntensity(lambda, intensity, variance, type, helio, cmb) {
 function coalesceResults(templateResults, type, intensity, helio, cmb) {
     // Adjust for optional weighting
     const coalesced = [];
-    let w;
+    let w;  
     for (let i = 0; i < templateResults.length; i++) {
         const tr = templateResults[i];
         const t = templateManager.getTemplateFromId(tr.id);
@@ -233,6 +234,7 @@ function coalesceResults(templateResults, type, intensity, helio, cmb) {
                 break;
             }
         }
+
         if (add) {
             topTen.push(coalesced[ii]);
         }
