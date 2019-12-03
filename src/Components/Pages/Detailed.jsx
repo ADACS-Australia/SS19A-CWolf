@@ -27,7 +27,7 @@ import {
 import {templateManager} from "../../Lib/TemplateManager";
 
 import styled from 'styled-components';
-import {addFiles} from "../../Stores/Data/Actions";
+
 //import {addURLs} from "../../Stores/Data/Actions";
 
 const getColor = (props) => {
@@ -421,12 +421,7 @@ class Detailed extends React.Component {
                             {...getRootProps()}
                         >
                             {this.isWaitingDrop() ? (
-                                /*<p><Button color='primary' size='sm' onClick={() => this.getTestURLLoad()}>
-                                {
-                                    this.props.ui.detailed.spectralLines ? "Test loading url from asvo.org.au" : "Show"
-                                }
-                            </Button></p>*/
-                            <DetailedCanvas {...this.props}/>
+                                <DetailedCanvas {...this.props}/>
                             ) : (
                                 <DetailedCanvas {...this.props}/>
                             )}
@@ -435,22 +430,6 @@ class Detailed extends React.Component {
                 }}
             </Dropzone>
         )
-    }
-    /*
-     <p><Button color='primary' size='sm' onClick={() => this.getTestURLLoad()}>
-                                {
-                                    this.props.ui.detailed.spectralLines ? "Test loading url from asvo.org.au" : "Show"
-                                }
-                            </Button></p>
-    */
-    getTestURLLoad() {
-        console.log("TEST URL LOAD");
-        let myacceptedFiles = "https://tao.asvo.org.au/taostaging/static/emlLinearVacuumNoHelio1.json";
-        console.log("ADD IT NOW");
-        let files=[];
-        files.push({name:myacceptedFiles, isurl: true});
-        addFiles(files);
-        console.log("ADD DONE");
     }
 
     getQOPText() {

@@ -23,6 +23,7 @@ import {
 } from "../../../Stores/Detailed/Actions";
 import {templateManager} from "../../../Lib/TemplateManager";
 import {setSpectraFocus, setWaitingForSpectra} from "../../../Stores/UI/Actions";
+import {addFiles} from "../../../Stores/Data/Actions";
 
 class DetailedCanvas extends React.Component {
     constructor(props) {
@@ -48,7 +49,16 @@ class DetailedCanvas extends React.Component {
 
         let rect = this.refs.canvas.getBoundingClientRect();
 
-        // Force another redraw to fix the canvas
+        // TODO: RS - Is this the best place for this?
+        if ("remote_file" in window.marz_configuration) {
+            if (window.marz_configuration.remote_file !== null) {
+                console.log("ADD REMOTE FILE ",window.marz_configuration.remote_file);
+                let files=[];
+                files.push({name:window.marz_configuration.remote_file, isurl: true});
+                addFiles(files);
+            }
+        }
+
         this.update();
     }
 
