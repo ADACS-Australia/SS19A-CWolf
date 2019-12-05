@@ -28,6 +28,8 @@ import {templateManager} from "../../Lib/TemplateManager";
 
 import styled from 'styled-components';
 
+import {addFiles} from "../../Stores/Data/Actions";
+
 //import {addURLs} from "../../Stores/Data/Actions";
 
 const getColor = (props) => {

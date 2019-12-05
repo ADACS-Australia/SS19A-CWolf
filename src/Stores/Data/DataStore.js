@@ -224,27 +224,52 @@ class DataStore {
 
         if (lastNumDrag !== state.numDrag || lastFitsLength !== state.fits.length) {
             if (state.fits.length > 0) {
-                console.log("RS: DataStore drop FITS");
+                if ("isurl" in state.fits[0]) {
+                    console.log("RS: DataStore drop FITS URL" + state.fits[0].name);
 
-                // Get the fits file to load (We don't handle multiple files)
-                const fitsFile = state.fits[0];
+                    // Get the fits file to load (We don't handle multiple files)
+                    const fitsFile = state.fits[0];
 
-                // Handle setting the filename correctly
-                let originalFilename = null;
-                if (fitsFile.actualName != null) {
-                    originalFilename = fitsFile.actualName.replace(/\.[^/.]+$/, "");
-                } else {
-                    originalFilename = fitsFile.name.replace(/\.[^/.]+$/, "");
+                    // Handle setting the filename correctly
+                    let originalFilename = fitsFile.name;
+                    //if (fitsFile.actualName != null) {
+                    //    originalFilename = fitsFile.actualName.replace(/\.[^/.]+$/, "");
+                    //} else {
+                    //    originalFilename = fitsFile.name.replace(/\.[^/.]+$/, "");
+                    //}
+                    setTimeout(() => setFitsFilename(originalFilename.replace(/_/g, " ")), 0);
+
+                    describe(fitsFile);
+
+                    state.fitsFileLoader.setFiledata(fitsFile.name, state.fits[0].name);
+                    //state.fitsFileLoader.loadInFitsFile(state.fits[0]).then(function() { console.log('Fits file loaded');});
+                    state.consumer.consume(state.fitsFileLoader, state.processorService.spectraManager).then(function (spectraList) {
+                        onsole.log("ok...FITS");
+                    });
                 }
-                setTimeout(() => setFitsFilename(originalFilename.replace(/_/g, " ")), 0);
+                else {
+                    console.log("RS: DataStore drop FITS");
 
-                describe(fitsFile);
+                    // Get the fits file to load (We don't handle multiple files)
+                    const fitsFile = state.fits[0];
 
-                state.fitsFileLoader.setFiledata(fitsFile.name, fitsFile);
-                //state.fitsFileLoader.loadInFitsFile(state.fits[0]).then(function() { console.log('Fits file loaded');});
-                state.consumer.consume(state.fitsFileLoader, state.processorService.spectraManager).then(function (spectraList) {
-                    console.log("ok...FITS");
-                });
+                    // Handle setting the filename correctly
+                    let originalFilename = null;
+                    if (fitsFile.actualName != null) {
+                        originalFilename = fitsFile.actualName.replace(/\.[^/.]+$/, "");
+                    } else {
+                        originalFilename = fitsFile.name.replace(/\.[^/.]+$/, "");
+                    }
+                    setTimeout(() => setFitsFilename(originalFilename.replace(/_/g, " ")), 0);
+
+                    describe(fitsFile);
+
+                    state.fitsFileLoader.setFiledata(fitsFile.name, fitsFile);
+                    //state.fitsFileLoader.loadInFitsFile(state.fits[0]).then(function() { console.log('Fits file loaded');});
+                    state.consumer.consume(state.fitsFileLoader, state.processorService.spectraManager).then(function (spectraList) {
+                        onsole.log("ok...FITS");
+                    });
+                }
             }
         }
         if (lastNumDrag !== state.numDrag || lastJSONLength !== state.json.length) {
