@@ -29,6 +29,12 @@ class FitsFileLoader {
             "headervalue": "SuperCOSMOS I",
             "readfunc": this.parse6dFGSFitsFile
         },
+        {
+            "instrument": "SDSS",
+            "headerkw": "TELESCOP",
+            "headervalue": "SDSS 2.5-M",
+            "readfunc": this.parseSDSSFitsFile
+        }
     ];
 
     wavelengthConversionFactors = {
@@ -506,6 +512,102 @@ class FitsFileLoader {
 
         return q.promise;
     }
+
+
+    getVarianceTable(ext) {
+        const q = $q.defer();
+        console.log("Reading table intensities from extension " + ext);
+
+        // Attempt to identify which table column the wavelength data are in
+        const intsTypeKW = [];
+        const intsColName = [];
+        const inverses = [];
+
+        for (let headerkw in this.fits.getHeader(ext).cards) {
+            try {
+                if (this.fits.getHeader(ext).cards[headerkw].value.match(/var/i) && headerkw.indexOf("TYPE") !== -1) {
+                    intsTypeKW.push(headerkw);
+                    intsColName.push(this.fits.getHeader(ext).cards[headerkw].value);
+                    if (this.fits.getHeader(ext).cards[headerkw].value.match(/ivar/i)) {
+                        inverses.push(true);
+                    } else {
+                        inverses.push(false);
+                    }
+                }
+            } catch (TypeError) {}
+        }
+
+        if (intsTypeKW.length !== 1) {
+            console.log("&&& PROMISE REJECTED && - Unable to determine table column for intensity/flux ");
+            console.log(intsTypeKW);
+            q.reject("Unable to determine table column for intensity/flux");
+            return;
+        }
+
+        // Extract the column data
+        let col_data = [];
+        console.log("Getting data from extension " + ext + ", column " + intsColName[0]);
+        this.fits.getDataUnit(ext).getColumn(intsColName[0], function (column) {
+            col_data = column;
+
+            console.log(">>> Found intensity data from table:");
+            console.log(col_data);
+
+            if (inverses[0]) {
+                console.log("Inverting variances");
+                for (let j = 0; j < col_data.length; j++) {
+                    col_data[j] = 1 / col_data[j];
+                }
+            }
+
+            // Wavelength unit detection is done elsewhere
+            q.resolve([col_data, ]);
+        });
+
+        return q.promise;
+    }
+
+
+    getSkyTable(ext) {
+        const q = $q.defer();
+        console.log("Reading table intensities from extension " + ext);
+
+        // Attempt to identify which table column the wavelength data are in
+        const intsTypeKW = [];
+        const intsColName = [];
+
+        for (let headerkw in this.fits.getHeader(ext).cards) {
+            try {
+                if (this.fits.getHeader(ext).cards[headerkw].value.match(/sky/i) && headerkw.indexOf("TYPE") !== -1) {
+                    intsTypeKW.push(headerkw);
+                    intsColName.push(this.fits.getHeader(ext).cards[headerkw].value);
+                }
+            } catch (TypeError) {}
+        }
+
+        if (intsTypeKW.length !== 1) {
+            console.log("&&& PROMISE REJECTED && - Unable to determine table column for intensity/flux ");
+            console.log(intsTypeKW);
+            q.reject("Unable to determine table column for intensity/flux");
+            return;
+        }
+
+        // Extract the column data
+        let col_data = [];
+        console.log("Getting data from extension " + ext + ", column " + intsColName[0]);
+        this.fits.getDataUnit(ext).getColumn(intsColName[0], function (column) {
+            col_data = column;
+
+            console.log(">>> Found intensity data from table:");
+            console.log(col_data);
+
+            // Wavelength unit detection is done elsewhere
+            q.resolve([col_data, ]);
+        });
+
+        return q.promise;
+    }
+
 
     parseSingleExtensionFitsFile(q, ext) {
         console.log("Parsing Single Extension Fits File - extension " + ext);
