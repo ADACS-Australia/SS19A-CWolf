@@ -1259,7 +1259,7 @@
       E: function(view, offset) {
         var val;
         val = view.getFloat32(offset);
-        console.log("Retrieved value" + val + "from DataView, offset " + offset);
+        console.log("Retrieved value " + val + " from DataView, offset " + offset);
         offset += 4;
         return [val, offset];
       },
@@ -1305,7 +1305,18 @@
     //     return parseFloat(value);
     //   }
     // };
-
+    Table.offsets = {
+      L: 1,
+      B: 1,
+      I: 2,
+      J: 4,
+      K: 8,
+      A: 1,
+      E: 4,
+      D: 8,
+      C: 8,
+      M: 16
+    };
     Table.prototype.setAccessors = function(header) {
       console.log("}}} Running Table.setAccessors");
       var descriptor, form, i, match, pattern, type, _i, _ref1, _results,
@@ -1320,9 +1331,11 @@
         _results.push((function(descriptor) {
           var accessor;
           _this.descriptors.push(descriptor);
-          accessor = function(value) {
-            return _this.dataAccessors[descriptor](value);
+          accessor = function(value, offset) {
+            return _this.dataAccessors[descriptor](value, offset);
           };
+          _this.elementByteLengths.push(_this.constructor.offsets[descriptor]);
+
           return _this.accessors.push(accessor);
         })(descriptor));
       }
@@ -1376,7 +1389,7 @@
           while (nRows--) {
             // console.log('Accessor is (for index ' + index + '):');
             // console.log(accessor);
-            column[i] = accessor(view, offset);
+            column[i] = accessor(view, offset)[0];
             if (i == 0) {
               console.log("Added value to column: " + column[i]);
               console.log("View was:");
