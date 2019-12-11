@@ -1209,117 +1209,27 @@
       _ref = Table.__super__.constructor.apply(this, arguments);
       return _ref;
     }
-
     Table.prototype.dataAccessors =
         {
-      L: function(view, offset) {
-        var val, x;
-        x = view.getInt8(offset);
-        offset += 1;
-        val = x === 84 ? true : false;
-        return [val, offset];
+      A: function(value) {
+        return value.trim();
       },
-      B: function(view, offset) {
-        var val;
-        val = view.getUint8(offset);
-        offset += 1;
-        return [val, offset];
+      I: function(value) {
+        return parseInt(value);
       },
-      I: function(view, offset) {
-        var val;
-        val = view.getInt16(offset);
-        offset += 2;
-        return [val, offset];
+      F: function(value) {
+        return parseFloat(value);
       },
-      J: function(view, offset) {
-        var val;
-        val = view.getInt32(offset);
-        offset += 4;
-        return [val, offset];
+      E: function(value) {
+        return parseFloat(value);
       },
-      K: function(view, offset) {
-        var factor, highByte, lowByte, mod, val;
-        highByte = Math.abs(view.getInt32(offset));
-        offset += 4;
-        lowByte = Math.abs(view.getInt32(offset));
-        offset += 4;
-        mod = highByte % 10;
-        factor = mod ? -1 : 1;
-        highByte -= mod;
-        val = factor * ((highByte << 32) | lowByte);
-        return [val, offset];
-      },
-      A: function(view, offset) {
-        var val;
-        val = view.getUint8(offset);
-        val = String.fromCharCode(val);
-        offset += 1;
-        return [val, offset];
-      },
-      E: function(view, offset) {
-        var val;
-        val = view.getFloat32(offset);
-        console.log("Retrieved value " + val + " from DataView, offset " + offset);
-        offset += 4;
-        return [val, offset];
-      },
-      D: function(view, offset) {
-        var val;
-        val = view.getFloat64(offset);
-        offset += 8;
-        return [val, offset];
-      },
-      C: function(view, offset) {
-        var val, val1, val2;
-        val1 = view.getFloat32(offset);
-        offset += 4;
-        val2 = view.getFloat32(offset);
-        offset += 4;
-        val = [val1, val2];
-        return [val, offset];
-      },
-      M: function(view, offset) {
-        var val, val1, val2;
-        val1 = view.getFloat64(offset);
-        offset += 8;
-        val2 = view.getFloat64(offset);
-        offset += 8;
-        val = [val1, val2];
-        return [val, offset];
+      D: function(value) {
+        return parseFloat(value);
       }
-    };
-    //     {
-    //   A: function(value) {
-    //     return value.trim();
-    //   },
-    //   I: function(value) {
-    //     return parseInt(value);
-    //   },
-    //   F: function(value) {
-    //     return parseFloat(value);
-    //   },
-    //   E: function(value) {
-    //     return parseFloat(value);
-    //   },
-    //   D: function(value) {
-    //     return parseFloat(value);
-    //   }
-    // };
-    Table.offsets = {
-      L: 1,
-      B: 1,
-      I: 2,
-      J: 4,
-      K: 8,
-      A: 1,
-      E: 4,
-      D: 8,
-      C: 8,
-      M: 16
     };
     Table.prototype.setAccessors = function(header) {
       console.log("}}} Running Table.setAccessors");
-      var descriptor, form, i, match, pattern, type, _i, _ref1, _results,
+      var descriptor, form, i, match, pattern, type, _i, _ref1, _results, offset,
         _this = this;
       pattern = /([AIFED])(\d+)\.*(\d+)*/;
       _results = [];
@@ -1328,13 +1238,14 @@
         type = header.get("TTYPE" + i);
         match = pattern.exec(form);
         descriptor = match[1];
-        _results.push((function(descriptor) {
+        offset = match[2];
+        _this.elementByteLengths.push(parseInt(offset));
+          _results.push((function(descriptor) {
           var accessor;
           _this.descriptors.push(descriptor);
-          accessor = function(value, offset) {
-            return _this.dataAccessors[descriptor](value, offset);
+          accessor = function(data) {
+            return _this.dataAccessors[descriptor](data);
           };
-          _this.elementByteLengths.push(_this.constructor.offsets[descriptor]);
 
           return _this.accessors.push(accessor);
         })(descriptor));
@@ -1384,12 +1295,13 @@
           var nRows, offset, startRow, view;
           nRows = buffer.byteLength / _this.rowByteSize;
           console.log("}}} function 'cb' has set nRows = " + nRows);
-          view = new DataView(buffer);
+          let t = new TextDecoder();
+          view = t.decode(buffer);
           offset = elementByteOffset;
           while (nRows--) {
             // console.log('Accessor is (for index ' + index + '):');
             // console.log(accessor);
-            column[i] = accessor(view, offset)[0];
+            column[i] = accessor(view.slice(offset, offset + elementByteLength));
             if (i == 0) {
               console.log("Added value to column: " + column[i]);
               console.log("View was:");
