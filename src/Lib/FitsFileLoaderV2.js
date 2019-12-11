@@ -944,6 +944,66 @@ class FitsFileLoader {
 
     }
 
+    parseSDSSFitsFile(q) {
+        console.log("Parsing a file from SDSS. Using the DR12+ lite data standard.");
+        console.log("See https://data.sdss.org/sas/dr16/eboss/spectro/redux/v5_13_0/spectra/lite/10000/spec-10000-57346-0001.fits for an example fits file");
+        // This file typically has two extensions, and the coadded data is in the second extension (BinaryTable)
+
+        let spectrum_exts = [];
+        // Identify the extensions with the data we want. The SDSS Fits have no EXTNAME cards
+        spectrum_exts.push(this.fits.getHDU("COADD"));
+
+        let promise_list = spectrum_exts.map(
+            function(j) {
+                const q2 = $q.defer();
+                $q.all([
+                    this.getIntensityTable(j),
+                    this.getWavelengthUnitTable(j),
+                    this.getWavelengthsTable(j),
+                    this.getVarianceTable(j),
+                    this.getSkyTable(j)
+                ]).then(function (data) {
+                    console.log(">>> I've made it inside the 'then' function for ext " + j);
+                    let id = this.readHeaderValue(0,"THING_ID", 0);
+                    let specs = data[0];
+                    let wavlUnit = data[1];
+                    let wavls = data[2][0];
+                    console.log(">>> Read in data");
+                    console.log(data);
+
+                    let intensity = specs[0];
+                    let variance = data[3][0];
+                    let sky = data[4][0];
+                    console.log(">>> Unpacked the data");
+                    let spec = new Spectra({
+                        id: id,
+                        intensity: intensity,
+                        variance: variance,
+                        wavelength: wavls,
+                        wavelength_unit: wavlUnit,
+                        sky: sky,
+                    });
+                    console.log(">>> Created the Spectra object");
+                    console.log(">>> Completed read for extension " + j + "; spectra are:");
+                    console.log(spec);
+                    q2.resolve(spec);
+                }.bind(this), function () {
+                    console.error('!!! parse6dFGSFitsFile promise chain failed, on extension ' + j + ' !!!');
+                    console.error(data);
+                });
+                return q2.promise;
+            }.bind(this)
+        );
+
+        $q.all(promise_list).then(
+            function (data) {
+                console.log('%%% This is the then function for the master promise all');
+                q.resolve(data);
+            }
+        ).catch(e => console.error(e));
+
+    }
+
     parse6dFGSFitsFile(q) {
         console.log("Parsing a file from the 6dF Galaxy Survey");
 
