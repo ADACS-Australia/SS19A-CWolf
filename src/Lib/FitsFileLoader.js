@@ -206,7 +206,7 @@ class FitsFileLoader {
                 if (shouldPerformCMB) {
                     cmb = getCMBCorrection(ra * 180 / Math.PI, dec * 180 / Math.PI, this.epoch, this.radecsys);
                 }
-                const s = new Spectra(id, llambda, int, vari, skyy, name, ra, dec, mag, type, this.originalFilename, helio, cmb, this.node);
+                const s = new Spectra({id:id, wavelength:llambda, intensity:int, variance:vari, sky:skyy, name:name, ra:ra, dec:dec, magnitude:mag, type:type, fielname:this.originalFilename, helio:helio, cmb:cmb, node:this.node});
                 s.setCompute(int != null && vari != null);
                 spectraList.push(s);
             }

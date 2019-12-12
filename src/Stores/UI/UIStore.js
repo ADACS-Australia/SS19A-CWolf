@@ -137,6 +137,7 @@ class UIStore {
 
                 setTimeout(() => {
                     setShouldUpdateTemplateData();
+                    setShouldUpdateXcorData();
                 }, 0);
 
                 return {

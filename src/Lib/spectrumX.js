@@ -120,8 +120,8 @@ class SpectrumX {
         console.log("provide type="+this.properties.type);
         console.log("provide helio="+this.getHelio());
         console.log("provide cmb="+this.getCMB());
-        var spectra = new Spectra(this.properties.id, this.wavelength, this.intensity, this.variance, this.sky,
-             this.properties.name, this.properties.ra, this.properties.dec, this.properties.magnitude, this.properties.type, null, this.getHelio(), this.getCMB(), false);
+        var spectra = new Spectra({id:this.properties.id, wavelength:this.wavelength, intensity:this.intensity, variance:this.variance, sky:this.sky,
+             name:this.properties.name, ra:this.properties.ra, dec:this.properties.dec, magnitude:this.properties.magnitude, type:this.properties.type, helio:his.getHelio(), cmb:this.getCMB()});
         var spectraList = [spectra];
         q.resolve(spectraList); 
         return q.promise;    
