@@ -82,6 +82,7 @@ class UIStore {
     }
 
     reduce(state, action) {
+        //console.log("UIStore action",action);
         switch (action.type) {
             case UIActionTypes.SET_MERGE:
 
@@ -293,6 +294,7 @@ class UIStore {
                 };
 
             case UIActionTypes.CLICK_SPECTRAL_LINE:
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
                 UIStore.clickSpectralLine(action.id, state);
                 return {
                     ...state
@@ -375,6 +377,13 @@ class UIStore {
                 };
 
             case UIActionTypes.SET_SPECTRA_FOCUS:
+                /*
+                This should result in the template redshifting (The "data" (intensity, wavelength) always stays unchanged)
+                In the spectrum chart this means the data plot is static and the template and "spectrum lines" move.
+                In the callouts the idea is that the template appears static because it is centred around the "spectrum lines" that redshift with it.
+                The things that change in the callouts is the x labels and the "data"
+                */
+                setTimeout(() => setShouldUpdateTemplateData(), 0);
                 state.detailed.spectraFocus = action.focus;
 
                 return {
