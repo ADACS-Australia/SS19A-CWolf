@@ -10,6 +10,7 @@ import {storeReady} from "../Stores/StoreUtils";
 import Settings from "./Pages/Settings";
 import Templates from "./Pages/Templates";
 import {isSmall} from "../Utils/dry_helpers";
+import {templateManager} from "../Lib/TemplateManager";
 
 const Router = process.env.NODE_ENV === 'development' ? BrowserRouter : MemoryRouter;
 
@@ -24,6 +25,7 @@ function MarzApp(props) {
 
         // Wait for the render to complete then call the store ready event
         setTimeout(() => {
+            templateManager.initialise();   // This is a good place since we will have "window" and no workers will have started yet
             storeReady()
         }, 0)
     }
