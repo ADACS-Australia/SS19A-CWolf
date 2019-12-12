@@ -20,7 +20,23 @@ class Spectra {
      * @param cmb - km/s 3K background velocity correction
      * @constructor
      */
-    constructor(id, lambda, intensity, variance, sky, name, ra, dec, magnitude, type, filename, helio, cmb, node) {
+    constructor({
+        id,
+        wavelength,
+        intensity,
+        variance = null,
+        sky = null,
+        name = "",
+        ra = null,
+        dec = null,
+        magnitude = null,
+        type = null,
+        filename = null,
+        helio = null,
+        cmb = null,
+        node = false,
+        wavelength_unit = "pixel",
+    }) {
         this.version = globalConfig.marzVersion;
         this.helio = defaultFor(helio, null);
         this.cmb = defaultFor(cmb, null);
@@ -32,12 +48,12 @@ class Spectra {
         this.magnitude = magnitude;
         this.type = type;
         this.filename = filename;
-        this.lambda = lambda;
+        this.lambda = wavelength;
         this.intensity = intensity;
         this.variance = variance;
         this.variancePlot = variance;
         this.comment = "";
-        this.compute = true;
+
         console.log('### spectra - loaded parameters from constructor pass ###');
         if (variance != null && !this.node) {
             this.variancePlot = variance.slice();
@@ -77,6 +93,12 @@ class Spectra {
         this.imageZ = null;
         this.imageTID = null;
         this.image = null;
+
+
+        if (this.variance == null) {
+            this.setCompute(false);
+        }
+
     }
 
     getHash() {

@@ -1,6 +1,6 @@
 import {DataActionTypes, setFitsFilename} from "./Actions";
 import {setMerge} from "../UI/Actions";
-import FitsFileLoader from "../../Lib/FitsFileLoader";
+import FitsFileLoader from "../../Lib/FitsFileLoaderV2";
 import SpectrumConsumer from '../../Lib/SpectrumConsumer';
 import SpectrumJSONProvider from '../../Lib/SpectrumJSONProvider';
 import ResultsManager from "../../Lib/ResultsManager";

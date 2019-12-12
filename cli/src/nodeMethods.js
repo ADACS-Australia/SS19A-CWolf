@@ -5,7 +5,7 @@ import ProcessorManager from "../../src/Lib/ProcessorManager";
 import SpectraManager from "../../src/Lib/SpectraManager";
 import {templateManager} from "../../src/Lib/TemplateManager";
 import ResultsGenerator from "../../src/Lib/ResultsGenerator";
-import FitsFileLoader from "../../src/Lib/FitsFileLoader";
+import FitsFileLoader from "../../src/Lib/FitsFileLoaderV2";
 import SpectrumConsumer from "../../src/Lib/SpectrumConsumer";
 import {defaultFor} from "../../src/Utils/methods";
 import SpectrumJSONProvider from "../../src/Lib/SpectrumJSONProvider";
