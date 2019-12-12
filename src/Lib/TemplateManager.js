@@ -641,6 +641,10 @@ class TemplateManager {
         }
     }
 
+    getOriginalTemplates() {
+        return this.originalTemplates;
+    };
+
     saveInactives() {
         if (typeof document != "undefined" && document != null) {
             CookieManager.setCookie(this.templateEnabledCookieKey, this.inactiveArray);
