@@ -56,6 +56,9 @@ class Detailed extends React.Component {
     }
 
     render() {
+        if (this.displayMarz() && this.props.ui.active == null) {
+            return (<div>No spectra loaded yet</div>)
+        }
         return (this.displayMarz() || this.displaySimple() || this.displayTemplateOverlay()) ?
         (
             <div className="detailedView filler">
