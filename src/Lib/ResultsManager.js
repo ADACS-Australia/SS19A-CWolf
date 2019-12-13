@@ -58,8 +58,8 @@ class ResultsManager {
 
     convertResultToMimicSpectra(result) {
         var helio = result["HelioCor"] == null ? null : result["HelioCor"];
-        var spectra = new Spectra(result["ID"], null, null, null, null, result["Name"],
-            result["RA"], result["DEC"],result["Mag"], result["Type"], result.filename, helio);
+        let spectra = new Spectra({id:result["ID"], name:result["Name"],
+            ra:result["RA"], dec:result["DEC"],magnitude:result["Mag"], type:result["Type"], filename:result.filename, helio:helio});
         spectra.automaticBestResults = [{templateId: result["AutoTID"], z: result["AutoZ"], value: result["AutoXCor"]}];
         spectra.setComment(result["Comment"]);
         spectra.setQOP(parseInt(result["QOP"]));

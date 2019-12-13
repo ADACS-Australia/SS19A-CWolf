@@ -1,4 +1,5 @@
 import React from "react";
+
 import {
     binarySearch,
     defaultFor,
@@ -22,6 +23,7 @@ import {
 } from "../../../Stores/Detailed/Actions";
 import {templateManager} from "../../../Lib/TemplateManager";
 import {setSpectraFocus, setWaitingForSpectra} from "../../../Stores/UI/Actions";
+import {addFiles} from "../../../Stores/Data/Actions";
 
 class DetailedCanvas extends React.Component {
     constructor(props) {
@@ -45,7 +47,18 @@ class DetailedCanvas extends React.Component {
         // Update the scale
         this.setScale();
 
-        // Force another redraw to fix the canvas
+        let rect = this.refs.canvas.getBoundingClientRect();
+
+        // TODO: RS - Is this the best place for this?
+        if ("remote_file" in window.marz_configuration) {
+            if (window.marz_configuration.remote_file !== null) {
+                console.log("ADD REMOTE FILE ",window.marz_configuration.remote_file);
+                let files=[];
+                files.push({name:window.marz_configuration.remote_file, isurl: true});
+                addFiles(files);
+            }
+        }
+
         this.update();
     }
 
@@ -61,13 +74,44 @@ class DetailedCanvas extends React.Component {
         return true;
     }
 
+    //  Conditional content
+    showData() {
+        return true;
+    }
+    showTemplate() {
+        const dataonly = (window.marz_configuration.layout == 'ReadOnlySpectrumView' || window.marz_configuration.layout == 'SimpleSpectrumView');
+        return !dataonly;
+    }
+    showXcor() {
+        const dataonly = (window.marz_configuration.layout == 'ReadOnlySpectrumView' || window.marz_configuration.layout == 'SimpleSpectrumView');
+        return !dataonly;
+    }
+    showCallout() {
+        return (window.marz_configuration.layout == 'MarzSpectrumView');
+    }
+    showSpectraLines() {
+        return (window.marz_configuration.layout == 'MarzSpectrumView' || window.marz_configuration.layout == 'TemplateOverlaySpectrumView');
+    }
+    showZoomControl() {
+        return window.marz_configuration.layout != 'ReadOnlySpectrumView';
+    }
+    showDownloadControl() {
+        return (window.marz_configuration.layout == 'MarzSpectrumView');
+    }
+    showMultipleSpectra() {
+        if (this.params.data.count()<=1) return false;
+        return (window.marz_configuration.layout == 'ReadOnlySpectrumView' || window.marz_configuration.layout == 'SimpleSpectrumView');
+    }
+
     render() {
         // Check if the 2d context has been initialised yet
         if (this.c)
             // Yes it has, so render the canvas
             this.update();
 
-        return (
+        return (window.marz_configuration.layout == 'MarzSpectrumView') ?
+        (
+
             <div ref='parent' id="detailedCanvasParent" className="canvas-container">
                 <canvas
                     ref='canvas'
@@ -81,6 +125,47 @@ class DetailedCanvas extends React.Component {
                     onWheel={e => this.handleEvent(e)}
                 />
             </div>
+        ) : (
+            window.marz_configuration.layout == 'ReadOnlySpectrumView' ?
+            (
+                <div ref='parent' id="detailedCanvasParent" className="canvas-container-no-margin">
+                    <canvas
+                        ref='canvas'
+                        id="detailedCanvas"
+                    />
+                </div>
+            ) :
+            (window.marz_configuration.layout == 'TemplateOverlaySpectrumView') ?
+            (
+                <div ref='parent' id="detailedCanvasParent" className="canvas-container-3line-margin">
+                    <canvas
+                        ref='canvas'
+                        id="detailedCanvas"
+                        onMouseDown={e => this.handleEvent(e)}
+                        onMouseUp={e => this.handleEvent(e)}
+                        onMouseMove={e => this.handleEvent(e)}
+                        onTouchStart={e => this.handleEvent(e)}
+                        onTouchEnd={e => this.handleEvent(e)}
+                        onTouchMove={e => this.handleEvent(e)}
+                        onWheel={e => this.handleEvent(e)}
+                    />
+                </div>
+            ) :
+            (
+                <div ref='parent' id="detailedCanvasParent" className="canvas-container-1line-margin">
+                    <canvas
+                        ref='canvas'
+                        id="detailedCanvas"
+                        onMouseDown={e => this.handleEvent(e)}
+                        onMouseUp={e => this.handleEvent(e)}
+                        onMouseMove={e => this.handleEvent(e)}
+                        onTouchStart={e => this.handleEvent(e)}
+                        onTouchEnd={e => this.handleEvent(e)}
+                        onTouchMove={e => this.handleEvent(e)}
+                        onWheel={e => this.handleEvent(e)}
+                    />
+                </div>
+            )
         )
     }
 
@@ -102,15 +187,16 @@ class DetailedCanvas extends React.Component {
         // Get the view information for this spectra
         this.view = this.params.view;
 
-        // if (this.ui.active)
-        //     console.log(this.ui.active.getHash())
-
         // Check if we need to update the base data
         if (this.params.shouldUpdateBaseData) {
             // Reset the flag to update the base data
             setTimeout(() => clearShouldUpdateBaseData(), 0);
             // Add the base data
-            this.addBaseData();
+            if (this.showMultipleSpectra()) {
+                this.addBaseDataAll();
+            } else {
+                this.addBaseData();
+            }
         }
 
         // Check if we need to update the sky data
@@ -136,7 +222,7 @@ class DetailedCanvas extends React.Component {
             // Add the base data
             this.addxcorData();
         }
-
+        
         // Check if we need to update the xcor data
         if (this.params.shouldUpdateSmoothData) {
             // Reset the flag to update the smooth data
@@ -388,8 +474,8 @@ class DetailedCanvas extends React.Component {
         this.refs.canvas.style.width = this.params.canvasWidth + "px";
         this.refs.canvas.style.height = this.params.canvasHeight + "px";
         this.c.scale(this.params.scale, this.params.scale);
-        this.params.callout = this.params.canvasHeight > 450;
-        this.params.xcor = this.params.xcorData && (this.params.canvasHeight > 300);
+        this.params.callout = this.showCallout() ? this.params.canvasHeight > 450 : false;
+        this.params.xcor = this.params.xcorData && this.showXcor() && (this.params.canvasHeight > 300);
         this.params.xcorBound.width = this.params.canvasWidth - this.params.xcorBound.left - this.params.xcorBound.right;
         this.params.xcorBound.height = this.params.xcorHeight - this.params.xcorBound.top - this.params.xcorBound.bottom;
         this.view.bounds[0].top = this.params.xcor ? this.params.baseTop + this.params.xcorHeight : this.params.baseTop;
@@ -426,9 +512,19 @@ class DetailedCanvas extends React.Component {
 
         for (let i = 0; i < count; i++) {
             if (data[i].bound) {
-                bound.yMin = data[i].yMins[currentRangeIndex];
-                bound.yMax = data[i].yMaxs[currentRangeIndex];
+                bound.yMin = Math.min(bound.yMin,data[i].yMins[currentRangeIndex]);
+                bound.yMax = Math.max(bound.yMax,data[i].yMaxs[currentRangeIndex]);
             }
+        }
+
+        let hasYrange = false
+        if ("ymin" in window.marz_configuration) {
+            bound.yMin = parseFloat(window.marz_configuration.ymin, bound.yMin)
+            hasYrange = true
+        }
+        if ("ymax" in window.marz_configuration) {
+            bound.yMax = parseFloat(window.marz_configuration.ymax, bound.yMax)
+            hasYrange = true
         }
 
         if (c === 0) {
@@ -436,10 +532,14 @@ class DetailedCanvas extends React.Component {
                 bound.xMin = 3300;
                 bound.xMax = 7200;
             }
-            bound.yMin = -500;
-            bound.yMax = 1000;
+            if (!hasYrange) {
+                bound.yMin = -500;
+                bound.yMax = 1000;
+            }
         } else {
-            bound.yMin = bound.yMax - (bound.callout ? this.params.calloutSpacingFactor : this.params.spacingFactor) * (bound.yMax - bound.yMin);
+            if (!hasYrange) {
+                bound.yMin = bound.yMax - (bound.callout ? this.params.calloutSpacingFactor : this.params.spacingFactor) * (bound.yMax - bound.yMin);
+            }
         }
     };
 
@@ -534,12 +634,18 @@ class DetailedCanvas extends React.Component {
         }
         yStep = Math.max(1, Math.floor(yStep / Math.pow(base, exponent))) * Math.pow(base, exponent);
         const firstY = startY - startY % yStep;
+        let yfactor=1;
+        let yStepAsInteger=yStep;
+        while (yStepAsInteger<1) {
+            yfactor *= 10;
+            yStepAsInteger = yStep * yfactor;
+        }
 
         const x = bound.left - 10;
         for (let i = firstY + yStep; i < endY; i += yStep) {
             const y = DetailedCanvas.convertDataYToCanvasCoordinate(bound, i);
             if (onlyLabels) {
-                const lbl = parseFloat((i).toPrecision(4));
+                const lbl = parseFloat((i*yfactor).toPrecision(4));
                 if (Math.abs(lbl) < 1e-10) {
                     this.c.fillText('0', x, y);
                 } else {
@@ -553,12 +659,17 @@ class DetailedCanvas extends React.Component {
         if (!onlyLabels) {
             this.c.stroke();
         }
+        return yfactor;
     };
 
-    plotAxesFormalLabels(bound) {
+    plotAxesFormalLabels(yfactor,bound) {
         if (!bound.callout) {
             const xlabel = "Wavelength (\u00C5)";
-            const ylabel = "Relative Intensity";
+            let ylabel = "Intensity";
+            if (yfactor>1) {
+                let log_yfactor = Math.log10(yfactor);
+                ylabel += (" (10^"+log_yfactor+")");
+            }
 
             const bottomX = bound.left + 0.5 * bound.width;
             const bottomY = bound.top + bound.height + 20;
@@ -672,8 +783,12 @@ class DetailedCanvas extends React.Component {
         this.c.lineWidth = 0.6;
 
         const data = this.params.data.toArray();
+        const dataonly = (window.marz_configuration.layout == 'ReadOnlySpectrumView' || window.marz_configuration.layout == 'SimpleSpectrumView');
 
         for (let j = 0; j < this.params.data.count(); j++) {
+            if (dataonly &&  data[j].id!= "data") {
+                continue;
+            }
             this.c.beginPath();
             this.c.strokeStyle = data[j].colour;
             const xs = data[j].x;
@@ -942,15 +1057,17 @@ class DetailedCanvas extends React.Component {
         this.getBounds(bound);
         this.plotAxesLabels(false, bound);
         this.plotZeroLine(bound);
-        this.plotSpectralLines(bound);
+        if (this.showSpectraLines())
+            this.plotSpectralLines(bound);
         this.renderPlots(bound);
         this.plotAxes(bound);
-        this.plotAxesLabels(true, bound);
-        this.plotAxesFormalLabels(bound);
-        if (!download) {
+        let yfactor = this.plotAxesLabels(true, bound);
+        this.plotAxesFormalLabels(yfactor,bound);
+        if (!download && this.showZoomControl()) {
             this.drawFocus(bound);
             this.drawZoomOut(bound);
-            this.drawDownload(bound);
+            if (this.showDownloadControl())
+                this.drawDownload(bound);
             this.drawCursor(bound);
         }
     };
@@ -1029,10 +1146,15 @@ class DetailedCanvas extends React.Component {
         this.refreshSettings();
         this.selectCalloutWindows();
         this.clearPlot();
-        this.plotxcorData();
-        for (let i = 0; i < this.view.bounds.length; i++) {
-            this.plotWindow(this.view.bounds[i], false);
+        if (this.showXcor())
+            this.plotxcorData();
+        this.plotWindow(this.view.bounds[0], false);
+        if (this.showCallout()) {
+            for (let i = 1; i < this.view.bounds.length; i++) {
+                this.plotWindow(this.view.bounds[i], false);
+            }
         }
+        
         this.params.requested = false;
     };
 
@@ -1041,7 +1163,8 @@ class DetailedCanvas extends React.Component {
         this.refreshSettings();
         this.selectCalloutWindows();
         this.clearPlot(true);
-        this.plotxcorData();
+        if (this.showXcor())
+            this.plotxcorData();
         for (let i = 0; i < this.view.bounds.length; i++) {
             this.plotWindow(this.view.bounds[i], true);
         }
@@ -1149,6 +1272,70 @@ class DetailedCanvas extends React.Component {
             }
             this.smoothData('data');
         }
+        this.params.data.orderBy(a => a.id);
+    };
+    addBaseDataAll() {
+        // Remove any existing data or variance from the data array
+        this.params.data = this.params.data.where(x => x.id !== 'data' && x.id !== 'variance');
+
+        let colors = [];
+        colors.push("#a6cee3");
+        colors.push("#1f78b4");
+        colors.push("#b2df8a");
+        colors.push("#33a02c");
+        colors.push("#fb9a99");
+        colors.push("#e31a1c");
+        colors.push("#fdbf6f");
+        colors.push("#ff7f00");
+        colors.push("#cab2d6");
+        colors.push("#6a3d9a");
+        colors.push("#ffff99");
+        colors.push("#b15928");
+        let count=0;
+        for (let index in this.props.data.spectra)
+        {
+            count++;
+            let spectra = this.props.data.spectra[index];
+            let ys = null;
+            let xs = null;
+            let colour = "#000";
+            if (this.ui.dataSelection.processed && spectra.processedLambdaPlot != null) {
+                xs = spectra.processedLambdaPlot;
+                ys = this.detailed.continuum ? spectra.processedContinuum : spectra.processedIntensity2;
+                colour = this.ui.colours.processed;
+            } else {
+                ys = this.detailed.continuum ? spectra.intensityPlot : spectra.getIntensitySubtracted();
+                xs = spectra.lambda;
+                colour = this.ui.colours.raw;
+            }
+            colour = colors[count%colors.length];
+            const xs2 = xs.slice();
+            xs2.sort(function (a, b) {
+                return a - b;
+            });
+            const xMin = xs2[this.params.startRawTruncate];
+            const xMax = xs2[xs2.length - 1];
+
+            this.params.baseData = {
+                id: 'data', bound: true, colour: colour, x: xs, y: ys, xMin: xMin,
+                xMax: xMax
+            };
+            this.params.data = this.params.data.concat([this.params.baseData]);
+            if (this.ui.dataSelection.variance) {
+                if (this.ui.dataSelection.processed && spectra.processedVariancePlot != null) {
+                    ys = spectra.processedVariancePlot;
+                } else {
+                    ys = spectra.variancePlot;
+                }
+                this.params.data = this.params.data.concat(
+                    [
+                        {id: 'variance', bound: false, colour: this.ui.colours.variance, x: xs, y: ys}
+                    ]
+                );
+            }
+        }
+        this.smoothData('data');
+        this.params.setup = true;
         this.params.data.orderBy(a => a.id);
     };
 

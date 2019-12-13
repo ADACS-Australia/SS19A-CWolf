@@ -1,4 +1,5 @@
 import React from "react";
+import Dropzone from "react-dropzone";
 
 import '../../Assets/css/detailed.scss';
 import ManagedToggleButton from "../General/ToggleButton/ManagedToggleButton";
@@ -21,9 +22,31 @@ import {
     setProcessed, setRangeIndex, setSmooth, setSpectraComment, setTemplateId, setTemplateMatched,
     setVariance, toggleSpectralLines,
     updateRedShift,
-    updateTemplateOffset
+    updateTemplateOffset,
 } from "../../Stores/UI/Actions";
 import {templateManager} from "../../Lib/TemplateManager";
+
+import styled from 'styled-components';
+
+import {addFiles} from "../../Stores/Data/Actions";
+
+//import {addURLs} from "../../Stores/Data/Actions";
+
+const getColor = (props) => {
+    if (props.isDragReject) {
+        return '#c66';
+    }
+    if (props.isDragActive) {
+        return '#5E99FF';
+    }
+    return '#bbb';
+};
+const ContainerB = styled.div`
+  padding: 0px;
+  width: 100%;
+  border-width: 0px;
+  border-radius: 0px;
+`;
 
 const boldItems = Enumerable.from(['O2', 'Hb', 'Ha']);
 
@@ -33,14 +56,19 @@ class Detailed extends React.Component {
     }
 
     render() {
-        return (
+        if (this.displayMarz() && this.props.ui.active == null) {
+            return (<div>No spectra loaded yet</div>)
+        }
+        return (this.displayMarz() || this.displaySimple() || this.displayTemplateOverlay()) ?
+        (
             <div className="detailedView filler">
                 <div className="panel panel-default detailed-control panel-header">
+                    {this.displayMarz() ? (
                     <div className="panel-heading">
                         <strong>ID</strong> {this.props.ui.active ? this.props.ui.active.id : "None"}
                         <strong>NAME</strong> {this.props.ui.active ? this.props.ui.active.name : "None"}
                         {
-                            this.displayAuto() ?
+                            this.displayMarz() ?
                                 (
                                     <span>
                                         <strong>AutoQOP</strong>
@@ -76,6 +104,9 @@ class Detailed extends React.Component {
                         <strong>MAG</strong> {this.props.ui.active && this.props.ui.active.magnitude ? this.props.ui.active.magnitude.toFixed(2) : "None"}
                         <strong>TYPE</strong> {this.props.ui.active && this.props.ui.active.type ? this.props.ui.active.type : "None"}
                     </div>
+                    ) : (
+                        null
+                    )}
                     <ListGroup>
                         <ListGroupItem>
                             <Form inline>
@@ -91,7 +122,9 @@ class Detailed extends React.Component {
                                 {/*</div>*/}
                                 {/*</div>*/}
                                 {/*</div>*/}
-
+                                {
+                                    this.displayMarz() ?
+                                    (
                                 <ManagedToggleButton
                                     default={this.props.ui.dataSelection.processed}
                                     on={"Processed"}
@@ -103,6 +136,11 @@ class Detailed extends React.Component {
                                         setProcessed(toggled)
                                     }}
                                 />
+                                    ) : null
+                                }
+                                {
+                                    (this.displayMarz() || this.displayTemplateOverlay()) ?
+                                    (
                                 <ManagedToggleButton
                                     default={this.props.ui.dataSelection.matched}
                                     handle={"Template"}
@@ -111,7 +149,11 @@ class Detailed extends React.Component {
                                     onstyle="danger"
                                     onToggle={(toggled) => setTemplateMatched(toggled)}
                                 />
-
+                                    ) : null
+                                }
+                                {
+                                    this.displayMarz() ?
+                                    (
                                 <ManagedToggleButton
                                     default={this.props.ui.detailed.continuum}
                                     handle={"Continuum"}
@@ -120,9 +162,11 @@ class Detailed extends React.Component {
                                     onstyle="primary"
                                     onToggle={(toggled) => setContinuum(toggled)}
                                 />
+                                    ) : null
+                                }
 
                                 {
-                                    this.displayAuto() ?
+                                    (this.displayMarz() && this.displayAuto()) ?
                                         (
                                             <ManagedToggleButton
                                                 default={this.props.ui.dataSelection.variance}
@@ -137,13 +181,20 @@ class Detailed extends React.Component {
                                    ) : null 
                                 }
                                 
-
+                                {
+                                    this.displayMarz() ?
+                                        (
                                 <ButtonGroup className='margin-right-4px'>
                                     <Button color='light' size='sm' onClick={() => resetToAutomatic()}>Reset
                                         auto</Button>
                                     <Button color='light' size='sm' onClick={() => resetToManual()}>Reset
                                         manual</Button>
                                 </ButtonGroup>
+                                        ) : null
+                                }
+                                {
+                                        (this.displayMarz() || this.displaySimple() || this.displayTemplateOverlay()) ?
+                                        (
 
                                 <ManagedSliderInput
                                     defaultValue={this.props.ui.detailed.smooth}
@@ -155,6 +206,11 @@ class Detailed extends React.Component {
                                     label='Smooth'
                                     onChange={(value) => setSmooth(value)}
                                 />
+                                    ) : null
+                                }
+                                {
+                                    (this.displayMarz() || this.displaySimple() || this.displayTemplateOverlay()) ?
+                                        (
                                 <InputGroup className='force-inline-layout' size='sm'>
                                     <InputGroupAddon addonType="prepend">
                                         Range
@@ -177,10 +233,17 @@ class Detailed extends React.Component {
                                         }
                                     </ButtonGroup>
                                 </InputGroup>
+                                        ) : null
+                                }
                             </Form>
                         </ListGroupItem>
+                        {
+                        (this.displayMarz() || this.displayTemplateOverlay()) ?
+                        (
                         <ListGroupItem>
                             <Form inline>
+                                {
+                                    this.displayMarz() ? (
                                 <FormGroup inline>
                                     <InputGroup
                                         className="force-inline-layout margin-right-4px"
@@ -228,7 +291,8 @@ class Detailed extends React.Component {
                                             ) : null
                                         }
                                     </InputGroup>
-                                </FormGroup>
+                                </FormGroup>):null
+                                }
                                 <FormGroup inline>
                                     <InputGroup
                                         className="force-inline-layout template-container margin-right-4px"
@@ -294,6 +358,11 @@ class Detailed extends React.Component {
                                 </Button>
                             </Form>
                         </ListGroupItem>
+                        ) : null 
+                                }
+                                {
+                                    (this.displayMarz() || this.displayTemplateOverlay()) ?
+                                    (
                         <ListGroupItem>
                             <Form inline>
                                 <Button color='primary' size='sm' onClick={() => toggleSpectralLines()}>
@@ -322,10 +391,49 @@ class Detailed extends React.Component {
                                 </ul>
                             </Form>
                         </ListGroupItem>
+                                    ) : null
+                        }
                     </ListGroup>
                 </div>
-                <DetailedCanvas {...this.props}/>
+                
+                {/* Render the file dropper */}
+                    <Dropzone onDrop={this.onDrop}>
+                        {({getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles}) => {
+                            return (
+                                <ContainerB
+                                    isDragActive={isDragActive}
+                                    isDragReject={isDragReject}
+                                    {...getRootProps()}
+                                >
+                                    {this.isWaitingDrop() ? (
+                                        <DetailedCanvas {...this.props}/>
+                                    ) : (
+                                        <DetailedCanvas {...this.props}/>
+                                    )}
+                                </ContainerB>
+                            )
+                        }}
+                    </Dropzone>
             </div>
+        ) :
+        (
+            <Dropzone onDrop={this.onDrop}>
+                {({getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles}) => {
+                    return (
+                        <ContainerB
+                            isDragActive={isDragActive}
+                            isDragReject={isDragReject}
+                            {...getRootProps()}
+                        >
+                            {this.isWaitingDrop() ? (
+                                <DetailedCanvas {...this.props}/>
+                            ) : (
+                                <DetailedCanvas {...this.props}/>
+                            )}
+                        </ContainerB>
+                    )
+                }}
+            </Dropzone>
         )
     }
 
@@ -341,6 +449,19 @@ class Detailed extends React.Component {
     displayAuto() {
         const s = this.props.ui.active;
         return s && s.autoQOP && s.qop === 0 && s.getMatches().length > 0;
+    }
+
+    displayReadOnly() {
+        return window.marz_configuration.layout == 'ReadOnlySpectrumView';
+    }
+    displaySimple() {
+        return window.marz_configuration.layout == 'SimpleSpectrumView';
+    }
+    displayTemplateOverlay() {
+        return window.marz_configuration.layout == 'TemplateOverlaySpectrumView';
+    }
+    displayMarz() {
+        return window.marz_configuration.layout == 'MarzSpectrumView';
     }
 
     getQOPLabel(qop) {
@@ -369,6 +490,31 @@ class Detailed extends React.Component {
             return s.autoQOP + " at " + s.getMatches()[0].z
         }
     };
+
+    //
+    onDrop(acceptedFiles, rejectedFiles) {
+        // Do something with files
+        //let myacceptedFiles = "https://tao.asvo.org.au/taostaging/static/emlLinearVacuumNoHelio1.json";/
+        //let files=[];
+        //files.push({name:myacceptedFiles, isurl: true});
+        //addFiles(files);
+        //console.log("ADD DONE");
+        addFiles(acceptedFiles);
+    }
+
+    getContractButtonLabel() {
+        return this.props.ui.sidebarSmall ? ">>" : "Contract sidebar";
+    };
+
+    isWaitingDrop() {
+        // If there is no spectra loaded, we are waiting for a file drop
+        return !this.props.data.processorService.spectraManager.hasSpectra();
+    };
+
+    getTitle() {
+        // Get the current title for the loaded fits file
+        return this.props.data.fitsFileName;
+    }
 }
 
 export default Detailed

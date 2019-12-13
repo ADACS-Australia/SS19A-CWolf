@@ -12,6 +12,7 @@ class Processor {
         this.spectraManager = new SpectraController(store, resultsManager);
 
         this.processorManager.setInactiveTemplateCallback(() => this.templateManager.getInactiveTemplates());
+        this.processorManager.setTemplateManagerCallback(() => this.templateManager.getTemplateManager());
         this.processorManager.setProcessedCallback(results => this.spectraManager.setProcessedResults(results));
         this.processorManager.setMatchedCallback(results => this.spectraManager.setMatchedResults(results));
     }

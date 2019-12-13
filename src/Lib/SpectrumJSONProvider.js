@@ -34,8 +34,8 @@ class SpectrumJSONProvider {
         const spectraList = [];
         for (let i=0; i < this.provision.length; i++) {
             const me = this.provision[i];
-            const spectra = new Spectra(me.properties.id, me.wavelength, me.intensity, me.variance, me.sky,
-                me.properties.name, me.properties.ra, me.properties.dec, me.properties.magnitude, me.properties.type, null, me.getHelio(), me.getCMB(), false);
+            const spectra = new Spectra({id:me.properties.id, wavelength:me.wavelength, intensity:me.intensity, variance:me.variance, sky:me.sky,
+                name:me.properties.name, ra:me.properties.ra, dec:me.properties.dec, magnitude:me.properties.magnitude, type:me.properties.type, helio:me.getHelio(), cmb: me.getCMB()});
             spectraList.push(spectra)
         }
         q.resolve(spectraList); 

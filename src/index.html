@@ -13,11 +13,20 @@
             // "marz_conainer"
             container_class: "container",
 
+            // Which of the 4 use case styles to display
+            // 1.  ReadOnlySpectrumView
+            // 2.  SimpleSpectrumView
+            // 3.  TemplateOverlaySpectrumView
+            // 4.  MarzSpectrumView
+            layout: "MarzSpectrumView",
+            ymin_inactive: "0",
+            ymax_inactive: "200",
+            remote_templates_inactive: "https://tao.asvo.org.au/taostaging/static/MarzTemplates.json",
+
             // The remote file address to load. If this is null, it will revert to the default drag/drop file importer
-            remote_file: null
+            remote_file_inactive: "https://tao.asvo.org.au/taostaging/static/emlLogVacuumHelioMultiple.fits"
         };
     </script>
-
     <div id="container">
     </div>
 </body>

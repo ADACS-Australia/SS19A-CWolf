@@ -1029,7 +1029,20 @@
       return true;
     };
 
+    Tabular.prototype.typedArray = {
+      B: Uint8Array,
+      I: Uint16Array,
+      J: Uint32Array,
+      E: Float32Array,
+      D: Float64Array,
+      1: Uint8Array,
+      2: Uint16Array,
+      4: Uint32Array
+    };
+
     Tabular.prototype.getColumns = function(header) {
+      console.log("Accessors for this object are:");
+      console.log(this.accessors);
       var columns, i, key, _i, _ref;
       columns = [];
       for (i = _i = 1, _ref = this.cols; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
@@ -1048,9 +1061,17 @@
       if (this.blob != null) {
         index = this.columns.indexOf(name);
         descriptor = this.descriptors[index];
+        console.log('}}} Accessors available in Table.getColumn are:');
+        console.log(this.accessors);
+        console.log('}}} Descriptor is ' + descriptor);
         accessor = this.accessors[index];
+        // console.log("Accessors list is:");
+        // console.log(this.accessors);
+        // console.log("Chosen accessor is (for index " + index + ":");
+        // console.log(accessor);
         elementByteLength = this.elementByteLengths[index];
         elementByteOffset = this.elementByteLengths.slice(0, index);
+        console.log("}}} elementByteLength = " + elementByteLength + ", elementByteOffset = " + elementByteOffset);
         if (elementByteOffset.length === 0) {
           elementByteOffset = 0;
         } else {
@@ -1059,8 +1080,13 @@
           });
         }
         column = this.typedArray[descriptor] != null ? new this.typedArray[descriptor](this.rows) : [];
+        console.log("}}} 'column' variable set as:");
+        console.log(column);
+        console.log("}}} At this point, the 'rows' its developed from are:");
+        console.log(this.rows);
         rowsPerIteration = ~~(this.maxMemory / this.rowByteSize);
         rowsPerIteration = Math.min(rowsPerIteration, this.rows);
+        console.log("}}} Set rowsPerIteration to be " + rowsPerIteration);
         factor = this.rows / rowsPerIteration;
         iterations = Math.floor(factor) === factor ? factor : Math.floor(factor) + 1;
         i = 0;
@@ -1071,9 +1097,19 @@
           view = new DataView(buffer);
           offset = elementByteOffset;
           while (nRows--) {
-            column[i] = accessor(view, offset)[0];
-            i += 1;
-            offset += _this.rowByteSize;
+            // console.log('Accessor is (for index ' + index + '):');
+            // console.log(accessor);
+              column[i] = accessor(view, offset)[0];
+              if (i == 0) {
+                console.log("Added value to column: " + column[i]);
+                console.log("View was:");
+                console.log(view);
+                console.log("Offset is " + offset);
+                console.log("Accessor function is:");
+                console.log(accessor);
+              }
+              i += 1;
+              offset += _this.rowByteSize;
           }
           iterations -= 1;
           index += 1;
@@ -1173,8 +1209,8 @@
       _ref = Table.__super__.constructor.apply(this, arguments);
       return _ref;
     }
-
-    Table.prototype.dataAccessors = {
+    Table.prototype.dataAccessors =
+        {
       A: function(value) {
         return value.trim();
       },
@@ -1191,9 +1227,9 @@
         return parseFloat(value);
       }
     };
-
     Table.prototype.setAccessors = function(header) {
-      var descriptor, form, i, match, pattern, type, _i, _ref1, _results,
+      console.log("}}} Running Table.setAccessors");
+      var descriptor, form, i, match, pattern, type, _i, _ref1, _results, offset,
         _this = this;
       pattern = /([AIFED])(\d+)\.*(\d+)*/;
       _results = [];
@@ -1202,15 +1238,103 @@
         type = header.get("TTYPE" + i);
         match = pattern.exec(form);
         descriptor = match[1];
-        _results.push((function(descriptor) {
+        offset = match[2];
+        _this.elementByteLengths.push(parseInt(offset));
+          _results.push((function(descriptor) {
           var accessor;
-          accessor = function(value) {
-            return _this.dataAccessors[descriptor](value);
+          _this.descriptors.push(descriptor);
+          accessor = function(data) {
+            return _this.dataAccessors[descriptor](data);
           };
+
           return _this.accessors.push(accessor);
         })(descriptor));
       }
+      console.log("}}} Ended up with these accessors:");
+      console.log(_this.accessors);
       return _results;
+    };
+
+    Table.prototype.getColumn = function(name, callback, opts) {
+      var accessor, cb, column, descriptor, elementByteLength, elementByteOffset, factor, i, index, iterations, rowsPerIteration,
+          _this = this;
+      if (this.blob != null) {
+        index = this.columns.indexOf(name);
+        descriptor = this.descriptors[index];
+        console.log('}}} Accessors available in Table.getColumn are:');
+        console.log(this.accessors);
+        console.log('}}} Descriptor is ' + descriptor);
+        accessor = this.accessors[index];
+        // console.log("Accessors list is:");
+        // console.log(this.accessors);
+        // console.log("Chosen accessor is (for index " + index + ":");
+        // console.log(accessor);
+        elementByteLength = this.elementByteLengths[index];
+        elementByteOffset = this.elementByteLengths.slice(0, index);
+        if (elementByteOffset.length === 0) {
+          elementByteOffset = 0;
+        } else {
+          elementByteOffset = elementByteOffset.reduce(function(a, b) {
+            return a + b;
+          });
+        }
+        console.log("}}} elementByteLength = " + elementByteLength + ", elementByteOffset = " + elementByteOffset);
+        console.log(elementByteOffset);
+        column = this.typedArray[descriptor] != null ? new this.typedArray[descriptor](this.rows) : [];
+        console.log("}}} 'column' variable set as:");
+        console.log(column);
+        rowsPerIteration = ~~(this.maxMemory / this.rowByteSize);
+        rowsPerIteration = Math.min(rowsPerIteration, this.rows);
+        console.log('}}} rowsPerIteration set as ' + rowsPerIteration);
+        factor = this.rows / rowsPerIteration;
+        iterations = Math.floor(factor) === factor ? factor : Math.floor(factor) + 1;
+        console.log("}}} Iterations to run through are " + iterations);
+        i = 0;
+        index = 0;
+        cb = function(buffer, opts) {
+          var nRows, offset, startRow, view;
+          nRows = buffer.byteLength / _this.rowByteSize;
+          console.log("}}} function 'cb' has set nRows = " + nRows);
+          let t = new TextDecoder();
+          view = t.decode(buffer);
+          offset = elementByteOffset;
+          while (nRows--) {
+            // console.log('Accessor is (for index ' + index + '):');
+            // console.log(accessor);
+            column[i] = accessor(view.slice(offset, offset + elementByteLength));
+            if (i == 0) {
+              console.log("Added value to column: " + column[i]);
+              console.log("View was:");
+              console.log(view);
+              console.log("Offset is " + offset);
+              console.log("Accessor function is:");
+              console.log(accessor);
+            }
+            i += 1;
+            offset += _this.rowByteSize;
+          }
+          iterations -= 1;
+          index += 1;
+          if (iterations) {
+            startRow = index * rowsPerIteration;
+            return _this.getTableBuffer(startRow, rowsPerIteration, cb, opts);
+          } else {
+            _this.invoke(callback, opts, column);
+          }
+        };
+        let return_values = this.getTableBuffer(0, rowsPerIteration, cb, opts);
+        console.log("}}} getColumns is about to return:");
+        console.log(return_values);
+        return return_values
+      } else {
+        cb = function(rows, opts) {
+          column = rows.map(function(d) {
+            return d[name];
+          });
+          return _this.invoke(callback, opts, column);
+        };
+        return this.getRows(0, this.rows, cb, opts);
+      }
     };
 
     Table.prototype._getRows = function(buffer) {

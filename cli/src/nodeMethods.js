@@ -3,9 +3,9 @@ import * as $q from 'q';
 import ProgressBar from 'progress';
 import ProcessorManager from "../../src/Lib/ProcessorManager";
 import SpectraManager from "../../src/Lib/SpectraManager";
-import {TemplateManager} from "../../src/Lib/TemplateManager";
+import {templateManager} from "../../src/Lib/TemplateManager";
 import ResultsGenerator from "../../src/Lib/ResultsGenerator";
-import FitsFileLoader from "../../src/Lib/FitsFileLoader";
+import FitsFileLoader from "../../src/Lib/FitsFileLoaderV2";
 import SpectrumConsumer from "../../src/Lib/SpectrumConsumer";
 import {defaultFor} from "../../src/Utils/methods";
 import SpectrumJSONProvider from "../../src/Lib/SpectrumJSONProvider";
@@ -25,7 +25,8 @@ function init(workers, log, argv) {
     p = new ProcessorManager(true);
     s = new SpectraManager(null);
     s.setCLIData(data);
-    t = new TemplateManager(false);
+    t = templateManager;
+    t.setOriginalTemplates(t.inbuiltTemplates());
     r = new ResultsGenerator(data, t, false);
     fl = new FitsFileLoader(p, r, true);
 
@@ -41,6 +42,9 @@ function init(workers, log, argv) {
     p.setInactiveTemplateCallback(function () {
         return argv['disabledTemplates']
     });
+    p.setTemplateManagerCallback(function() {
+        return templateManager;
+    })
     p.setProcessedCallback(s.setProcessedResults, s);
     p.setMatchedCallback(s.setMatchedResultsNode, s);
 }

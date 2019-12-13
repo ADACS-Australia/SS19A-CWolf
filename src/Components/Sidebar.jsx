@@ -4,7 +4,7 @@ import Dropzone from "react-dropzone";
 import styled from 'styled-components';
 import {addFiles} from "../Stores/Data/Actions";
 import {Button, ButtonGroup} from "reactstrap";
-import {saveManual, setActive, setGraphicalLayout, setOnlyQOP0, toggleSmallSidebar} from "../Stores/UI/Actions";
+import {saveManual, setActive, setGraphicalLayout, setOnlyQOP0, toggleSmallSidebar, selectReadOnlyView, selectSimpleView, selectOverlayView} from "../Stores/UI/Actions";
 import {isDetailed, isOverview, isSmall} from "../Utils/dry_helpers";
 import ManagedButtonGroup from "./General/ManagedButtonGroup/ManagedButtonGroup";
 import * as Enumerable from "linq";
@@ -62,6 +62,11 @@ class Sidebar extends React.Component {
         return labels[qop][this.props.ui.sidebarSmall ? 1 : 0]
     };
 
+    getButtonTooltip(qop) {
+        const labels = {4: ['Great (4)', '4'], 3: ['Good (3)', '3'], 2: ['Possible (2)', '2'], 1: ['Unknown (1)', '1'], 6: ['It\'s a star! (6)', '6'], 0: ['Unassigned (0)', '0']};
+        return labels[qop][0]
+    };
+
     getAnalysedText(spectra) {
         if (spectra.hasRedshift()) {
             return "z = " + spectra.getFinalRedshift().toFixed(5);
@@ -111,11 +116,11 @@ class Sidebar extends React.Component {
                                 <Button block color="light" size="sm" onClick={() => toggleSmallSidebar()}>
                                     {this.getContractButtonLabel()}
                                 </Button>
-                            </div>) : null
+                        </div>) : null
                         }
 
                         {/* Render the default redshift selection */}
-                        <p>TODO: Merge Redshifter</p>
+                        {/*<p>TODO: Merge Redshifter</p>*/}
                         {this.props.ui.merge && !this.props.ui.sidebarSmall ? (
                             <div className="top-spacing">
                                 <b>Default Redshifter:</b>
@@ -132,7 +137,19 @@ class Sidebar extends React.Component {
                                 </ManagedButtonGroup>
                             </div>
                         ) : null}
-
+                            {!this.props.ui.sidebarSmall ? (
+                            <div className="top-spacing">
+                                <Button block color="light" size="sm" onClick={() => selectReadOnlyView()}>
+                                    {"ReadOnlySpectrumView"}
+                                </Button>
+                                <Button block color="light" size="sm" onClick={() => selectSimpleView()}>
+                                    {"SimpleSpectrumView"}
+                                </Button>
+                                <Button block color="light" size="sm" onClick={() => selectOverlayView()}>
+                                    {"TemplateOverlayView"}
+                                </Button>
+                            </div>
+                            ) : null}
                         {/* Render the Graph/Table buttons if we're on the overview page */}
                         {isOverview(this.props) ? (
                             <div className="top-spacing">
@@ -208,15 +225,28 @@ class Sidebar extends React.Component {
                         }
                     </div>
                     {
-                        isDetailed(this.props) ? (
+                        isDetailed(this.props) && !this.props.ui.sidebarSmall ? (
                             <div className="top-spacing">
-                                <b>Save QOP: (TODO: Tooltips)</b>
+                                <b>Save QOP:</b>
                                 <Button size="sm" block color="success" onClick={() => saveManual(4)}>{this.getButtonLabel(4)}</Button>
                                 <Button size="sm" block color="info" onClick={() => saveManual(3)}>{this.getButtonLabel(3)}</Button>
                                 <Button size="sm" block color="warning" onClick={() => saveManual(2)}>{this.getButtonLabel(2)}</Button>
                                 <Button size="sm" block color="danger" onClick={() => saveManual(1)}>{this.getButtonLabel(1)}</Button>
                                 <Button size="sm" block color="primary" onClick={() => saveManual(6)}>{this.getButtonLabel(6)}</Button>
                                 <Button size="sm" block color="default" onClick={() => saveManual(0)}>{this.getButtonLabel(0)}</Button>
+                            </div>
+                        ) : null
+                    }
+                    {
+                        isDetailed(this.props) && this.props.ui.sidebarSmall ? (
+                            <div className="top-spacing">
+                                <b>Save QOP:</b>
+                                <Button size="sm" data-toggle="tooltip" title={this.getButtonTooltip(4)} block color="success" onClick={() => saveManual(4)}>{this.getButtonLabel(4)}</Button>
+                                <Button size="sm" data-toggle="tooltip" title={this.getButtonTooltip(3)} block color="info" onClick={() => saveManual(3)}>{this.getButtonLabel(3)}</Button>
+                                <Button size="sm" data-toggle="tooltip" title={this.getButtonTooltip(2)} block color="warning" onClick={() => saveManual(2)}>{this.getButtonLabel(2)}</Button>
+                                <Button size="sm" data-toggle="tooltip" title={this.getButtonTooltip(1)} block color="danger" onClick={() => saveManual(1)}>{this.getButtonLabel(1)}</Button>
+                                <Button size="sm" data-toggle="tooltip" title={this.getButtonTooltip(6)} block color="primary" onClick={() => saveManual(6)}>{this.getButtonLabel(6)}</Button>
+                                <Button size="sm" data-toggle="tooltip" title={this.getButtonTooltip(0)} block color="default" onClick={() => saveManual(0)}>{this.getButtonLabel(0)}</Button>
                             </div>
                         ) : null
                     }

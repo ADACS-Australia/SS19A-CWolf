@@ -10,6 +10,7 @@ import {storeReady} from "../Stores/StoreUtils";
 import Settings from "./Pages/Settings";
 import Templates from "./Pages/Templates";
 import {isSmall} from "../Utils/dry_helpers";
+import {templateManager} from "../Lib/TemplateManager";
 
 const Router = process.env.NODE_ENV === 'development' ? BrowserRouter : MemoryRouter;
 
@@ -24,6 +25,7 @@ function MarzApp(props) {
 
         // Wait for the render to complete then call the store ready event
         setTimeout(() => {
+            templateManager.initialise();   // This is a good place since we will have "window" and no workers will have started yet
             storeReady()
         }, 0)
     }
@@ -32,25 +34,54 @@ function MarzApp(props) {
         <Router>
             <Route render={(routeProps) => (
                 <div>
-                    <Header {...props}/>
+                    {
+                        window.marz_configuration.layout == 'MarzSpectrumView' ?
+                        (
+                            <Header {...props}/>
+                        ) : null
+                    }
                     <div id="underNavContainer">
-                        <div className={"sidebar" + (isSmall({...props, ...routeProps}) ? " sidebarSmall" : "")}>
-                            <Sidebar {...props} {...routeProps}/>
-                        </div>
-                        <div className={"afterSideBarContainer" + (isSmall({...props, ...routeProps}) ? " sidebarSmall" : "")}>
-                            <div className="spacing relative">
-                                <Route exact path="/" render={(routeProps) => <Overview {...props} {...routeProps}/>}/>
-                                <Route path="/usage/" render={(routeProps) => <Usage {...props} {...routeProps}/>}/>
-                                <Route path="/detailed/"
-                                       render={(routeProps) => <Detailed {...props} {...routeProps}/>}/>
-                                <Route path="/settings/"
-                                       render={(routeProps) => <Settings {...props} {...routeProps}/>}/>
-                                <Route path="/templates/"
-                                       render={(routeProps) => <Templates {...props} {...routeProps}/>}/>
+                        {
+                            (window.marz_configuration.layout == 'MarzSpectrumView') ?
+                            (
+                                <div className={"sidebar" + (isSmall({...props, ...routeProps}) ? " sidebarSmall" : "")}>
+                                    <Sidebar {...props} {...routeProps}/>
+                                </div>
+                            ) : null
+                        }
+                        {
+                        window.marz_configuration.layout == 'MarzSpectrumView' ?
+                        (
+                            <div className={"afterSideBarContainer" + (isSmall({...props, ...routeProps}) ? " sidebarSmall" : "")}>
+                                <div className="spacing relative">
+                                    <Route exact path="/" render={(routeProps) => <Overview {...props} {...routeProps}/>}/>
+                                    <Route path="/usage/" render={(routeProps) => <Usage {...props} {...routeProps}/>}/>
+                                    <Route path="/detailed/"
+                                        render={(routeProps) => <Detailed {...props} {...routeProps}/>}/>
+                                    <Route path="/settings/"
+                                        render={(routeProps) => <Settings {...props} {...routeProps}/>}/>
+                                    <Route path="/templates/"
+                                        render={(routeProps) => <Templates {...props} {...routeProps}/>}/>
+                                </div>
                             </div>
-                        </div>
+                        ) : 
+                        (
+                            <div className="afterSideBarContainer sidebarSmall">
+                                <div className="spacing relative">
+                                    <Route path="/"
+                                        render={(routeProps) => <Detailed {...props} {...routeProps}/>}/>
+                                </div>
+                            </div>
+                        ) 
+                    }
                     </div>
-                    <Footer {...props}/>
+                    {
+                        window.marz_configuration.layout == 'MarzSpectrumView' ?
+                        (
+                            <Footer {...props}/>
+                        ) : null
+                    }
+                    
                 </div>
             )}/>
         </Router>
