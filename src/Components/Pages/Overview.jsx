@@ -6,6 +6,7 @@ import BootstrapTable from 'react-bootstrap-table-next';
 import marzIcon from '../../Assets/images/Marz2.png';
 import * as Enumerable from "linq";
 import {templateManager} from "../../Lib/TemplateManager";
+import {addFiles} from "../../Stores/Data/Actions";
 
 class Overview extends React.Component {
     constructor(props) {
@@ -19,6 +20,14 @@ class Overview extends React.Component {
             return "";
         }
     };
+
+    componentDidMount() {
+        if (this.props.location.search) {
+            let files=[];
+            files.push({name:this.props.location.search.slice(1), isurl: true});
+            addFiles(files);
+        }
+    }
 
     render() {
         // Check if we're loading a file currently

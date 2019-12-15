@@ -54,6 +54,14 @@ class Detailed extends React.Component {
     constructor(props) {
         super(props);
     }
+    componentDidMount() {
+        console.log("mounting DETAILED");
+        if (this.props.location.search) {
+            let files=[];
+            files.push({name:this.props.location.search.slice(1), isurl: true});
+            addFiles(files);
+        }
+    }
 
     render() {
         if (this.displayMarz() && this.props.ui.active == null) {
