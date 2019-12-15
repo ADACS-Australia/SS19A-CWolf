@@ -1321,6 +1321,7 @@ class DetailedCanvas extends React.Component {
                 xMax: xMax
             };
             this.params.data = this.params.data.concat([this.params.baseData]);
+            // show only if user wants to
             if (this.ui.dataSelection.variance) {
                 if (this.ui.dataSelection.processed && spectra.processedVariancePlot != null) {
                     ys = spectra.processedVariancePlot;
@@ -1343,17 +1344,20 @@ class DetailedCanvas extends React.Component {
         this.params.data = this.params.data.where(x => x.id !== 'sky');
 
         if (this.ui.active != null && this.ui.active.sky != null) {
-            this.params.data = this.params.data.concat(
-                [
-                    {
-                        id: 'sky',
-                        colour: this.ui.colours.sky,
-                        bound: false,
-                        x: this.ui.active.lambda,
-                        y: this.ui.active.sky
-                    }
-                ]
-            );
+            // show only if user wants to
+            if (this.ui.dataSelection.sky) {
+                this.params.data = this.params.data.concat(
+                    [
+                        {
+                            id: 'sky',
+                            colour: this.ui.colours.sky,
+                            bound: false,
+                            x: this.ui.active.lambda,
+                            y: this.ui.active.sky
+                        }
+                    ]
+                );
+            }
         }
     };
 

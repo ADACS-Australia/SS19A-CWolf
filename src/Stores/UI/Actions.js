@@ -9,6 +9,7 @@ const UIActionTypes = {
     SET_TEMPLATE_ID: "UIActionTypes.SET_TEMPLATE_ID",
     SET_PROCESSED: "UIActionTypes.SET_PROCESSED",
     SET_VARIANCE: "UIActionTypes.SET_VARIANCE",
+    SET_SKY: "UIActionTypes.SET_SKY",
     RESET_TO_AUTOMATIC: "UIActionTypes.RESET_TO_AUTOMATIC",
     RESET_TO_MANUAL: "UIActionTypes.RESET_TO_MANUAL",
     // TODO: refactor these somewhere more relevant
@@ -91,6 +92,13 @@ function setVariance(variance) {
     AppDispatcher.dispatch({
         type: UIActionTypes.SET_VARIANCE,
         variance: variance
+    })
+}
+
+function setSky(sky) {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.SET_SKY,
+        sky: sky
     })
 }
 
@@ -265,6 +273,7 @@ export {
     setTemplateId,
     setProcessed,
     setVariance,
+    setSky,
     resetToAutomatic,
     resetToManual,
     updateNumberMatched,

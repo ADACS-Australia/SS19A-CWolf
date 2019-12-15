@@ -30,7 +30,8 @@ class UIStore {
             dataSelection: {
                 processed: true,
                 matched: true,
-                variance: false
+                variance: false,
+                sky: true
             },
             quality: {
                 max: 0,
@@ -161,11 +162,26 @@ class UIStore {
                 setTimeout(() => setShouldUpdateBaseData(), 0);
 
                 // Update the processed/raw data
+
+                console.log("SET VARIANCE", action.variance);
                 state.dataSelection.variance = action.variance;
 
                 return {
                     ...state,
                 };
+
+            case UIActionTypes.SET_SKY:
+                // Check if the old active is different to the new variance state
+                setTimeout(() => setShouldUpdateSkyData(), 0);
+        
+                // Update the processed/raw data
+                console.log("SET SKY", action.sky);
+                state.dataSelection.sky = action.sky;
+        
+                return {
+                    ...state,
+                };
+        
 
             case UIActionTypes.RESET_TO_AUTOMATIC:
                 const autoSpectra = state.active;

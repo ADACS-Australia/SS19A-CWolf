@@ -20,7 +20,7 @@ import {
     previousSpectralLine,
     resetToAutomatic, resetToManual, selectMatch, setContinuum,
     setProcessed, setRangeIndex, setSmooth, setSpectraComment, setTemplateId, setTemplateMatched,
-    setVariance, toggleSpectralLines,
+    setVariance, setSky, toggleSpectralLines,
     updateRedShift,
     updateTemplateOffset,
 } from "../../Stores/UI/Actions";
@@ -184,6 +184,21 @@ class Detailed extends React.Component {
                                                 onstyle="warning"
                                                 onToggle={(toggled) => {
                                                     setVariance(toggled)
+                                                }}
+                                            />
+                                   ) : null 
+                                }
+                                {
+                                    (this.displayMarz() && this.displayAuto()) ?
+                                        (
+                                            <ManagedToggleButton
+                                                default={this.props.ui.dataSelection.sky}
+                                                handle={"Sky"}
+                                                size="xs"
+                                                offstyle="secondary"
+                                                onstyle="warning"
+                                                onToggle={(toggled) => {
+                                                    setSky(toggled)
                                                 }}
                                             />
                                    ) : null 
