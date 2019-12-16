@@ -291,7 +291,7 @@ fieldset[disabled] .btn-darkened.active {
   border-color: #d6e9c6; }
 
 .usage h1 {
-  colour: #222;
+  color: rgb(160, 160, 160);
   line-height: 1.5em; }
 .usage h2 {
   color: #444;
