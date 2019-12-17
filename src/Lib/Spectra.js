@@ -260,16 +260,13 @@ class Spectra {
         return this.automaticBestResults.length;
     };
 
-    findNext(z, templateId)
-    {
-        for (let index=0; index<this.getNumBestResults();index++) {
-            if (this.getMatches()[index].z == z && this.getMatches()[index].templateId == templateId.toString()) {
-                let next=index+1;
-                next = next%this.getNumBestResults();
-                return this.getMatches()[next];
-            }
-        }
-        return null;
+    /* To cycle through the top "max" results */
+    findNextIndex(index, max) {
+        let maxresults=defaultFor(max, this.getNumBestResults());
+        maxresults = Math.min(max,this.getNumBestResults());
+        let next=index+1;
+        next = next%maxresults;
+        return next;
     }
 
     hasMatches() {

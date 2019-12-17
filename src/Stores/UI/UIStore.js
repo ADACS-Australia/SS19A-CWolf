@@ -52,7 +52,7 @@ class UIStore {
                 redshift: "0",
                 oldRedshift: "0",
                 matchedActive: true,
-                matchedIndex: null,
+                matchedIndex: 0,
                 rangeIndex: 0,
                 ranges: [100, 99.5, 99, 98],
                 mergeIndex: 0,
@@ -83,7 +83,6 @@ class UIStore {
     }
 
     reduce(state, action) {
-        //console.log("UIStore action",action);
         switch (action.type) {
             case UIActionTypes.SET_MERGE:
 
@@ -163,7 +162,6 @@ class UIStore {
 
                 // Update the processed/raw data
 
-                console.log("SET VARIANCE", action.variance);
                 state.dataSelection.variance = action.variance;
 
                 return {
@@ -175,7 +173,6 @@ class UIStore {
                 setTimeout(() => setShouldUpdateSkyData(), 0);
         
                 // Update the processed/raw data
-                console.log("SET SKY", action.sky);
                 state.dataSelection.sky = action.sky;
         
                 return {
@@ -260,14 +257,17 @@ class UIStore {
                     ...state,
                 };
 
-            case UIActionTypes.SELECT_MATCH:
+            case UIActionTypes.SET_MATCHED_INDEX:
                 setTimeout(() => setShouldUpdateTemplateData(), 0);
                 setTimeout(() => setShouldUpdateXcorData(), 0);
+
+                // Update the match index value
+                state.detailed.matchedIndex = action.matchedIndex;
 
                 // Set the match redshift and template ID
                 state.detailed.redshift = action.redshift;
                 state.detailed.templateId = action.templateId;
-
+        
                 return {
                     ...state,
                 };
@@ -375,15 +375,12 @@ class UIStore {
                 };
 
             case UIActionTypes.ACCEPT_AUTO_QOP:
-                console.log("ACCEPT AUTO QOP")
                 const matches = state.active.getMatches(state.detailed.bounds.maxMatches);
                 if (state.active && matches != null && matches.length > 0) {
-                    console.log("ACCEPT AUTO QOP IF 1")
                     state.detailed.redshift = matches[0].z;
                     state.detailed.templateId = matches[0].templateId;
 
                     if (state.active) {
-                        console.log("ACCEPT AUTO QOP IF 2")
                         this.store.getState().getData().processorService.spectraManager.setManualResults(state.active, state.templateId, state.detailed.redshift, state.active.autoQOP);
                         setTimeout(() => this.store.getState().getData().processorService.spectraManager.setNextSpectra(), 0);
                     }

@@ -18,7 +18,7 @@ import {
     clickSpectralLine,
     nextSpectralLine, performFit,
     previousSpectralLine,
-    resetToAutomatic, resetToManual, selectMatch, setContinuum,
+    resetToAutomatic, resetToManual, setMatchedIndex, setContinuum,
     setProcessed, setRangeIndex, setSmooth, setSpectraComment, setTemplateId, setTemplateMatched,
     setVariance, setSky, toggleSpectralLines,
     updateRedShift,
@@ -64,10 +64,8 @@ class Detailed extends React.Component {
     }
     handleKeyPress(event) {
         if (event.key === 'o') {
-            let next = this.props.ui.active.findNext(this.props.ui.detailed.redshift,this.props.ui.detailed.templateId);
-            if (next) {
-                selectMatch(next);
-            }
+            let nextindex = this.props.ui.active.findNextIndex(this.props.ui.detailed.matchedIndex,this.props.ui.detailed.bounds.maxMatches);
+            setMatchedIndex(nextindex,this.props.ui.active.getMatches()[nextindex]);
         } else if (event.key === '.') {
             nextSpectralLine();
         } else if (event.key === ',') {
@@ -288,25 +286,27 @@ class Detailed extends React.Component {
                                             Top Results
                                         </InputGroupAddon>
                                         {
-                                            this.props.ui.active && this.props.ui.active.hasMatches() ? (
-                                                <ManagedButtonGroup onChange={(match) => selectMatch(match)}>
-                                                    {
-                                                        Enumerable.from(this.props.ui.active.getMatches(
-                                                            this.props.ui.detailed.bounds.maxMatches
-                                                        )).select((e, i) => {
-                                                            return (
-                                                                <Button
-                                                                    size="sm"
-                                                                    key={i}
-                                                                    value={e}
-                                                                >
-                                                                    {i + 1}
-                                                                </Button>
-                                                            )
-                                                        }).toArray()
-                                                    }
-                                                </ManagedButtonGroup>
-                                            ) : null
+                                        this.props.ui.active && this.props.ui.active.hasMatches() ? (
+                                            <ButtonGroup>
+                                            {
+                                                Enumerable.from(this.props.ui.active.getMatches(
+                                                    this.props.ui.detailed.bounds.maxMatches
+                                                )).select((e, i) => {
+                                                    return (
+                                                        <Button
+                                                            color='light'
+                                                            size='sm'
+                                                            onClick={() => setMatchedIndex(i,e)}
+                                                            key={i}
+                                                            active={this.props.ui.detailed.matchedIndex === i}
+                                                        >
+                                                            {i + 1}
+                                                        </Button>
+                                                    )
+                                                }).toArray()
+                                            }
+                                            </ButtonGroup>
+                                        ) : null
                                         }
                                         {
                                             !this.props.ui.active || this.props.ui.active.getNumBestResults() === 0 ? (

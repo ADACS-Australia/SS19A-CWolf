@@ -20,7 +20,7 @@ const UIActionTypes = {
     SET_TEMPLATE_MATCHED: "UIActionTypes.SET_TEMPLATE_MATCHED",
     SET_CONTINUUM: "UIActionTypes.SET_CONTINUUM",
     SET_RANGE_INDEX: "UIActionTypes.SET_RANGE_INDEX",
-    SELECT_MATCH: "UIActionTypes.SELECT_MATCH",
+    SET_MATCHED_INDEX: "UIActionTypes.SET_MATCHED_INDEX",
     TOGGLE_SPECTRAL_LINES: "UIActionTypes.TOGGLE_SPECTRAL_LINES",
     PREVIOUS_SPECTRAL_LINE: "UIActionTypes.PREVIOUS_SPECTRAL_LINE",
     NEXT_SPECTRAL_LINE: "UIActionTypes.NEXT_SPECTRAL_LINE",
@@ -154,9 +154,10 @@ function setRangeIndex(rangeIndex) {
     })
 }
 
-function selectMatch(match) {
+function setMatchedIndex(matchedIndex, match) {
     AppDispatcher.dispatch({
-        type: UIActionTypes.SELECT_MATCH,
+        type: UIActionTypes.SET_MATCHED_INDEX,
+        matchedIndex: matchedIndex,
         redshift: match.z,
         templateId: match.templateId
     })
@@ -282,7 +283,7 @@ export {
     setTemplateMatched,
     setContinuum,
     setRangeIndex,
-    selectMatch,
+    setMatchedIndex,
     toggleSpectralLines,
     previousSpectralLine,
     nextSpectralLine,
