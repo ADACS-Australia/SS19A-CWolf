@@ -55,21 +55,33 @@ class Detailed extends React.Component {
         super(props);
     }
     componentDidMount() {
-        console.log("mounting DETAILED");
         if (this.props.location.search) {
             let files=[];
             files.push({name:this.props.location.search.slice(1), isurl: true});
             addFiles(files);
         }
+        this.refs.top.focus();
+    }
+    handleKeyPress(event) {
+        if (event.key === 'o') {
+            let next = this.props.ui.active.findNext(this.props.ui.detailed.redshift,this.props.ui.detailed.templateId);
+            if (next) {
+                selectMatch(next);
+            }
+        } else if (event.key === '.') {
+            nextSpectralLine();
+        } else if (event.key === ',') {
+            previousSpectralLine();
+        }
     }
 
     render() {
         if (this.displayMarz() && this.props.ui.active == null) {
-            return (<div>No spectra loaded yet</div>)
+            return (<div ref="top" onKeyPress={e=>this.handleKeyPress(e)}>No spectra loaded yet</div>)
         }
         return (this.displayMarz() || this.displaySimple() || this.displayTemplateOverlay()) ?
         (
-            <div className="detailedView filler">
+            <div ref="top" className="detailedView filler" tabIndex={0} onKeyPress={e=>this.handleKeyPress(e)}>
                 <div className="panel panel-default detailed-control panel-header">
                     {this.displayMarz() ? (
                     <div className="panel-heading">

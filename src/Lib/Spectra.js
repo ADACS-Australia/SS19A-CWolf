@@ -260,6 +260,18 @@ class Spectra {
         return this.automaticBestResults.length;
     };
 
+    findNext(z, templateId)
+    {
+        for (let index=0; index<this.getNumBestResults();index++) {
+            if (this.getMatches()[index].z == z && this.getMatches()[index].templateId == templateId.toString()) {
+                let next=index+1;
+                next = next%this.getNumBestResults();
+                return this.getMatches()[next];
+            }
+        }
+        return null;
+    }
+
     hasMatches() {
         return (this.automaticBestResults != null && this.automaticBestResults.length > 1);
     };
