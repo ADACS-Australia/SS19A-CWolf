@@ -60,7 +60,9 @@ class Detailed extends React.Component {
             files.push({name:this.props.location.search.slice(1), isurl: true});
             addFiles(files);
         }
-        this.refs.top.focus();
+        if (this.refs.top) {
+            this.refs.top.focus();
+        }
     }
     handleKeyPress(event) {
         if (event.key === 'o') {

@@ -26,6 +26,13 @@ class Overview extends React.Component {
             let files=[];
             files.push({name:this.props.location.search.slice(1), isurl: true});
             addFiles(files);
+        } else if ("remote_file" in window.marz_configuration) {
+            if (window.marz_configuration.remote_file !== null) {
+                console.log("ADD REMOTE FILE ",window.marz_configuration.remote_file);
+                let files=[];
+                files.push({name:window.marz_configuration.remote_file, isurl: true});
+                addFiles(files);
+            }
         }
     }
 

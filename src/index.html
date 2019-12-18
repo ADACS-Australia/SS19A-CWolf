@@ -7,6 +7,17 @@
 
 <body>
     <script>
+        function getQueryString() {
+            let query_string = document.URL.split('?');
+            if (query_string.length>1) {
+                return query_string;
+            }
+        }
+        let query_string = getQeuryString();
+        let remote_file=null;
+        if (query_string) {
+            remote_file=query_string[1];
+        }
         // The Marz configuration dictionary
         window.marz_configuration = {
             // The HTML container class to mount the Marz react application. If this is null, it will use the class
@@ -18,13 +29,13 @@
             // 2.  SimpleSpectrumView
             // 3.  TemplateOverlaySpectrumView
             // 4.  MarzSpectrumView
-            layout: "MarzSpectrumView",
+            layout: "TemplateOverlaySpectrumView",
             ymin_inactive: "0",
             ymax_inactive: "200",
             remote_templates_inactive: "https://tao.asvo.org.au/taostaging/static/MarzTemplates.json",
 
             // The remote file address to load. If this is null, it will revert to the default drag/drop file importer
-            remote_file_inactive: "https://tao.asvo.org.au/taostaging/static/emlLogVacuumHelioMultiple.fits"
+            remote_file: remote_file
         };
     </script>
     <div id="container">
