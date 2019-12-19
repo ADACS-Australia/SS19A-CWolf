@@ -81,7 +81,7 @@ class Detailed extends React.Component {
         }
         return (this.displayMarz() || this.displaySimple() || this.displayTemplateOverlay()) ?
         (
-            <div ref="top" className="detailedView filler" tabIndex={0} onKeyPress={e=>this.handleKeyPress(e)}>
+            <div ref="top" className="detailed-body filler" tabIndex={0} onKeyPress={e=>this.handleKeyPress(e)}>
                 <div className="panel panel-default detailed-control panel-header">
                     {this.displayMarz() ? (
                     <div className="panel-heading">
@@ -454,6 +454,7 @@ class Detailed extends React.Component {
             </div>
         ) :
         (
+            <div ref="top" className="detailed-body filler">
             <Dropzone onDrop={this.onDrop}>
                 {({getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles}) => {
                     return (
@@ -471,6 +472,7 @@ class Detailed extends React.Component {
                     )
                 }}
             </Dropzone>
+            </div>
         )
     }
 

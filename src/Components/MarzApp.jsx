@@ -12,6 +12,7 @@ import Templates from "./Pages/Templates";
 import {isSmall} from "../Utils/dry_helpers";
 import {templateManager} from "../Lib/TemplateManager";
 
+
 const Router = process.env.NODE_ENV === 'development' ? BrowserRouter : MemoryRouter;
 
 // Enable the one shot store ready event trigger

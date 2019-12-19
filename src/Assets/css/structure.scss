@@ -1,7 +1,3 @@
-* {
-  --spectra-width: 1600px;
-  --spectra-height: 600px;
-}
 html, body, .filler {
   margin: 0;
   padding: 0;
@@ -18,12 +14,21 @@ html, body, .navbar-fixed-top, .navbar-fixed-botom {
   min-width: 970px;
 }
 
+.detailed-body {
+  margin: 0;
+  padding: 0;
+  min-width: 100px;
+  width: 100px;
+  height: 100%; 
+  outline: none;
+}
+
 .detailed-control {
   margin: 0;
   padding: 0;
-  min-width: 600px;
-  max-width: var(--spectra-width);
-  border: 1px green solid;
+  max-height: 173px;
+  overflow-y: scroll;
+  overflow-x: scroll;
 }
 
 body {

@@ -112,7 +112,7 @@ class DetailedCanvas extends React.Component {
         return (window.marz_configuration.layout == 'MarzSpectrumView') ?
         (
 
-            <div ref='parent' id="detailedCanvasParent" className="canvas-container">
+            <div ref='parent' id="detailedCanvasParent" className="canvas-container canvas-container-4line-margin">
                 <canvas
                     ref='canvas'
                     id="detailedCanvas"
@@ -128,7 +128,7 @@ class DetailedCanvas extends React.Component {
         ) : (
             window.marz_configuration.layout == 'ReadOnlySpectrumView' ?
             (
-                <div ref='parent' id="detailedCanvasParent" className="canvas-container-no-margin">
+                <div ref='parent' id="detailedCanvasParent" className="canvas-container canvas-container-no-margin">
                     <canvas
                         ref='canvas'
                         id="detailedCanvas"
@@ -137,7 +137,7 @@ class DetailedCanvas extends React.Component {
             ) :
             (window.marz_configuration.layout == 'TemplateOverlaySpectrumView') ?
             (
-                <div ref='parent' id="detailedCanvasParent" className="canvas-container-3line-margin">
+                <div ref='parent' id="detailedCanvasParent" className="canvas-container canvas-container-3line-margin">
                     <canvas
                         ref='canvas'
                         id="detailedCanvas"
@@ -152,7 +152,7 @@ class DetailedCanvas extends React.Component {
                 </div>
             ) :
             (
-                <div ref='parent' id="detailedCanvasParent" className="canvas-container-1line-margin">
+                <div ref='parent' id="detailedCanvasParent" className="canvas-container canvas-container-1line-margin">
                     <canvas
                         ref='canvas'
                         id="detailedCanvas"

@@ -54,60 +54,36 @@
 
 .canvas-container {
   position: absolute;
-  top: 173px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--spectra-height);
-  width: var(--spectra-width);
-  border: 1px solid blue;
-}
-
-.canvas-container-1line-margin {
-  position: absolute;
-  top: 44px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--spectra-height);
-  width: var(--spectra-width);
-  border: 1px solid blue;
-}
-
-.canvas-container-2line-margin {
-  position: absolute;
-  top: 88px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--spectra-height);
-  width: var(--spectra-width);
-  border: 1px solid blue;
-}
-
-.canvas-container-3line-margin {
-  position: absolute;
-  top: 132px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--spectra-height);
-  width: var(--spectra-width);
-  border: 1px solid blue;
-}
-
-.canvas-container-no-margin {
-  position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 200px;
-  width: var(--spectra-width);
-  border: 1px solid blue;
+  min-height: 100px;
+  width: 100%;
+}
+
+.canvas-container-1line-margin {
+  top: 44px;
+}
+
+.canvas-container-2line-margin {
+  top: 88px;
+}
+
+.canvas-container-3line-margin {
+  top: 132px;
+}
+
+.canvas-container-4line-margin {
+  top: 173px;
+}
+
+.canvas-container-no-margin {
+  height: 173px;
 }
 
 .panel-header {
-  max-height: 41px; }
+  max-height: 41px; 
+}
 
 /*# sourceMappingURL=detailed.css.map */

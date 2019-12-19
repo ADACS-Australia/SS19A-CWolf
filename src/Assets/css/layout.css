@@ -60,9 +60,6 @@ input::selection {
     width: 100%;
     cursor: pointer; }
 
-.detailedView {
-  min-height: 450px; }
-
 .overview-item {
   width: 320px;
   height: 150px;

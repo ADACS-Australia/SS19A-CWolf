@@ -10,12 +10,15 @@ import './Assets/css/bootstrap.min.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 // Include remaining CSS
+
 import './Assets/css/common.scss';
 import './Assets/css/dialogs.scss';
 import './Assets/css/layout.scss';
 import './Assets/css/loader.scss';
 import './Assets/css/non-responsive.scss';
 import './Assets/css/structure.scss';
+
+import './Assets/css/custom.scss';
 
 // Get the container to mount the react application in
 const container = document.getElementById(window.marz_configuration.container_class || 'marz_conainer');

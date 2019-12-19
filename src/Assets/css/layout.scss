@@ -56,25 +56,6 @@ input::selection {
   display: block;
 }
 
-//div.dropzone {
-//  border-radius: 5px;
-//  border: 4px dashed #bbb;
-//  transition: all 0.25s;
-//  -webkit-transition: all 0.25s;
-//  width: 100%;
-//  padding: 10px;
-//  text-align: center;
-//
-//  &.dropover {
-//    color: #5E99FF;
-//    border-color: #5E99FF;
-//  }
-//
-//  h4 {
-//    line-height: 1.4em;
-//  }
-//}
-
 .file-drop-h5 {
   margin-top: 10px;
   margin-bottom: 10px;
@@ -92,10 +73,6 @@ input::selection {
     width: 100%;
     cursor: pointer;
   }
-}
-
-.detailedView {
-  min-height: 450px;
 }
 
 .overview-item {
