@@ -276,7 +276,8 @@ class FitsFileLoader {
         const lambda = [];
         if (scale === "T" || scale === 1 || scale === true) {
             for (let i = 0; i < this.numPoints; i++) {
-                lambda.push(Math.pow(10, ((i + 1 - crpix) * cdelt) + crval));
+                // RS: That is, they do not need to be converted???  TODO: Check with Marc
+                lambda.push(((i + 1 - crpix) * cdelt) + crval);
             }
         } else {
             for (let i = 0; i < this.numPoints; i++) {
@@ -397,6 +398,10 @@ class FitsFileLoader {
 
     getIntensitySpect(ext, wavlAxis) {
         const q = $q.defer();
+        if (typeof(ext) == "undefined") {
+            q.resolve([]);
+            return q.promise;
+        }
 
         // Check the shape of the data - if 1-d, just return the single column
         const dataDims = this.fits.getDataUnit(ext).naxis.length ;
