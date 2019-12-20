@@ -99,7 +99,7 @@ const defaultState = {
     focusCosmeticMaxRadius: 6,
 
 
-    zoomXRatio: 0.8,
+    zoomXRatio: 0.98,
 
     height: 100,
     width: 300,
