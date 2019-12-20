@@ -170,6 +170,12 @@ class ProcessorManager {
     addSpectraListToQueue(spectraList) {
         this.jobs.length = 0;
         for (let i = 0; i < spectraList.length; i++) {
+            // tweak to allow unprocessed spectra to be displayed
+            if (window) {
+                const dataonly = (window.marz_configuration.layout == 'ReadOnlySpectrumView' || window.marz_configuration.layout == 'SimpleSpectrumView');
+                if (dataonly)
+                    spectraList[i].variance = null;
+            }
             this.jobs.push(spectraList[i]);
         }
         this.sortJobs();
