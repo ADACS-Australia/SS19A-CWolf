@@ -864,6 +864,11 @@ class FitsFileLoader {
             let spectra = [];
             console.log("^^^ Forming return JSON objects ^^^");
             for (let s=0; s < intensity.length; s++) {
+                // Check for actual intensities
+
+                if (!this.useSpectra(intensity[s])) {
+                    continue;
+                }
                 console.log("^^^ -- Forming object "+s+" ^^^");
                 let spec;
                 if (wavelengths.length === 1) {
@@ -1080,6 +1085,26 @@ class FitsFileLoader {
         ).catch(e => console.error(e));
     }
 
+    /**
+     * Issues with some spectra containing almost all NaN values means I now check
+     * each spectra before redshifting. This is a simple check at the moment,
+     * but it can be extended if needed.
+     *
+     * Currently, if 90% or more of spectra values are NaN, throw it out. Realistically,
+     * I could make this limit much lower.
+     *
+     * @param intensity
+     * @returns {boolean}
+     */
+    useSpectra(intensity) {
+        let c = 0;
+        for (let i = 0; i < intensity.length; i++) {
+            if (isNaN(intensity[i])) {
+                c += 1;
+            }
+        }
+        return c <= 0.9 * intensity.length;
+    };
 }
 
 export default FitsFileLoader;
