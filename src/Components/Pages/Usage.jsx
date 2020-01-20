@@ -8,6 +8,9 @@ import {
 } from "react-accessible-accordion";
 
 import "../../Assets/css/usage-accordion.css"
+import {keybinds} from "../KeyBindings";
+import * as Enumerable from "linq";
+import Row from "reactstrap/es/Row";
 
 class Usage extends React.Component {
     constructor(props) {
@@ -283,7 +286,18 @@ class Usage extends React.Component {
                             trigger shortcuts. However, the same is true if you have a check-button focused, or a
                             slider. So, if a shortcut doesn't work, click away and try again!</p>
                         <p>The following commands are available:</p>
-                        {/*todo Add keybindings*/}
+                        {
+                            Enumerable.from(keybinds).select(k => (
+                                <Row key={k.key}>
+                                    <div className="col-md-2 col-xs-3 text-right pad-20px">
+                                        <code>
+                                            {k.label.split(",") !== 0 ? Enumerable.from(k.label.split(",")).aggregate((p, next) => p + " or " + next) : k.label}
+                                        </code>
+                                    </div>
+                                    <div className="col-md-10 col-xs-9">{k.description}</div>
+                                </Row>
+                            ))
+                        }
                     </AccordionItemPanel>
                 </AccordionItem>
                 <AccordionItem>

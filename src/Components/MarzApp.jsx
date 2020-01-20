@@ -11,6 +11,7 @@ import Settings from "./Pages/Settings";
 import Templates from "./Pages/Templates";
 import {isSmall} from "../Utils/dry_helpers";
 import {templateManager} from "../Lib/TemplateManager";
+import {KeyBindings} from "./KeyBindings";
 
 
 const Router = process.env.NODE_ENV === 'development' ? BrowserRouter : MemoryRouter;
@@ -38,7 +39,10 @@ function MarzApp(props) {
                     {
                         window.marz_configuration.layout == 'MarzSpectrumView' ?
                         (
-                            <Header {...props}/>
+                            <div>
+                                <KeyBindings {...props} {...routeProps}/>
+                                <Header {...props}/>
+                            </div>
                         ) : null
                     }
                     <div id="underNavContainer">
@@ -67,7 +71,7 @@ function MarzApp(props) {
                             </div>
                         ) : 
                         (
-                            <div className="afterSideBarContainer sidebarSmall">
+                            <div className="afterSideBarContainer readOnlySpectraContainer">
                                 <div className="spacing relative">
                                     <Route path="/"
                                         render={(routeProps) => <Detailed {...props} {...routeProps}/>}/>

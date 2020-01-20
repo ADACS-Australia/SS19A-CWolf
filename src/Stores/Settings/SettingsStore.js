@@ -165,7 +165,7 @@ class SettingsStore {
         let defaultValue = 2;
         try {
             if (navigator != null && navigator.hardwareConcurrency != null) {
-                defaultValue = navigator.hardwareConcurrency;
+                defaultValue = navigator.hardwareConcurrency - 1;
             }
         } catch (err) {
             log.warn("Could not fetch navigator.hardwareConcurrency");

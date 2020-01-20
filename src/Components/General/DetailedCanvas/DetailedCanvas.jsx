@@ -16,18 +16,79 @@ import {getStrengthOfLine} from "./spectralAnalysis";
 import download_image from '../../../Assets/images/download.png';
 import lens_image from '../../../Assets/images/lens.png';
 import {spectraLineService} from "./spectralLines";
-import {
-    clearShouldUpdateBaseData,
-    clearShouldUpdateSkyData, clearShouldUpdateSmoothData,
-    clearShouldUpdateTemplateData, clearShouldUpdateXcorData
-} from "../../../Stores/Detailed/Actions";
 import {templateManager} from "../../../Lib/TemplateManager";
 import {setSpectraFocus, setWaitingForSpectra} from "../../../Stores/UI/Actions";
 import {addFiles} from "../../../Stores/Data/Actions";
+import {isDetailed} from "../../../Utils/dry_helpers";
+
+let updateBaseData = () => {};
+let updateSkyData = () => {};
+let updateTemplateData = () => {};
+let updateXcorData = () => {};
+let updateSmoothData = () => {};
+let updateCanvas = () => {};
 
 class DetailedCanvas extends React.Component {
     constructor(props) {
         super(props);
+
+        updateBaseData = () => {
+            // Add the base data
+            if (this.showMultipleSpectra()) {
+                this.addBaseDataAll();
+            } else {
+                this.addBaseData();
+            }
+
+            if (!isDetailed(this.props))
+                return;
+
+            this.update();
+        };
+
+        updateSkyData = () => {
+            // Add the base data
+            this.addSkyData();
+
+            if (!isDetailed(this.props))
+                return;
+
+            this.update();
+        };
+
+        updateTemplateData = () => {
+            // Add the base data
+            this.addTemplateData();
+
+            if (!isDetailed(this.props))
+                return;
+
+            this.update();
+        };
+
+        updateXcorData = () => {
+            // Add the base data
+            this.addxcorData();
+
+            if (!isDetailed(this.props))
+                return;
+
+            this.update();
+        };
+
+        updateSmoothData = () => {
+            // Smooth the data and redraw
+            this.smoothData('data');
+
+            if (!isDetailed(this.props))
+                return;
+
+            this.update();
+        };
+
+        updateCanvas = () => {
+            this.update();
+        }
     }
 
     componentDidMount() {
@@ -41,8 +102,14 @@ class DetailedCanvas extends React.Component {
         this.downloadImg.src = download_image;
         this.templateManager = templateManager;
 
-        // Force a redraw to initialise settings and parameters
         this.update();
+
+        // Force a complete update
+        updateBaseData();
+        updateTemplateData();
+        updateXcorData();
+        updateSkyData();
+        updateSmoothData();
 
         // Update the scale
         this.setScale();
@@ -64,14 +131,7 @@ class DetailedCanvas extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         // todo: Need to add checks here if the canvas should be rerendered during a react update
-        // console.log(nextProps)
-        // if (nextProps.detailed.shouldUpdateBaseData)
-        //     return true;
-        //
-        // if (nextProps.detailed.shouldUpdateSkyData)
-        //     return true;
-
-        return true;
+        return false;
     }
 
     //  Conditional content
@@ -187,49 +247,8 @@ class DetailedCanvas extends React.Component {
         // Get the view information for this spectra
         this.view = this.params.view;
 
-        // Check if we need to update the base data
-        if (this.params.shouldUpdateBaseData) {
-            // Reset the flag to update the base data
-            setTimeout(() => clearShouldUpdateBaseData(), 0);
-            // Add the base data
-            if (this.showMultipleSpectra()) {
-                this.addBaseDataAll();
-            } else {
-                this.addBaseData();
-            }
-        }
-
-        // Check if we need to update the sky data
-        if (this.params.shouldUpdateSkyData) {
-            // Reset the flag to update the base data
-            setTimeout(() => clearShouldUpdateSkyData(), 0);
-            // Add the base data
-            this.addSkyData();
-        }
-
-        // Check if we need to update the base data
-        if (this.params.shouldUpdateTemplateData) {
-            // Reset the flag to update the base data
-            setTimeout(() => clearShouldUpdateTemplateData(), 0);
-            // Add the base data
-            this.addTemplateData();
-        }
-
-        // Check if we need to update the xcor data
-        if (this.params.shouldUpdateXcorData) {
-            // Reset the flag to update the base data
-            setTimeout(() => clearShouldUpdateXcorData(), 0);
-            // Add the base data
-            this.addxcorData();
-        }
-        
-        // Check if we need to update the xcor data
-        if (this.params.shouldUpdateSmoothData) {
-            // Reset the flag to update the smooth data
-            setTimeout(() => clearShouldUpdateSmoothData(), 0);
-            // Smooth the data and redraw
-            this.smoothData('data');
-        }
+        if (this.detailed.lockedBounds === false)
+            this.view.bounds[0].lockedBounds = false;
 
         // Force a canvas redraw
         this.handleRedrawRequest();
@@ -1384,4 +1403,12 @@ class DetailedCanvas extends React.Component {
     };
 }
 
-export default DetailedCanvas;
+export {
+    DetailedCanvas,
+    updateBaseData,
+    updateSkyData,
+    updateSmoothData,
+    updateTemplateData,
+    updateXcorData,
+    updateCanvas
+};

@@ -119,21 +119,6 @@ const defaultState = {
     view: {
         ...defaultView
     },
-
-    // For triggering the update of base data
-    shouldUpdateBaseData: false,
-
-    // For triggering the update of sky data
-    shouldUpdateSkyData: false,
-
-    // For triggering the update of template data
-    shouldUpdateTemplateData: false,
-
-    // For triggering the update of xcor data
-    shouldUpdateXcorData: false,
-
-    // For triggering the update of smooth data
-    shouldUpdateSmoothData: false,
 };
 
 class DetailedStore {
@@ -153,66 +138,6 @@ class DetailedStore {
 
     reduce(state, action) {
         switch (action.type) {
-            case DetailedActionTypes.SET_SHOULD_UPDATE_BASE_DATA:
-                // Set the base data update flag
-                state.shouldUpdateBaseData = true;
-
-                return {...state};
-
-            case DetailedActionTypes.CLEAR_SHOULD_UPDATE_BASE_DATA:
-                // Clear the base data update flag
-                state.shouldUpdateBaseData = false;
-
-                return {...state};
-
-            case DetailedActionTypes.SET_SHOULD_UPDATE_XCOR_DATA:
-                // Set the base data update flag
-                state.shouldUpdateXcorData = true;
-
-                return {...state};
-
-            case DetailedActionTypes.CLEAR_SHOULD_UPDATE_XCOR_DATA:
-                // Clear the base data update flag
-                state.shouldUpdateXcorData = false;
-
-                return {...state};
-
-            case DetailedActionTypes.SET_SHOULD_UPDATE_TEMPLATE_DATA:
-                // Set the base data update flag
-                state.shouldUpdateTemplateData = true;
-
-                return {...state};
-
-            case DetailedActionTypes.CLEAR_SHOULD_UPDATE_TEMPLATE_DATA:
-                // Clear the base data update flag
-                state.shouldUpdateTemplateData = false;
-
-                return {...state};
-
-            case DetailedActionTypes.SET_SHOULD_UPDATE_SKY_DATA:
-                // Set the base data update flag
-                state.shouldUpdateSkyData = true;
-
-                return {...state};
-
-            case DetailedActionTypes.CLEAR_SHOULD_UPDATE_SKY_DATA:
-                // Clear the base data update flag
-                state.shouldUpdateSkyData = false;
-
-                return {...state};
-
-            case DetailedActionTypes.SET_SHOULD_UPDATE_SMOOTH_DATA:
-                // Set the base data update flag
-                state.shouldUpdateSmoothData = true;
-
-                return {...state};
-
-            case DetailedActionTypes.CLEAR_SHOULD_UPDATE_SMOOTH_DATA:
-                // Clear the base data update flag
-                state.shouldUpdateSmoothData = false;
-
-                return {...state};
-
             default:
                 return state;
         }

@@ -1,6 +1,6 @@
 import {globalConfig} from "./config";
-import {updateNumberMatched, updateNumberProcessed} from "../Stores/UI/Actions";
-import {setShouldUpdateXcorData} from "../Stores/Detailed/Actions";
+import {setActive, updateNumberMatched, updateNumberProcessed} from "../Stores/UI/Actions";
+import {updateXcorData} from "../Components/General/DetailedCanvas/DetailedCanvas";
 
 class SpectraManager {
     constructor(store) {
@@ -29,7 +29,6 @@ class SpectraManager {
         if (this.clidata != null)
             return this.clidata;
         return this.store.getState().getData();
-
     }
 
     setMatchedResultsNode(results) {
@@ -74,7 +73,7 @@ class SpectraManager {
         }
 
         setTimeout(() => updateNumberMatched(), 0);
-        setTimeout(() => setShouldUpdateXcorData(), 0);
+        updateXcorData();
     };
     setSpectra(spectraList) {
         const data = this.getData();
@@ -87,6 +86,8 @@ class SpectraManager {
             data.spectra.push(spectraList[i]);
             data.spectraHash[spectraList[i].id] = spectraList[i];
         }
+
+        setTimeout(() => setActive(spectraList[0]))
     };
     setProcessedResults(results) {
         const data = this.getData();

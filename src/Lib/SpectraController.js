@@ -10,7 +10,7 @@ import {
     updateNumberProcessed,
     updateRedShift
 } from "../Stores/UI/Actions";
-import {setShouldUpdateBaseData} from "../Stores/Detailed/Actions";
+import {updateBaseData, updateTemplateData} from "../Components/General/DetailedCanvas/DetailedCanvas";
 
 class SpectraController {
     constructor(store, resultsManager) {
@@ -70,6 +70,16 @@ class SpectraController {
         } else {
             this.setActive(this.getNextSpectra(ui.active));
             return true;
+        }
+    };
+
+    setPreviousSpectra() {
+        const data = this.getData();
+        const ui = this.getUI();
+        if (data.history.length > 1) {
+            this.setActive(data.history[data.history.length - 2], false);
+        } else {
+            this.setActive(this.getPreviousSpectra(ui.active));
         }
     };
 
@@ -202,8 +212,6 @@ class SpectraController {
                 data.fits.shift();
             }
         }
-
-        setTimeout(() => setShouldUpdateBaseData(), 0)
     };
 
     getUI() {

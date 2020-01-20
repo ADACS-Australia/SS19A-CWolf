@@ -43,7 +43,14 @@ const UIActionTypes = {
     SAVE_MANUAL: "UIActionTypes.SAVE_MANUAL",
     SET_ONLY_QOP_0: "UIActionTypes.SET_ONLY_QOP_0",
 
-    SET_SPECTRA_COMMENT: "UIActionTypes.SET_SPECTRA_COMMENT"
+    SET_SPECTRA_COMMENT: "UIActionTypes.SET_SPECTRA_COMMENT",
+
+    NEXT_MATCHED_DETAILS: "UIActionTypes.NEXT_MATCHED_DETAILS",
+    PREV_MATCHED_DETAILS: "UIActionTypes.PREV_MATCHED_DETAILS",
+    FIT_NOW: "UIActionTypes.FIT_NOW",
+    RESET_ZOOM: "UIActionTypes.RESET_ZOOM",
+    NEXT_TEMPLATE: "UIActionTypes.NEXT_TEMPLATE",
+    PREV_TEMPLATE: "UIActionTypes.PREV_TEMPLATE",
 };
 
 function setMerge(merge) {
@@ -266,6 +273,42 @@ function setSpectraComment(comment) {
     })
 }
 
+function nextMatchedDetails() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.NEXT_MATCHED_DETAILS,
+    })
+}
+
+function prevMatchedDetails() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.PREV_MATCHED_DETAILS,
+    })
+}
+
+function fitNow() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.FIT_NOW
+    })
+}
+
+function resetZoom() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.RESET_ZOOM
+    })
+}
+
+function nextTemplate() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.NEXT_TEMPLATE
+    })
+}
+
+function prevTemplate() {
+    AppDispatcher.dispatch({
+        type: UIActionTypes.PREV_TEMPLATE
+    })
+}
+
 export {
     setMerge,
     updateTemplateOffset,
@@ -300,5 +343,11 @@ export {
     saveManual,
     setOnlyQOP0,
     setSpectraComment,
+    nextMatchedDetails,
+    prevMatchedDetails,
+    fitNow,
+    resetZoom,
+    nextTemplate,
+    prevTemplate,
     UIActionTypes,
 };

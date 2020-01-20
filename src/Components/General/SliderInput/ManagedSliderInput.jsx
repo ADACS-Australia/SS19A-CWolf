@@ -38,6 +38,7 @@ class ManagedSliderInput extends React.Component {
                         {this.props.label}
                     </InputGroupAddon>
                     <Input
+                        id={this.props.inputId || null}
                         type="number"
                         bsSize="xs"
                         min={this.props.min}

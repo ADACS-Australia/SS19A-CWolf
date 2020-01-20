@@ -50,6 +50,8 @@ p.fill-height {
 .sidebar-spectra-list {
   flex-grow: 1;
   overflow-y: auto;
+  min-height:150px;
+  margin-bottom: 5px;
 }
 
 .darker {
@@ -164,4 +166,8 @@ p.fill-height {
 
 .alignTop {
   vertical-align: top
+}
+
+.pad-20px {
+  padding-right: 20px;
 }

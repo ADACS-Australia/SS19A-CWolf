@@ -1,14 +1,13 @@
 import {setTemplateId, UIActionTypes, updateRedShift} from "./Actions";
-import {
-    setShouldUpdateBaseData,
-    setShouldUpdateSkyData, setShouldUpdateSmoothData,
-    setShouldUpdateTemplateData,
-    setShouldUpdateXcorData
-} from "../Detailed/Actions";
 import {spectraLineService} from "../../Components/General/DetailedCanvas/spectralLines";
 import {templateManager as templatesService} from "../../Lib/TemplateManager";
 import {getFit, getQuasarFFT, getStandardFFT, matchTemplate} from "../../Utils/methods";
 import localStorageService from "../../Lib/LocalStorageManager";
+import {
+    updateBaseData, updateCanvas,
+    updateSkyData, updateSmoothData,
+    updateTemplateData, updateXcorData
+} from "../../Components/General/DetailedCanvas/DetailedCanvas";
 
 class UIStore {
     constructor(store) {
@@ -62,7 +61,6 @@ class UIStore {
                 spectralLines: true,
                 waitingForSpectra: false,
                 lockedBounds: false,
-                lockedBoundsCounter: 1,
                 skyHeight: 125
             },
             colours: {
@@ -94,7 +92,7 @@ class UIStore {
                 };
 
             case UIActionTypes.UPDATE_REDSHIFT:
-                setTimeout(() => setShouldUpdateTemplateData(), 0);
+                setTimeout(() => updateTemplateData(), 0);
 
                 // Update the redshift
                 state.detailed.redshift = action.redshift;
@@ -104,7 +102,7 @@ class UIStore {
                 };
 
             case UIActionTypes.UPDATE_TEMPLATE_OFFSET:
-                setTimeout(() => setShouldUpdateTemplateData(), 0);
+                setTimeout(() => updateTemplateData(), 0);
 
                 // Update the template offset
                 state.detailed.templateOffset = action.templateOffset;
@@ -115,14 +113,12 @@ class UIStore {
 
             case UIActionTypes.SET_ACTIVE:
                 // Check if the old active is different to the new active
-                if (state.active !== action.spectra) {
-                    setTimeout(() => {
-                        setShouldUpdateBaseData();
-                        setShouldUpdateSkyData();
-                        setShouldUpdateTemplateData();
-                        setShouldUpdateXcorData();
-                    }, 0);
-                }
+                setTimeout(() => {
+                    updateBaseData();
+                    updateSkyData();
+                    updateTemplateData();
+                    updateXcorData();
+                }, 0);
 
                 // Update the active spectra
                 state.active = action.spectra;
@@ -137,8 +133,8 @@ class UIStore {
                 state.detailed.templateId = action.id;
 
                 setTimeout(() => {
-                    setShouldUpdateTemplateData();
-                    setShouldUpdateXcorData();
+                    updateTemplateData();
+                    updateXcorData();
                 }, 0);
 
                 return {
@@ -147,7 +143,7 @@ class UIStore {
 
             case UIActionTypes.SET_PROCESSED:
                 // Check if the old active is different to the new processed state
-                setTimeout(() => setShouldUpdateBaseData(), 0);
+                setTimeout(() => updateBaseData(), 0);
 
                 // Update the processed/raw data
                 state.dataSelection.processed = action.processed;
@@ -158,10 +154,9 @@ class UIStore {
 
             case UIActionTypes.SET_VARIANCE:
                 // Check if the old active is different to the new variance state
-                setTimeout(() => setShouldUpdateBaseData(), 0);
+                setTimeout(() => updateBaseData(), 0);
 
                 // Update the processed/raw data
-
                 state.dataSelection.variance = action.variance;
 
                 return {
@@ -170,15 +165,15 @@ class UIStore {
 
             case UIActionTypes.SET_SKY:
                 // Check if the old active is different to the new variance state
-                setTimeout(() => setShouldUpdateSkyData(), 0);
-        
+                setTimeout(() => updateSkyData(), 0);
+
                 // Update the processed/raw data
                 state.dataSelection.sky = action.sky;
-        
+
                 return {
                     ...state,
                 };
-        
+
 
             case UIActionTypes.RESET_TO_AUTOMATIC:
                 const autoSpectra = state.active;
@@ -189,7 +184,7 @@ class UIStore {
                         setTimeout(() => updateRedShift(best.z), 0);
                     }
                 }
-                
+
                 return {
                     ...state
                 };
@@ -219,7 +214,7 @@ class UIStore {
                 };
 
             case UIActionTypes.SET_SMOOTH:
-                setTimeout(() => setShouldUpdateSmoothData(), 0);
+                setTimeout(() => updateSmoothData(), 0);
 
                 // Update the smooth value
                 state.detailed.smooth = action.smoothValue;
@@ -229,7 +224,7 @@ class UIStore {
                 };
 
             case UIActionTypes.SET_TEMPLATE_MATCHED:
-                setTimeout(() => setShouldUpdateTemplateData(), 0);
+                setTimeout(() => updateTemplateData(), 0);
 
                 // Update the matched value
                 state.dataSelection.matched = action.matched;
@@ -239,8 +234,10 @@ class UIStore {
                 };
 
             case UIActionTypes.SET_CONTINUUM:
-                setTimeout(() => setShouldUpdateBaseData(), 0);
-                setTimeout(() => setShouldUpdateTemplateData(), 0);
+                setTimeout(() => {
+                    updateBaseData();
+                    updateTemplateData();
+                }, 0);
 
                 // Update the continuum value
                 state.detailed.continuum = action.continuum;
@@ -253,13 +250,17 @@ class UIStore {
                 // Update the range index value
                 state.detailed.rangeIndex = action.rangeIndex;
 
+                setTimeout(updateCanvas, 0);
+
                 return {
                     ...state,
                 };
 
             case UIActionTypes.SET_MATCHED_INDEX:
-                setTimeout(() => setShouldUpdateTemplateData(), 0);
-                setTimeout(() => setShouldUpdateXcorData(), 0);
+                setTimeout(() => {
+                    updateTemplateData();
+                    updateXcorData();
+                }, 0);
 
                 // Update the match index value
                 state.detailed.matchedIndex = action.matchedIndex;
@@ -267,7 +268,7 @@ class UIStore {
                 // Set the match redshift and template ID
                 state.detailed.redshift = action.redshift;
                 state.detailed.templateId = action.templateId;
-        
+
                 return {
                     ...state,
                 };
@@ -275,6 +276,8 @@ class UIStore {
             case UIActionTypes.TOGGLE_SPECTRAL_LINES:
                 // Toggle the spectral line display
                 state.detailed.spectralLines = !state.detailed.spectralLines;
+
+                setTimeout(updateCanvas, 0);
 
                 return {
                     ...state,
@@ -289,7 +292,9 @@ class UIStore {
                     if (lines.length > 0)
                         UIStore.clickSpectralLine(lines[0].id, state)
                 }
-                
+
+                setTimeout(updateCanvas, 0);
+
                 return {
                     ...state
                 };
@@ -305,12 +310,14 @@ class UIStore {
                     }
                 }
 
+                setTimeout(updateCanvas, 0);
+
                 return {
                     ...state
                 };
 
             case UIActionTypes.CLICK_SPECTRAL_LINE:
-                setTimeout(() => setShouldUpdateTemplateData(), 0);
+                setTimeout(() => updateTemplateData(), 0);
                 UIStore.clickSpectralLine(action.id, state);
                 return {
                     ...state
@@ -335,6 +342,8 @@ class UIStore {
                     this.doFit(state);
                 }
 
+                setTimeout(updateCanvas, 0);
+
                 return {
                     ...state
                 };
@@ -348,24 +357,24 @@ class UIStore {
 
             case UIActionTypes.READONLYVIEW:
                 window.marz_configuration.layout = "ReadOnlySpectrumView";
-    
-                    return {
-                        ...state
-                    };
+
+                return {
+                    ...state
+                };
 
             case UIActionTypes.SIMPLEVIEW:
                 window.marz_configuration.layout = "SimpleSpectrumView";
-    
-                    return {
-                        ...state
-                    };
+
+                return {
+                    ...state
+                };
 
             case UIActionTypes.OVERLAYVIEW:
                 window.marz_configuration.layout = "TemplateOverlaySpectrumView";
-            
-                    return {
-                        ...state
-                    };
+
+                return {
+                    ...state
+                };
 
             case UIActionTypes.SET_GRAPHICAL_LAYOUT:
                 state.graphicalLayout = action.graphical;
@@ -396,7 +405,7 @@ class UIStore {
                 In the callouts the idea is that the template appears static because it is centred around the "spectrum lines" that redshift with it.
                 The things that change in the callouts is the x labels and the "data"
                 */
-                setTimeout(() => setShouldUpdateTemplateData(), 0);
+                setTimeout(() => updateTemplateData(), 0);
                 state.detailed.spectraFocus = action.focus;
 
                 return {
@@ -438,6 +447,120 @@ class UIStore {
                     ...state
                 };
 
+            case UIActionTypes.NEXT_MATCHED_DETAILS:
+                const matchnext = this.currentlyMatching(state);
+                if (matchnext == null) {
+                    state.detailed.redshift = state.active.getMatches(state.details.bounds.maxMatches)[0].z;
+                    state.detailed.templateId = state.active.getMatches(state.details.bounds.maxMatches)[0].templateId;
+                } else {
+                    if (matchnext === matchnext.next) {
+                        if (state.active) {
+                            this.store.getState().getData().processorService.addToPriorityQueue(
+                                state.active,
+                                true
+                            )
+                        }
+                    } else {
+                        state.detailed.redshift = matchnext.next.z;
+                        state.detailed.templateId = matchnext.next.templateId;
+                    }
+                }
+                this.currentlyMatching(state);
+
+                setTimeout(() => {
+                    updateBaseData();
+                    updateSkyData();
+                    updateTemplateData();
+                    updateXcorData();
+                }, 0);
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.PREV_MATCHED_DETAILS:
+                const matchprev = this.currentlyMatching(state);
+                if (matchprev == null) {
+                    state.detailed.redshift = state.active.getMatches(state.detailed.bounds.maxMatches)[0].z;
+                    state.detailed.templateId = state.active.getMatches(state.detailed.bounds.maxMatches)[0].templateId;
+                } else {
+                    if (matchprev === matchprev.prev) {
+                        if (state.active) {
+                            this.store.getState().getData().processorService.addToPriorityQueue(
+                                state.active,
+                                true
+                            )
+                        }
+                    } else {
+                        state.detailed.redshift = matchprev.prev.z;
+                        state.detailed.templateId = matchprev.prev.templateId;
+                    }
+                }
+                this.currentlyMatching(state);
+
+                setTimeout(() => {
+                    updateBaseData();
+                    updateSkyData();
+                    updateTemplateData();
+                    updateXcorData();
+                }, 0);
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.FIT_NOW:
+                this.fit(state);
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.RESET_ZOOM:
+                state.detailed.lockedBounds = false;
+
+                setTimeout(() => {
+                    updateBaseData();
+                }, 0);
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.NEXT_TEMPLATE:
+                const t1 = state.detailed.templateId;
+                const ts1 = templatesService.getTemplates();
+                const tt1 = templatesService.getTemplateFromId(t1);
+                const i1 = ts1.indexOf(tt1);
+                if (i1 < ts1.length-1) {
+                    state.detailed.templateId = "" + ts1[i1+1].id;
+                }
+
+                setTimeout(() => {
+                    updateTemplateData();
+                }, 0);
+
+                return {
+                    ...state
+                };
+
+            case UIActionTypes.PREV_TEMPLATE:
+                const t2 = state.detailed.templateId;
+                const ts2 = templatesService.getTemplates();
+                const tt2 = templatesService.getTemplateFromId(t2);
+                const i2 = ts2.indexOf(tt2);
+                if (i2 > 0) {
+                    state.detailed.templateId = "" + ts2[i2-1].id;
+                }
+
+                setTimeout(() => {
+                    updateTemplateData();
+                }, 0);
+
+                return {
+                    ...state
+                };
+
             default:
                 return state;
         }
@@ -449,11 +572,34 @@ class UIStore {
             state.lineSelected = id;
             const currentWavelength = spectraLineService.getFromID(id).wavelength;
             const desiredWavelength = state.detailed.spectraFocus;
-            const z = desiredWavelength/currentWavelength - 1;
+            const z = desiredWavelength / currentWavelength - 1;
             state.detailed.redshift = z.toFixed(5);
             state.detailed.oldRedshift = state.detailed.redshift;
         }
     }
+
+    fit(state) {
+        state.fitTID = state.detailed.templateId;
+        state.fitZ = state.detailed.redshift;
+        state.waitingOnFit = true;
+        if (state.active != null) {
+            if (state.active.processedIntensity == null) {
+                if (state.active) {
+                    this.store.getState().getData().processorService.addToPriorityQueue(
+                        state.active,
+                        true
+                    )
+                }
+                return;
+            }
+        }
+        const tid = state.detailed.templateId;
+        if (tid == null || tid === "0" || state.active == null) {
+            state.waitingOnFit = false;
+        } else {
+            this.doFit(state);
+        }
+    };
 
     doFit(state) {
         const s = state.active;
@@ -481,6 +627,35 @@ class UIStore {
             state.detailed.redshift = bestZ.toFixed(5);
         }
         state.waitingOnFit = false;
+    };
+
+    currentlyMatching(state) {
+        let matched = false;
+        if (state.active && state.active.getMatches()) {
+            const matches = state.active.getMatches(state.detailed.bounds.maxMatches);
+            for (let i = 0; i < matches.length; i++) {
+                if (state.detailed.redshift === matches[i].z && state.detailed.templateId === matches[i].templateId) {
+                    state.detailed.matchedIndex = i;
+                    matched = true;
+                    matches[i].index = i;
+                    if (i < matches.length - 1) {
+                        matches[i].next = matches[i + 1];
+                    } else {
+                        matches[i].next = matches[0];
+                    }
+                    if (i > 0) {
+                        matches[i].prev = matches[i - 1];
+                    } else {
+                        matches[i].prev = matches[matches.length - 1];
+                    }
+                    return matches[i];
+                }
+            }
+        }
+        if (!matched) {
+            state.detailed.matchedIndex = null;
+        }
+        return null;
     };
 }
 
