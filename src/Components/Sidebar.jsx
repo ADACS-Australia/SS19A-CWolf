@@ -272,7 +272,7 @@ class Sidebar extends React.Component {
                                             <div
                                                 className={"left-padding-small spectra-list-item " + ((i % 2 === 0) ? "darker " : "") + (this.props.ui.active === e ? "activeSelect" : "")}
                                                 key={e.id}
-                                                onClick={() => setActive(e)}
+                                                onClick={() => this.props.data.processorService.spectraManager.setActive(e)}
                                                 onDoubleClick={() => {
                                                     this.props.data.processorService.spectraManager.setActive(e);
                                                     this.props.history.push('/detailed/')
