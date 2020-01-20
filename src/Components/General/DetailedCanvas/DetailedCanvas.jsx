@@ -400,12 +400,13 @@ class DetailedCanvas extends React.Component {
                 this.c.strokeRect(this.params.lastXDown + 0.5, this.params.lastYDown, this.w, this.h);
             }
         } else if (loc.bound != null && loc.bound.xcorCallout === true) {
-            if (this.params.lastXDown != null && this.params.lastXDown != null) {
+            if (this.params.lastXDown != null && this.params.lastYDown != null) {
                 this.xcorEvent(loc.dataX);
             } else {
-                this.handleRedrawRequest();
                 this.plotZLine2(loc.bound, loc.x);
             }
+
+            this.handleRedrawRequest();
         }
     };
 

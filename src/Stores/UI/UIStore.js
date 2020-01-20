@@ -575,6 +575,10 @@ class UIStore {
             const z = desiredWavelength / currentWavelength - 1;
             state.detailed.redshift = z.toFixed(5);
             state.detailed.oldRedshift = state.detailed.redshift;
+
+            setTimeout(() => {
+                updateTemplateData();
+            }, 0);
         }
     }
 
