@@ -27,6 +27,10 @@ To start the live development server:
 
 
 
+Once the development server is running, you should be able to access it by visiting http://localhost:8080 in your browser of choice.
+
+
+
 ## Deployment 
 
 ### Manually
