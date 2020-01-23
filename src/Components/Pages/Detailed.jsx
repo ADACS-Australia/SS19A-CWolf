@@ -75,9 +75,6 @@ class Detailed extends React.Component {
     }
 
     render() {
-        if (!this.displayMarz() && this.props.ui.active == null) {
-            return (<div ref="top">No spectra loaded yet</div>)
-        }
         return (this.displayMarz() || this.displaySimple() || this.displayTemplateOverlay()) ?
             (
                 <div ref="top" className="detailed-body filler" tabIndex={0}>
