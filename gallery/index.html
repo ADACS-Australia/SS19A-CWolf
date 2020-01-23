@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MARZ React</title>
+</head>
+
+<body>
+    <script>
+        // Which of the 4 use case styles to display
+        // 1.  ReadOnlySpectrumView
+        // 2.  SimpleSpectrumView
+        // 3.  TemplateOverlaySpectrumView
+        // 4.  MarzSpectrumView
+        asReadOnlySpectrumView = function() {
+            // The Marz configuration dictionary
+            window.marz_configuration = {
+                // The HTML container class to mount the Marz react application. If this is null, it will use the class
+                // "marz_conainer"
+                container_class: "container",
+                layout: "ReadOnlySpectrumView",
+                remote_file: null
+            }
+        };
+        asSimpleSpectrumView = function() {
+            // The Marz configuration dictionary
+            window.marz_configuration = {
+                // The HTML container class to mount the Marz react application. If this is null, it will use the class
+                // "marz_conainer"
+                container_class: "container",
+                layout: "SimpleSpectrumView",
+                remote_file: null
+            }
+        };
+        asTemplateOverlaySpectrumView = function() {
+            // The Marz configuration dictionary
+            window.marz_configuration = {
+                // The HTML container class to mount the Marz react application. If this is null, it will use the class
+                // "marz_conainer"
+                container_class: "container",
+                layout: "TemplateOverlaySpectrumView",
+                remote_file: null
+            }
+        };
+        asMarzSpectrumView = function() {
+            // The Marz configuration dictionary
+            window.marz_configuration = {
+                // The HTML container class to mount the Marz react application. If this is null, it will use the class
+                // "marz_conainer"
+                container_class: "container",
+                layout: "MarzSpectrumView",
+                remote_file: null
+            }
+        };
+    </script>
+    <p>Gallery</p>
+    <p><a href="http://localhost:8080/?style=ReadOnlySpectrumView" onclick="asReadOnlySpectrumView();">as ReadOnlySpectrumView</a></p>
+    <p><a href="http://localhost:8080/?style=SimpleSpectrumView" onclick="asSimpleSpectrumView();">as SimpleSpectrumView</a></p>
+    <p><a href="http://localhost:8080/?style=TemplateOverlaySpectrumView" onclick="asTemplateOverlaySpectrumView();">as TemplateOverlaySpectrumView</a></p>
+    <p><a href="http://localhost:8080" onclick="asMarzSpectrumView();">as MarzSpectrumView</a></p>
+</body>

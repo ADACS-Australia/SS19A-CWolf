@@ -39,6 +39,7 @@ import {templateManager} from "../../Lib/TemplateManager";
 import styled from 'styled-components';
 
 import {addFiles} from "../../Stores/Data/Actions";
+import {getRemoteFile} from "../../Utils/dry_helpers"
 
 const getColor = (props) => {
     if (props.isDragReject) {
@@ -64,9 +65,11 @@ class Detailed extends React.Component {
     }
 
     componentDidMount() {
-        if (this.props.location.search) {
+        let remote_file=getRemoteFile(this.props.location.search);
+        console.log("remote file in detailed=",remote_file, this.displayMarz(),window.marz_configuration.layout);
+        if (remote_file!=null) {
             let files = [];
-            files.push({name: this.props.location.search.slice(1), isurl: true});
+            files.push({name: remote_file, isurl: true});
             addFiles(files);
         }
         if (this.refs.top) {
@@ -75,7 +78,7 @@ class Detailed extends React.Component {
     }
 
     render() {
-        if (!this.displayMarz() && this.props.ui.active == null) {
+        if (this.displayMarz() && this.props.ui.active == null) {
             return (<div ref="top">No spectra loaded yet</div>)
         }
         return (this.displayMarz() || this.displaySimple() || this.displayTemplateOverlay()) ?

@@ -6,6 +6,7 @@ import BootstrapTable from 'react-bootstrap-table-next';
 import marzIcon from '../../Assets/images/Marz2.png';
 import * as Enumerable from "linq";
 import {templateManager} from "../../Lib/TemplateManager";
+import {getRemoteFile} from "../../Utils/dry_helpers";
 import {addFiles} from "../../Stores/Data/Actions";
 
 class Overview extends React.Component {
@@ -22,9 +23,11 @@ class Overview extends React.Component {
     };
 
     componentDidMount() {
-        if (this.props.location.search) {
+        let remote_file=getRemoteFile(this.props.location.search);
+        console.log("Overview remote_file=",remote_file);
+        if (remote_file!=null) {
             let files=[];
-            files.push({name:this.props.location.search.slice(1), isurl: true});
+            files.push({name:remote_file, isurl: true});
             addFiles(files);
         } else if ("remote_file" in window.marz_configuration) {
             if (window.marz_configuration.remote_file !== null) {

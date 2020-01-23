@@ -7,17 +7,43 @@
 
 <body>
     <script>
-        function getQueryString() {
+        function getRemoteFile() {
             let query_string = document.URL.split('?');
-            if (query_string.length>1) {
-                return query_string;
+            for (let i=0;i<query_string.length;i++) {
+                console.log("value["+i+"]=",query_string[i]);
             }
+            if (query_string.length>1) {
+                let querys=query_string[1].split('&');
+                for (let i=0;i<querys.length;i++) {
+                    if (querys[i].indexOf('=')==-1) {
+                        return querys[i];
+                    }
+                }
+            }
+            return null;
         }
-        let query_string = getQueryString();
-        let remote_file=null;
-        if (query_string) {
-            remote_file=query_string[1];
+        function getLayoutStyle() {
+            let query_string = document.URL.split('?');
+            for (let i=0;i<query_string.length;i++) {
+                console.log("value["+i+"]=",query_string[i]);
+            }
+            if (query_string.length>1) {
+                let querys=query_string[1].split('&');
+                for (let i=0;i<querys.length;i++) {
+                    if (querys[i].indexOf('=')!=-1) {
+                        let keywords=querys[i].split('=');
+                        if (keywords[0]=='style') {
+                            return keywords[1];
+                        }
+                    }
+                }
+            }
+            return "MarzSpectrumView";
         }
+        let layout_style = getLayoutStyle();
+        let remote_file = getRemoteFile();
+        console.log("layout_style=",layout_style);
+        console.log("remote_file=",remote_file);
         // The Marz configuration dictionary
         window.marz_configuration = {
             // The HTML container class to mount the Marz react application. If this is null, it will use the class
@@ -29,7 +55,7 @@
             // 2.  SimpleSpectrumView
             // 3.  TemplateOverlaySpectrumView
             // 4.  MarzSpectrumView
-            layout: "MarzSpectrumView",
+            layout: layout_style,
             ymin_inactive: "0",
             ymax_inactive: "200",
             remote_templates_inactive: "https://tao.asvo.org.au/taostaging/static/MarzTemplates.json",
