@@ -6,8 +6,8 @@ function isDetailed(props) {
 }
 
 function isOverview(props) {
-    // Check if the current path is the detailed page
-    return props.location.pathname === '/';
+    // Check if the current path is the overview page (TODO: Why is the "/marz" check needed on asvo.org.au?)
+    return (props.location.pathname === '/' || props.history.location.pathname.startsWith('/marz'));
 }
 
 function isSmall(props) {
@@ -17,9 +17,6 @@ function isSmall(props) {
 function getRemoteFile(url) {
     if (url) {
         let query_string = url.split('?');
-        for (let i=0;i<query_string.length;i++) {
-            console.log("value["+i+"]=",query_string[i]);
-        }
         if (query_string.length>1) {
             let querys=query_string[1].split('&');
             for (let i=0;i<querys.length;i++) {
@@ -34,9 +31,6 @@ function getRemoteFile(url) {
 
 function getLayoutStyle(url) {
     let query_string = url.split('?');
-    for (let i=0;i<query_string.length;i++) {
-        console.log("value["+i+"]=",query_string[i]);
-    }
     if (query_string.length>1) {
         let querys=query_string[1].split('&');
         for (let i=0;i<querys.length;i++) {

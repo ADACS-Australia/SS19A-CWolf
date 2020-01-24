@@ -59,7 +59,7 @@ function MarzApp(props) {
                         (
                             <div className={"afterSideBarContainer" + (isSmall({...props, ...routeProps}) ? " sidebarSmall" : "")}>
                                 <div className="spacing relative">
-                                    <Route exact path="/" render={(routeProps) => <Overview {...props} {...routeProps}/>}/>
+                                    <Route path="/" render={(routeProps) => <Overview {...props} {...routeProps}/>}/>
                                     <Route path="/usage/" render={(routeProps) => <Usage {...props} {...routeProps}/>}/>
                                     <Route path="/detailed/"
                                         render={(routeProps) => <Detailed {...props} {...routeProps}/>}/>
