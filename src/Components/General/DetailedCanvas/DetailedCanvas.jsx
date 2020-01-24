@@ -159,7 +159,8 @@ class DetailedCanvas extends React.Component {
         return (window.marz_configuration.layout == 'MarzSpectrumView');
     }
     showMultipleSpectra() {
-        if (this.params.data.count()<=1) return false;
+        if (this.props.data.spectra.length<=1) return false;
+        if (this.props.data.spectra.length>5) return false; // for safety do not display as multispectra if too many
         return (window.marz_configuration.layout == 'ReadOnlySpectrumView' || window.marz_configuration.layout == 'SimpleSpectrumView');
     }
 

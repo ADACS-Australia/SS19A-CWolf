@@ -1,14 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+        table, th, td {
+          border: 1px solid black;
+          border-collapse: collapse;
+        }
+        td {
+            padding: 20px;
+        }
+        </style>
     <meta charset="utf-8">
     <title>Marz V2 demo</title>
 </head>
 
 <body>
-    <p>Gallery (Work in Progress)</p>
-    <p><a href="/marz/?style=ReadOnlySpectrumView">as ReadOnlySpectrumView</a></p>
-    <p><a href="/marz/?style=SimpleSpectrumView">as SimpleSpectrumView</a></p>
-    <p><a href="/marz/?style=TemplateOverlaySpectrumView">as TemplateOverlaySpectrumView</a></p>
-    <p><a href="/marz/index.html">as MarzSpectrumView</a></p>
+    <h1>Marz V2 Gallery</h1>
+    <table style="width:50%;margin:10px">
+        <tr>
+            <th>
+                Example
+            </th>
+        </tr>
+        <tr>
+            <td>
+                <a href="/marz/?style=ReadOnlySpectrumView">Empty ReadOnlySpectrumView (Drag and Drop your own FITS file)</a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="/marz/?style=SimpleSpectrumView">Empty SimpleSpectrumView (Drag and Drop your own FITS file)</a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="/marz/?style=TemplateOverlaySpectrumView">Empty TemplateOverlaySpectrumView (Drag and Drop your own FITS file)</a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="/marz/index.html">Marz V2</a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="/marz/?https://tao.asvo.org.au/taostaging/static/emlLogVacuumHelioMultiple.fits&&style=ReadOnlySpectrumView">Multispectrum FITS file in SimpleSpectrumView</a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="/marz/?https://tao.asvo.org.au/taostaging/static/spec-4444-55538-1000.fits&&style=ReadOnlySpectrumView">sdss.org FITS file in SimpleSpectrumView</a>
+            </td>
+        </tr>
+    </table>
 </body>
+</html>
