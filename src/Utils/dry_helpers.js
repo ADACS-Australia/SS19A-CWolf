@@ -1,6 +1,8 @@
 function isDetailed(props) {
     // Check if the current path is the detailed page
-    return props.history.location.pathname.startsWith('/detailed');
+    if (window.marz_configuration.layout == 'MarzSpectrumView')
+        return props.history.location.pathname.startsWith('/detailed');
+    return true;
 }
 
 function isOverview(props) {
