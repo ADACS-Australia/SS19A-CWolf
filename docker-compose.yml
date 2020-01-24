@@ -20,4 +20,5 @@ services:
         nvm install-latest-npm && 
         npm install && 
         npm run build -- --output-public-path=\"/projects/live/marz/\" &&
+        cp -r /code/gallery /code/dist &&
         nginx -g 'daemon off;'"
