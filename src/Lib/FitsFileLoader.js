@@ -369,7 +369,11 @@ class FitsFileLoader {
                     if (this.inverseVariance) {
                         const arr = d.slice(i * this.numPoints, (i + 1) * this.numPoints);
                         for (let j = 0; j < arr.length; j++) {
-                            arr[j] = 1.0 / arr[j];
+                            if (arr[j] === 0) {
+                                arr[j] = NaN;
+                            } else {
+                                arr[j] = 1.0 / arr[j];
+                            }
                         }
                         variance.push(arr);
                     } else {
