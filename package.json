@@ -54,7 +54,7 @@
     "file-saver": "^2.0.2",
     "keyboardjs": "^2.5.1",
     "mathjs": "^6.1.0",
-    "minimist": ">=1.2.0",
+    "minimist": ">=1.2.2",
     "progress": ">=2.0.3",
     "q": "^1.5.1",
     "react-bootstrap-table-next": "^3.1.9"
